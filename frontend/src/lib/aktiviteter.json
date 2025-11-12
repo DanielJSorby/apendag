@@ -1,0 +1,94 @@
+{
+  "dager": [
+    {
+      "dato": "22/1",
+      "dag": "tirsdag",
+      "arrangement": "Show for 10. trinn, én gang per time",
+      "tidspunkter": [
+        "16:00-16:30",
+        "17:00-17:30",
+        "18:00-18:30",
+        "19:00-19:30"
+      ]
+    },
+    {
+      "dato": "24/1",
+      "dag": "torsdag",
+      "arrangement": "Åpen skoledag for 10. trinn",
+      "kurs": [
+        {
+          "id": 1,
+          "navn": "Elektrofag med studiekompetanse",
+          "plasser": 16,
+          "tid": {
+            "forLunsj": "09:00-11:30",
+            "etterLunsj": "12:00-14:30"
+          }
+        },
+        {
+          "id": 2,
+          "navn": "Elektrofag og datateknologi, yrkesfag",
+          "plasser": 16,
+          "tid": {
+            "forLunsj": "09:00-11:30",
+            "etterLunsj": "12:00-14:30"
+          }
+        },
+        {
+          "id": 3,
+          "navn": "Informasjonsteknologi og medieproduksjon med studiekompetanse",
+          "plasser": 16,
+          "tid": {
+            "forLunsj": "09:00-11:30",
+            "etterLunsj": "12:00-14:30"
+          }
+        },
+        {
+          "id": 4,
+          "navn": "Informasjonsteknologi og medieproduksjon, yrkesfag",
+          "plasser": 16,
+          "tid": {
+            "forLunsj": "09:00-11:30",
+            "etterLunsj": "12:00-14:30"
+          }
+        },
+        {
+          "id": 5,
+          "navn": "Kunst, design og arkitektur",
+          "plasser": 30,
+          "tid": {
+            "forLunsj": "09:00-11:30",
+            "etterLunsj": "12:00-14:30"
+          }
+        },
+        {
+          "id": 6,
+          "navn": "Medier og kommunikasjon",
+          "plasser": 30,
+          "tid": {
+            "forLunsj": "09:00-11:30",
+            "etterLunsj": "12:00-14:30"
+          }
+        },
+        {
+          "id": 7,
+          "navn": "Studiespesialisering med realfag",
+          "plasser": 30,
+          "tid": {
+            "forLunsj": "09:00-11:30",
+            "etterLunsj": "12:00-14:30"
+          }
+        },
+        {
+          "id": 8,
+          "navn": "Studiespesialisering med språk, samfunnsfag og økonomi",
+          "plasser": 30,
+          "tid": {
+            "forLunsj": "09:00-11:30",
+            "etterLunsj": "12:00-14:30"
+          }
+        }
+      ]
+    }
+  ]
+}
