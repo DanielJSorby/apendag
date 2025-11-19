@@ -14,9 +14,11 @@
 <style>
     .container {
         position: fixed;
+        top: 0;
+        left: 0;
         z-index: 10000000;
         width: 100%;
-        height: 80px;
+        height: 10vh;
         display: flex;
         justify-content: space-between;
         align-items: center;
