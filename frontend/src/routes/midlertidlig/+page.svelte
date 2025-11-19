@@ -9,6 +9,7 @@
 			forLunsj: string;
 			etterLunsj: string;
 		};
+		farge?: string;
 	}
 
 	interface DayData {
@@ -37,22 +38,38 @@
 		}
 	});
 
-	const timeSlotColors = ['#4facfe', '#c85a6b', '#6b8e5a', '#ff8a5b'];
+	const timeSlotColors = [
+		'var(--color-blue)',
+		'var(--color-pink)',
+		'var(--color-green)',
+		'var(--color-orange)'
+	];
 	const rotations = ['rotate-1', 'rotate-2', 'rotate-3', 'rotate-4'];
 
 	const programColors = [
-		'#4facfe', // primary
-		'#c85a6b', // secondary
-		'#6b8e5a', // success
-		'#ff8a5b' // accent
+		'var(--color-blue)',
+		'var(--color-pink)',
+		'var(--color-green)',
+		'var(--color-orange)'
 	];
 
 	const programBorderColors = [
-		'rgba(79, 172, 254, 0.3)',
-		'rgba(200, 90, 107, 0.3)',
-		'rgba(107, 142, 90, 0.3)',
-		'rgba(255, 138, 91, 0.3)'
+		'rgba(49, 171, 198, 0.3)',
+		'rgba(217, 59, 96, 0.3)',
+		'rgba(73, 116, 80, 0.3)',
+		'rgba(220, 137, 70, 0.3)'
 	];
+
+	function getBorderColor(farge?: string): string {
+		if (!farge) return programBorderColors[0];
+		const colorMap: Record<string, string> = {
+			'var(--color-blue)': 'rgba(49, 171, 198, 0.3)',
+			'var(--color-pink)': 'rgba(217, 59, 96, 0.3)',
+			'var(--color-green)': 'rgba(73, 116, 80, 0.3)',
+			'var(--color-orange)': 'rgba(220, 137, 70, 0.3)'
+		};
+		return colorMap[farge] || programBorderColors[0];
+	}
 
 	const revyeAktiviteter = ['🎬 Skuespill', '🎵 Sang', '💃 Dans', '🎨 Design', '🎪 Manus'];
 </script>
@@ -181,13 +198,13 @@
 					{#each torsdag?.kurs || [] as kurs, index}
 						<div
 							class="program-card"
-							style="border-color: {programBorderColors[index % programBorderColors.length]}"
+							style="border-color: {getBorderColor(kurs.farge)}"
 						>
 							<h3 class="program-title">{kurs.navn}</h3>
 							<div class="program-spots">
 								<div
 									class="spots-badge"
-									style="background-color: {programColors[index % programColors.length]}"
+									style="background-color: {kurs.farge || programColors[index % programColors.length]}"
 								>
 									<span class="spots-number">{kurs.plasser}</span>
 									<span class="spots-label">plasser</span>
@@ -323,7 +340,7 @@
 
 	/* Hero Section */
 	.hero {
-		background: white;
+		background: var(--color-white);
 		border-radius: 1rem;
 		box-shadow: 0 3px 18px rgba(0, 0, 0, 0.06);
 		padding: 1.5rem;
@@ -371,8 +388,8 @@
 
 	.hero-badge {
 		display: inline-block;
-		background: rgba(79, 172, 254, 0.1);
-		color: #4facfe;
+		background: rgba(49, 171, 198, 0.1);
+		color: var(--color-blue);
 		padding: 0.5rem 1rem;
 		border-radius: 9999px;
 		font-size: 0.875rem;
@@ -381,7 +398,7 @@
 	}
 
 	.hero-title {
-		color: #4facfe;
+		color: var(--color-blue);
 		font-weight: 700;
 		margin: 0 0 0.75rem 0;
 		text-align: left;
@@ -405,7 +422,7 @@
 	}
 
 	.hero-subtitle .highlight {
-		color: #4facfe;
+		color: var(--color-blue);
 		font-weight: 700;
 	}
 
@@ -438,11 +455,11 @@
 
 	/* Tuesday Section */
 	.tuesday-section {
-		background: white;
+		background: var(--color-white);
 		border-radius: 1rem;
 		box-shadow: 0 3px 18px rgba(0, 0, 0, 0.06);
 		padding: 1.5rem;
-		border-left: 6px solid #4facfe;
+		border-left: 6px solid var(--color-blue);
 	}
 
 	@media (min-width: 640px) {
@@ -484,14 +501,14 @@
 	}
 
 	.section-subtitle {
-		color: #4facfe;
+		color: var(--color-blue);
 		font-weight: 600;
 		font-size: 1.125rem;
 		margin: 0;
 	}
 
 	.time-highlight {
-		background: rgba(79, 172, 254, 0.05);
+		background: rgba(49, 171, 198, 0.05);
 		border-radius: 0.75rem;
 		padding: 1rem;
 		margin-bottom: 1.25rem;
@@ -500,7 +517,7 @@
 	.time-highlight-main {
 		font-size: 1.5rem;
 		font-weight: 700;
-		color: #4facfe;
+		color: var(--color-blue);
 		margin: 0 0 0.25rem 0;
 	}
 
@@ -518,10 +535,10 @@
 	}
 
 	.protip-box {
-		background: rgba(255, 138, 91, 0.1);
+		background: rgba(220, 137, 70, 0.1);
 		border-radius: 0.75rem;
 		padding: 1rem;
-		border: 2px dashed rgba(255, 138, 91, 0.3);
+		border: 2px dashed rgba(220, 137, 70, 0.3);
 	}
 
 	.protip-box p {
@@ -537,7 +554,7 @@
 
 	/* Show Section */
 	.show-section {
-		background: linear-gradient(to bottom right, rgba(79, 172, 254, 0.05), rgba(255, 138, 91, 0.05));
+		background: linear-gradient(to bottom right, rgba(49, 171, 198, 0.05), rgba(220, 137, 70, 0.05));
 		border-radius: 1rem;
 		box-shadow: 0 3px 18px rgba(0, 0, 0, 0.06);
 		padding: 1.5rem;
@@ -576,7 +593,7 @@
 	}
 
 	.show-slot {
-		color: white;
+		color: var(--color-white);
 		border-radius: 0.75rem;
 		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 		padding: 1rem;
@@ -628,14 +645,14 @@
 
 	/* Thursday Section */
 	.thursday-section {
-		background: linear-gradient(to bottom right, rgba(200, 90, 107, 0.1), rgba(200, 90, 107, 0.05));
+		background: linear-gradient(to bottom right, rgba(217, 59, 96, 0.1), rgba(217, 59, 96, 0.05));
 		border-radius: 1rem;
 		box-shadow: 0 3px 18px rgba(0, 0, 0, 0.06);
 		padding: 1.5rem;
 		margin-bottom: 2rem;
 		position: relative;
 		overflow: hidden;
-		border-left: 6px solid #c85a6b;
+		border-left: 6px solid var(--color-pink);
 	}
 
 	@media (min-width: 640px) {
@@ -666,8 +683,8 @@
 
 	.grade-banner {
 		display: inline-block;
-		background: #c85a6b;
-		color: white;
+		background: var(--color-pink);
+		color: var(--color-white);
 		padding: 0.375rem 1rem;
 		border-radius: 9999px;
 		font-size: 0.75rem;
@@ -676,7 +693,7 @@
 	}
 
 	.thursday-subtitle {
-		color: #c85a6b;
+		color: var(--color-pink);
 	}
 
 	.thursday-text {
@@ -684,8 +701,8 @@
 	}
 
 	.registration-box {
-		background: #ff8a5b;
-		color: white;
+		background: var(--color-orange);
+		color: var(--color-white);
 		border-radius: 0.75rem;
 		padding: 1.25rem;
 		position: relative;
@@ -836,7 +853,7 @@
 	}
 
 	.program-card {
-		background: white;
+		background: var(--color-white);
 		border-radius: 1rem;
 		box-shadow: 0 3px 18px rgba(0, 0, 0, 0.06);
 		padding: 1.25rem;
@@ -874,7 +891,7 @@
 	}
 
 	.spots-badge {
-		color: white;
+		color: var(--color-white);
 		width: 5rem;
 		height: 5rem;
 		display: flex;
@@ -953,7 +970,7 @@
 
 	/* Culture Section */
 	.culture-section {
-		background: linear-gradient(to bottom right, rgba(107, 142, 90, 0.1), rgba(107, 142, 90, 0.05));
+		background: linear-gradient(to bottom right, rgba(73, 116, 80, 0.1), rgba(73, 116, 80, 0.05));
 		border-radius: 1rem;
 		box-shadow: 0 3px 18px rgba(0, 0, 0, 0.06);
 		padding: 1.5rem;
@@ -1012,7 +1029,7 @@
 		background: rgba(255, 255, 255, 0.5);
 		border-radius: 0.75rem;
 		padding: 1rem;
-		border-left: 4px solid #6b8e5a;
+		border-left: 4px solid var(--color-green);
 		margin-top: 1.25rem;
 	}
 
@@ -1033,7 +1050,7 @@
 
 	/* Revy Section */
 	.revy-section {
-		background: linear-gradient(to bottom right, rgba(255, 138, 91, 0.1), rgba(255, 138, 91, 0.05));
+		background: linear-gradient(to bottom right, rgba(220, 137, 70, 0.1), rgba(220, 137, 70, 0.05));
 		border-radius: 1rem;
 		box-shadow: 0 3px 18px rgba(0, 0, 0, 0.06);
 		padding: 1.5rem;
@@ -1106,7 +1123,7 @@
 	}
 
 	.revy-activity {
-		background: rgba(255, 138, 91, 0.2);
+		background: rgba(220, 137, 70, 0.2);
 		color: #1a1a1a;
 		padding: 0.375rem 0.75rem;
 		border-radius: 9999px;
@@ -1116,12 +1133,12 @@
 
 	/* CTA Section */
 	.cta-section {
-		background: linear-gradient(to right, #4facfe, #c85a6b);
+		background: linear-gradient(to right, var(--color-blue), var(--color-pink));
 		border-radius: 1rem;
 		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 		padding: 1.5rem;
 		text-align: center;
-		color: white;
+		color: var(--color-white);
 		position: relative;
 		overflow: hidden;
 		margin-top: 2rem;
