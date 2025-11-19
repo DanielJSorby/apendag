@@ -18,7 +18,7 @@
 <div class="aktiviteter">
     <div id="førlunsj">
         {#each (arrangementer?.dager?.[1]?.kurs ?? []) as arrangement}
-            <AktivitetsBoks title={arrangement["navn"]} plasser={arrangement["plasser"]} tidspunkt={arrangement["tid"]["forLunsj"]} farge="red"/>
+            <AktivitetsBoks title={arrangement["navn"]} plasser={arrangement["plasser"]} tidspunkt={arrangement["tid"]} farge="red"/>
         {/each}
     </div>
     <div class="etterLunsj"></div>
