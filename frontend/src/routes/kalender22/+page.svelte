@@ -2,32 +2,34 @@
     import { onMount } from 'svelte';
     import AktivitetsBoks from '$lib/components/aktivitetsBoks.svelte';
 
-    // hold data fetched once
-    interface Activity {
-        navn?: string;
-        info?: string;
-        antallPlasser?: number | string;
-        [key: string]: unknown;
-    }
-    let arrangementer: Activity[] = [];
+    let arrangementer: any = null;
 
-    async function getData(): Promise<Activity[]> {
+    async function getData() {
         const response = await fetch('/aktiviteter.json');
-        const data = await response.json();
-        return data as Activity[];
+        arrangementer = await response.json();
+
     }
 
     onMount(async () => {
-        arrangementer = await getData();
+        await getData();
     });
 </script>
 
 <div class="aktiviteter">
-    <div class="førlunsj">
-        {#each arrangementer as a, i}
-            <AktivitetsBoks></AktivitetsBoks>
+    <div id="førlunsj">
+        {#each (arrangementer?.dager?.[1]?.kurs ?? []) as arrangement}
+            <AktivitetsBoks title={arrangement["navn"]} plasser={arrangement["plasser"]} tidspunkt={arrangement["tid"]} farge="red"/>
         {/each}
-
     </div>
     <div class="etterLunsj"></div>
 </div>
+
+<style>
+    #førlunsj {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1rem;
+        max-width: 900px; /* approx 3 * 320px columns */
+        margin:0 auto
+    }
+</style>
