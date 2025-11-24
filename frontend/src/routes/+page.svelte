@@ -7,14 +7,14 @@
             <p>Hvilken dag vil du se på opplegge til?</p>
         </div>
         <div class="buttons">
-            <button id="200126">
+            <button on:click={() => window.location.href = '/kalender20'}>
                 <div class="">
                 <h2>tirsdag 20.</h2>
                 <p>Åpen dag for alle interesserte på ettermiddagen</p>
                 </div>
                 <p>Trykk her for mer informasjon!</p>
             </button>
-            <button id="220126">
+            <button on:click={() => window.location.href = '/kalender22'}>
                 <div class="">
                 <h2>torsdag 22.</h2>
                 <p>Åpen dag med spesielle programmer kun for elever</p>
