@@ -48,7 +48,7 @@
 <div id="aktivitetBoks">
     <div class="tekst">
       <h1 id="title">{title}</h1>
-      <h3>Velg et tidspunkt under og meld deg på!</h3>
+      <h3 id="titleUnder">Velg et tidspunkt under og meld deg på!</h3>
       <div id="valgAvKurs">
         <button class:selected={visFør} on:click={() => byttFørEtter("førLunsj")}>{tidspunkt["forLunsj"]}</button>
         <button class:selected={!visFør} on:click={() => byttFørEtter("etterLunsj")}>{tidspunkt["etterLunsj"]}</button>
@@ -81,6 +81,13 @@
     </div>  
 </div>
 <style>
+    #title {
+        font-size: 18px;
+        height: 7rem;
+    }
+    #titleUnder {
+        font-size: 14px;
+    }
     .overlay {
         position: fixed;
         top: 0;
@@ -164,7 +171,7 @@
         margin-top: 1rem;
         margin-bottom: 1rem;
     } 
-    .meldPåKnapp-wrapper {
+    .meldPåKnapp-wrapper {  
         display: flex;
         justify-content: center;
         align-items: center;

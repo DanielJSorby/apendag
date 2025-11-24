@@ -15,6 +15,14 @@
     });
 </script>
 
+<div class="velkomst-container">
+    <h1>Velkommen til påmelding for åpen dag den 22. januar!</h1>
+    <p>
+        Meld deg på kursene under. Du kan velge ett kurs før lunsj og ett kurs etter lunsj.
+        Bruk knappene for å velge tidspunkt, og trykk deretter på "Meld deg på".
+    </p>
+</div>
+
 <div class="aktiviteter">
     <div id="alleAktiviteter">
         {#each (arrangementer?.dager?.[1]?.kurs ?? []) as arrangement}
@@ -24,8 +32,14 @@
 </div>
 
 <style>
+    .velkomst-container {
+        text-align: center;
+        margin: 2rem auto;
+        max-width: 600px;
+        margin-top: 5rem;
+    }
     .aktiviteter {
-        margin-top: 20rem;
+        margin-top: 2rem;
     }
     #alleAktiviteter {
         display: grid;
