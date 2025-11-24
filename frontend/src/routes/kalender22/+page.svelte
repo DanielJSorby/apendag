@@ -16,20 +16,23 @@
 </script>
 
 <div class="aktiviteter">
-    <div id="førlunsj">
+    <div id="alleAktiviteter">
         {#each (arrangementer?.dager?.[1]?.kurs ?? []) as arrangement}
-            <AktivitetsBoks title={arrangement["navn"]} plasser={arrangement["plasser"]} tidspunkt={arrangement["tid"]} farge="red"/>
+            <AktivitetsBoks title={arrangement["navn"]} plasserfør={arrangement["plasser"]} plasseretter={10} tidspunkt={arrangement["tid"]} farge={arrangement["farge"]}/>
         {/each}
     </div>
-    <div class="etterLunsj"></div>
 </div>
 
 <style>
-    #førlunsj {
+    .aktiviteter {
+        margin-top: 20rem;
+    }
+    #alleAktiviteter {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
         gap: 1rem;
         max-width: 900px; /* approx 3 * 320px columns */
         margin:0 auto
     }
+    
 </style>
