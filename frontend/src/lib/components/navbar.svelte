@@ -1,12 +1,13 @@
 <div class="container">
     <div class="content-left">
-        <div class="logo"></div>
-        <h1>Åpen Dag</h1>
+        <div class="logo" on:click ={()=> window.location.href = '/'}></div>
+        <h1 on:click ={()=> window.location.href = '/'}>Åpen Dag</h1>
     </div>
     <div class="content-right">
         <div class="nav-links">
-            <a href="/">Hjem</a>
-            <a href="/kontakt">Spørsmål</a>
+            <a href="/kalender20">Tirsdag 20.</a>
+            <a href="/kalender22">Torsdag 22.</a>
+            <a href="/chatside">Spørsmål</a>
         </div>
     </div>
 </div>
@@ -41,6 +42,14 @@
         background-image: url('$lib/assets/ElvebakkenLogo.svg');
         background-size: contain;
         background-repeat: no-repeat;
+        cursor: pointer;
+    }
+
+    .content-left h1 {
+        font-family: 'Oslo Sans', sans-serif;
+        font-size: 24px;
+        color: #333333;
+        cursor: pointer;
     }
 
     .nav-links a {
