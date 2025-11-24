@@ -173,7 +173,7 @@
     }
 
     /* Small mobile styles */
-    @media (max-width: 500px) {
+    @media (max-width: 600px) {
 
     .container {
         overflow-x: hidden;
