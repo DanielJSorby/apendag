@@ -148,7 +148,7 @@
             );
         background-size: 200% 100%;
         background-position: 0% 50%;
-        animation: bgPulse 30s linear infinite;
+        animation: bgPulse 6    0s linear infinite;
     }
 
     .fillerbilde::before {
