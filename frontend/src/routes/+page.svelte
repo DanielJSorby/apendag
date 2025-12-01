@@ -9,15 +9,15 @@
         <div class="buttons">
             <button on:click={() => window.location.href = '/kalender20'}>
                 <div class="">
-                <h2>tirsdag 20.</h2>
+                <h2>Tirsdag 20. januar</h2>
                 <p>Åpen dag for alle interesserte på ettermiddagen</p>
                 </div>
                 <p>Trykk her for mer informasjon!</p>
             </button>
             <button on:click={() => window.location.href = '/kalender22'}>
                 <div class="">
-                <h2>torsdag 22.</h2>
-                <p>Åpen dag med spesielle programmer kun for elever</p>
+                <h2>Torsdag 22. januar</h2>
+                <p>Åpen dag med spesielle kurs kun for elever</p>
                 </div>
                 <p>Trykk her for mer informasjon!</p>
             </button>
@@ -93,7 +93,7 @@
         z-index: 0;
         width: 100%;
         height: 100%;
-        background-image: 
+        /* background-image: 
             linear-gradient(90deg, 
                 var(--color-pink) 0%, 
                 var(--color-pink) 6%,
@@ -145,10 +145,13 @@
                 var(--color-white) 96%,
                 var(--color-pink) 96%,
                 var(--color-pink) 100%
-            );
-        background-size: 200% 100%;
-        background-position: 0% 50%;
-        animation: bgPulse 6    0s linear infinite;
+            ); */
+        /* background-size: 200% 100%;
+        background-position: 0% 50%; */
+        background-image: url('/images/forsidebilde.jpg');
+        background-size: cover;
+        background-repeat: no-repeat;
+        /* animation: bgPulse 60s linear infinite; */
     }
 
     .fillerbilde::before {
