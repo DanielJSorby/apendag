@@ -41,6 +41,7 @@
 		--color-orange: #DC8946;
 		--color-white: #fff;
 		--color-grey: #f8f9fa;
+		--color-black: black;
 	}
 
 	:global(body) {
