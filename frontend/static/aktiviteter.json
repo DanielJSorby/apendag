@@ -18,6 +18,7 @@
       "kurs": [
         {
           "id": 1,
+          "linje": "elst",
           "navn": "Elektrofag med studiekompetanse",
           "plasser": 16,
           "tid": {
@@ -28,6 +29,7 @@
         },
         {
           "id": 2,
+          "linje": "el",
           "navn": "Elektrofag og datateknologi, yrkesfag",
           "plasser": 16,
           "tid": {
@@ -38,6 +40,7 @@
         },
         {
           "id": 3,
+          "linje": "imst",
           "navn": "Informasjonsteknologi og medieproduksjon med studiekompetanse",
           "plasser": 16,
           "tid": {
@@ -48,6 +51,7 @@
         },
         {
           "id": 4,
+          "linje": "im",
           "navn": "Informasjonsteknologi og medieproduksjon, yrkesfag",
           "plasser": 16,
           "tid": {
@@ -58,6 +62,7 @@
         },
         {
           "id": 5,
+          "linje": "kda",
           "navn": "Kunst, design og arkitektur",
           "plasser": 30,
           "tid": {
@@ -68,6 +73,7 @@
         },
         {
           "id": 6,
+          "linje": "mk",
           "navn": "Medier og kommunikasjon",
           "plasser": 30,
           "tid": {
@@ -78,6 +84,7 @@
         },
         {
           "id": 7,
+          "linje": "st",
           "navn": "Studiespesialisering med realfag",
           "plasser": 30,
           "tid": {
@@ -88,6 +95,7 @@
         },
         {
           "id": 8,
+          "linje": "ssø",
           "navn": "Studiespesialisering med språk, samfunnsfag og økonomi",
           "plasser": 30,
           "tid": {
