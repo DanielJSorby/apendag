@@ -164,6 +164,7 @@ $effect(() => {
         z-index: -1;
         width: 100%;
         height: 100%;
+        overflow: hidden;
         /* background-image: 
             linear-gradient(90deg, 
                 var(--color-pink) 0%, 
