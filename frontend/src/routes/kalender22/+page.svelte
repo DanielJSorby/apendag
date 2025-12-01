@@ -26,7 +26,7 @@
 <div class="aktiviteter">
     <div id="alleAktiviteter">
         {#each (arrangementer?.dager?.[1]?.kurs ?? []) as arrangement}
-            <AktivitetsBoks title={arrangement["navn"]} plasserfør={arrangement["plasser"]} plasseretter={10} tidspunkt={arrangement["tid"]} farge={arrangement["farge"]}/>
+            <AktivitetsBoks title={arrangement["navn"]} plasserfør={arrangement["plasser"]} plasseretter={10} tidspunkt={arrangement["tid"]} farge={arrangement["farge"]} plassersiste={5}/>
         {/each}
     </div>
 </div>
@@ -43,10 +43,11 @@
     }
     #alleAktiviteter {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
         gap: 1rem;
-        max-width: 900px; /* approx 3 * 320px columns */
-        margin:0 auto
+        max-width: 1280px; 
+        margin: 0 auto;
+        padding: 0 1rem;
     }
     
 </style>

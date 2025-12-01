@@ -22,8 +22,9 @@
           "navn": "Elektrofag med studiekompetanse",
           "plasser": 16,
           "tid": {
-            "forLunsj": "09:00-11:30",
-            "etterLunsj": "12:00-14:30"
+            "forLunsj": "09:00-10:30",
+            "etterLunsj": "11:00-12:30",
+            "siste": "13:00-14:30"
           },
           "farge": "var(--color-blue)"
         },
@@ -33,8 +34,9 @@
           "navn": "Elektrofag og datateknologi, yrkesfag",
           "plasser": 16,
           "tid": {
-            "forLunsj": "09:00-11:30",
-            "etterLunsj": "12:30-14:30"
+            "forLunsj": "09:00-10:30",
+            "etterLunsj": "11:00-12:30",
+            "siste": "13:00-14:30"
           },
           "farge": "var(--color-pink)"
         },
@@ -44,8 +46,9 @@
           "navn": "Informasjonsteknologi og medieproduksjon med studiekompetanse",
           "plasser": 16,
           "tid": {
-            "forLunsj": "09:00-11:30",
-            "etterLunsj": "12:30-14:50"
+            "forLunsj": "09:00-10:30",
+            "etterLunsj": "11:00-12:30",
+            "siste": "13:00-14:30"
           },
           "farge": "var(--color-green)"
         },
@@ -55,8 +58,9 @@
           "navn": "Informasjonsteknologi og medieproduksjon, yrkesfag",
           "plasser": 16,
           "tid": {
-            "forLunsj": "09:00-11:30",
-            "etterLunsj": "12:00-14:30"
+            "forLunsj": "09:00-10:30",
+            "etterLunsj": "11:00-12:30",
+            "siste": "13:00-14:30"
           },
           "farge": "var(--color-orange)"
         },
@@ -66,8 +70,9 @@
           "navn": "Kunst, design og arkitektur",
           "plasser": 30,
           "tid": {
-            "forLunsj": "09:00-11:30",
-            "etterLunsj": "12:00-14:30"
+            "forLunsj": "09:00-10:30",
+            "etterLunsj": "11:00-12:30",
+            "siste": "13:00-14:30"
           },
           "farge": "var(--color-blue)"
         },
@@ -77,8 +82,9 @@
           "navn": "Medier og kommunikasjon",
           "plasser": 30,
           "tid": {
-            "forLunsj": "09:00-11:30",
-            "etterLunsj": "12:00-14:30"
+            "forLunsj": "09:00-10:30",
+            "etterLunsj": "11:00-12:30",
+            "siste": "13:00-14:30"
           },
           "farge": "var(--color-pink)"
         },
@@ -88,8 +94,9 @@
           "navn": "Studiespesialisering med realfag",
           "plasser": 30,
           "tid": {
-            "forLunsj": "09:00-11:30",
-            "etterLunsj": "12:00-14:30"
+            "forLunsj": "09:00-10:30",
+            "etterLunsj": "11:00-12:30",
+            "siste": "13:00-14:30"
           },
           "farge": "var(--color-green)"
         },
@@ -99,8 +106,9 @@
           "navn": "Studiespesialisering med språk, samfunnsfag og økonomi",
           "plasser": 30,
           "tid": {
-            "forLunsj": "09:00-11:30",
-            "etterLunsj": "12:00-14:30"
+            "forLunsj": "09:00-10:30",
+            "etterLunsj": "11:00-12:30",
+            "siste": "13:00-14:30"
           },
           "farge": "var(--color-orange)"
         }

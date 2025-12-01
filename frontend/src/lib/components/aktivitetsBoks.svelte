@@ -1,28 +1,37 @@
 <script lang="ts">
+    import { onMount } from 'svelte';
     interface Props {
         title?: string
-        tidspunkt?: { forLunsj: string, etterLunsj: string }
+        tidspunkt?: { forLunsj: string, etterLunsj: string, siste: string }
         farge?: string
         plasserfør?: number
         plasseretter?: number
+        plassersiste?: number
     }
     export let title: string = "";
-    export let tidspunkt: { forLunsj: string, etterLunsj: string } = { forLunsj: "", etterLunsj: "" };
+    export let tidspunkt: { forLunsj: string, etterLunsj: string, siste: string } = { forLunsj: "", etterLunsj: "", siste: "" };
     export let farge: string = "";
     export let plasserfør: number = 0;
     export let plasseretter: number = 0;
-    let visFør = true
+    export let plassersiste: number = 0;
+    let valgtTidspunkt: 'forLunsj' | 'etterLunsj' | 'siste' = 'forLunsj';
     let visOverlayEL = false
     let erPåmeldt = false
-    let tidspunktTekst = "09:00-11:00"
-    const byttFørEtter = ((førEtter: "førLunsj" | "etterLunsj")=> {
+    let tidspunktTekst: string;
+
+    onMount(() => {
+        tidspunktTekst = tidspunkt.forLunsj;
+    });
+
+    const byttFørEtter = ((førEtter: 'forLunsj' | 'etterLunsj' | 'siste')=> {
         if (erPåmeldt) return;
+        valgtTidspunkt = førEtter;
         if (førEtter === "etterLunsj") {
-            visFør = false
-            tidspunktTekst = "12:00-14:30"
+            tidspunktTekst = tidspunkt.etterLunsj;
+        } else if (førEtter === 'forLunsj') {
+            tidspunktTekst = tidspunkt.forLunsj;
         } else {
-            visFør = true 
-            tidspunktTekst = "09:00-11:00"
+            tidspunktTekst = tidspunkt.siste;
         }
     })
     const visOverlay = (()=> {
@@ -50,19 +59,24 @@
       <h1 id="title">{title}</h1>
       <h3 id="titleUnder">Velg et tidspunkt under og meld deg på!</h3>
       <div id="valgAvKurs">
-        <button class:selected={visFør} on:click={() => byttFørEtter("førLunsj")}>{tidspunkt["forLunsj"]}</button>
-        <button class:selected={!visFør} on:click={() => byttFørEtter("etterLunsj")}>{tidspunkt["etterLunsj"]}</button>
+        <button class:selected={valgtTidspunkt === 'forLunsj'} on:click={() => byttFørEtter('forLunsj')}>{tidspunkt["forLunsj"]}</button>
+        <button class:selected={valgtTidspunkt === 'etterLunsj'} on:click={() => byttFørEtter('etterLunsj')}>{tidspunkt["etterLunsj"]}</button>
+        <button class:selected={valgtTidspunkt === 'siste'} on:click={() => byttFørEtter('siste')}>{tidspunkt["siste"]}</button>
       </div>  
       <div class="visesIForholdTilTid">
-        {#if visFør}
+        {#if valgtTidspunkt === 'forLunsj'}
             <div style="background-color: {farge};" class="plasser">
                 <h1 id="tilgjengeligePlasser">{plasserfør}</h1>
                 <h3 id="plassState">Plasser</h3>
             </div>
-        {/if}
-        {#if !visFør}
+        {:else if valgtTidspunkt === 'etterLunsj'}
             <div style="background-color: {farge};" class="plasser">
                 <h1 id="tilgjengeligePlasser">{plasseretter}</h1>
+                <h3 id="plassState">Plasser</h3>
+            </div>
+        {:else}
+            <div style="background-color: {farge};" class="plasser">
+                <h1 id="tilgjengeligePlasser">{plassersiste}</h1>
                 <h3 id="plassState">Plasser</h3>
             </div>
         {/if}
@@ -81,6 +95,12 @@
     </div>  
 </div>
 <style>
+    .tekst {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
     #title {
         font-size: 18px;
         height: 7rem;
@@ -129,7 +149,6 @@
         gap: 1rem;
     }
     #aktivitetBoks {
-        min-width: calc(100vw/8);
         padding: 3rem;
         background-color: var(--color-grey);
         border-radius: 1rem;
