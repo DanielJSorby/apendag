@@ -17,7 +17,9 @@ $effect(() => {
     <div class="fillerbilde"></div>
     <div class="content">
         <div class="tekst-boks">
-            <h1>Velkommen til åpen dag på Elvebakken!</h1>
+            <h2>VELKOMMEN TIL</h2>
+            <h1>ÅPEN DAG PÅ</h1>
+            <h1>ELVEBAKKEN</h1>
             <p>Hvilken dag vil du se på opplegge til?</p>
         </div>
         <div class="buttons">
@@ -48,7 +50,7 @@ $effect(() => {
         <Linjeknapp linje="el" linjeData={linjeData} onclick={() => selectedLinje = 'el'} />
     </div>
     <div class="linje-tekst">
-        <h1 style="color: {linjeData[selectedLinje].farge};">{linjeData[selectedLinje].tittel}</h1>
+        <h1 style="color: {linjeData[selectedLinje].farge};">{@html linjeData[selectedLinje].tittel}</h1>
         <p>{linjeData[selectedLinje].langBeskrivelse}</p>
     </div>
 </div>
@@ -81,7 +83,20 @@ $effect(() => {
     .tekst-boks{
         display: flex;
         flex-direction: column;
-        align-items: left;
+        align-items: flex-start;
+        text-align: left;
+        color: white;
+    }
+
+    .tekst-boks h1 {
+        margin: 5px 0;
+        font-size: 3rem;
+    }
+
+    .tekst-boks h2 {
+        margin: 0;
+        font-size: 2.5rem;
+        font-weight: normal;
     }
 
     .buttons {
@@ -92,7 +107,7 @@ $effect(() => {
     button {
         padding: 10px 20px;
         border: 2px solid var(--color-pink);
-        border-radius: 5px;
+        border-radius: 15px;
         background-color: var(--color-white);
         color: var(--color-pink);
         box-shadow: var(--color-pink) 0px 0px 10px -2px;

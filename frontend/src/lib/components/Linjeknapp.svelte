@@ -21,7 +21,7 @@
 </script>
 
 <button class="linjeknapp" style="border-color: {currentLinje.farge}; color: {currentLinje.farge}; background-color: {currentLinje.lysfarge};" onclick={onclick}>
-    <h1>{currentLinje.tittel}</h1>
+    <h1>{@html currentLinje.tittel}</h1>
     <p>{currentLinje.beskrivelse}</p>
 </button>
 
