@@ -1,3 +1,17 @@
+<script lang="ts">
+import Linjeknapp from '$lib/components/Linjeknapp.svelte';
+
+let selectedLinje = $state<'st' | 'kda' | 'mk' | 'im' | 'el'>('st');
+let linjeData = $state<any>({});
+
+// Load JSON data on mount
+$effect(() => {
+    fetch('/linjer.json')
+        .then(res => res.json())
+        .then(data => linjeData = data);
+});
+</script>
+
 <div class="filler"></div>
 <div class="container">
     <div class="fillerbilde"></div>
@@ -7,14 +21,14 @@
             <p>Hvilken dag vil du se på opplegge til?</p>
         </div>
         <div class="buttons">
-            <button on:click={() => window.location.href = '/kalender20'}>
+            <button onclick={() => window.location.href = '/kalender20'}>
                 <div class="">
                 <h2>tirsdag 20.</h2>
                 <p>Åpen dag for alle interesserte på ettermiddagen</p>
                 </div>
                 <p>Trykk her for mer informasjon!</p>
             </button>
-            <button on:click={() => window.location.href = '/kalender22'}>
+            <button onclick={() => window.location.href = '/kalender22'}>
                 <div class="">
                 <h2>torsdag 22.</h2>
                 <p>Åpen dag med spesielle programmer kun for elever</p>
@@ -24,7 +38,21 @@
         </div>
     </div>
 </div>
-
+{#if Object.keys(linjeData).length > 0}
+<div class="linjer">
+    <div class="linjeknapper">
+        <Linjeknapp linje="st" linjeData={linjeData} onclick={() => selectedLinje = 'st'} />
+        <Linjeknapp linje="kda" linjeData={linjeData} onclick={() => selectedLinje = 'kda'} />
+        <Linjeknapp linje="mk" linjeData={linjeData} onclick={() => selectedLinje = 'mk'} />
+        <Linjeknapp linje="im" linjeData={linjeData} onclick={() => selectedLinje = 'im'} />
+        <Linjeknapp linje="el" linjeData={linjeData} onclick={() => selectedLinje = 'el'} />
+    </div>
+    <div class="linje-tekst">
+        <h1 style="color: {linjeData[selectedLinje].farge};">{linjeData[selectedLinje].tittel}</h1>
+        <p>{linjeData[selectedLinje].langBeskrivelse}</p>
+    </div>
+</div>
+{/if}
 <style>
     .filler {
         height: 10vh;
@@ -33,8 +61,7 @@
     .container {
         overflow-x: hidden;
         width: 100vw;
-        height: 90vh;
-        overflow: hidden;
+        min-height: 80vh;
         display: flex;
         align-items: center;
         justify-content: left;
@@ -77,6 +104,35 @@
         align-items: left;
     }
 
+    /*Linjer*/
+    .linjer{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+    .linjeknapper {
+        margin-left: 0;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-evenly;
+        align-items: center;
+        width: 100vw;
+        margin-top: 20px;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .linje-tekst {
+        margin-top: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        width: 80vw;
+    }
+
+
     /*temp bakgrunns animasjon */
 
     @keyframes bgPulse {
@@ -90,7 +146,7 @@
 
     .fillerbilde {
         position: absolute;
-        z-index: 0;
+        z-index: -1;
         width: 100%;
         height: 100%;
         background-image: 
@@ -173,7 +229,7 @@
     }
 
     /* Small mobile styles */
-    @media (max-width: 600px) {
+@media (max-width: 570px) {
 
     .container {
         overflow-x: hidden;
@@ -228,5 +284,9 @@
         border-radius: 1rem;
         border-width: 3px;
     }
+
+    .linje-tekst {
+        width: 90vw;
     }
+}
 </style>
