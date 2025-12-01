@@ -35,13 +35,17 @@
 	}
 
 	:global(:root) {
+		--color-white: #ffffff;
 		--color-pink: #D93B60;
 		--color-blue: #31ABC6;
 		--color-green: #497450;
 		--color-orange: #DC8946;
-		--color-white: #fff;
 		--color-grey: #f8f9fa;
 		--color-black: black;
+		--color-pink-light: #ffe0e3;
+		--color-blue-light: #cdf4ff;
+		--color-green-light: #d9ecd3;
+		--color-orange-light: #ffe7c7;
 	}
 
 	:global(body) {
