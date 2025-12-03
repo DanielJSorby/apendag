@@ -1,5 +1,6 @@
 <script lang="ts">
 	import ElvebakkenLogo from '$lib/assets/ElvebakkenLogo.svg';
+	import Footer from '$lib/components/footer.svelte';
 	import Navbar from '$lib/components/navbar.svelte';
 	let { children } = $props();
 </script>
@@ -16,7 +17,7 @@
 
 {@render children()}
 
-
+<Footer></Footer>
 <style>
 	@font-face {
 		font-family: 'Oslo Sans';

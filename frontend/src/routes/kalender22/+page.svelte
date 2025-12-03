@@ -46,6 +46,7 @@
     }
     .aktiviteter {
         margin-top: 2rem;
+        margin-bottom: 2rem;
     }
     #alleAktiviteter {
         display: grid;
