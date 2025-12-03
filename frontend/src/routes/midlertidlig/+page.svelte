@@ -318,6 +318,7 @@
 	.page-wrapper {
 		min-height: 100vh;
 		background: #f8f9fa;
+		padding-top: 10vh;
 	}
 
 	.container {

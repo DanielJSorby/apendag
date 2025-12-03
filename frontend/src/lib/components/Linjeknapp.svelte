@@ -20,10 +20,12 @@
     const currentLinje = data[linje];
 </script>
 
+<a href={`/linjer/${linje}`}>
 <button class="linjeknapp" style="border-color: {currentLinje.farge}; color: {currentLinje.farge}; background-color: {currentLinje.lysfarge};" onclick={onclick}>
-    <h1>{@html currentLinje.tittel}</h1>
-    <p>{currentLinje.beskrivelse}</p>
-</button>
+        <h1>{@html currentLinje.tittel}</h1>
+        <p>{currentLinje.beskrivelse}</p>
+    </button>
+</a>
 
 <style>
     button.linjeknapp {
@@ -42,7 +44,7 @@
     }
 
     button.linjeknapp:hover {
-        transform: scale(1.25);
+        transform: scale(1.1);
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
 
@@ -51,6 +53,11 @@
         margin: 0 0 10px 0;
         font-weight: bold;
         justify-self: flex-start;
+    }
+
+    a {
+        text-decoration: none;
+        color: inherit;
     }
 
     button.linjeknapp p {

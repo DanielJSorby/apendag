@@ -1,16 +1,23 @@
 <script lang="ts">
-import Linjeknapp from '$lib/components/Linjeknapp.svelte';
+    import Linjeknapp from '$lib/components/Linjeknapp.svelte';
+    import Noemer from '$lib/components/noemer.svelte';
 
-let selectedLinje = $state<'st' | 'kda' | 'mk' | 'im' | 'el'>('st');
-let linjeData = $state<any>({});
+    let selectedLinje = $state<'st' | 'kda' | 'mk' | 'im' | 'el'>('st');
+    let linjeData = $state<any>({});
 
-// Load JSON data on mount
-$effect(() => {
-    fetch('/linjer.json')
-        .then(res => res.json())
-        .then(data => linjeData = data);
-});
+    // Load JSON data on mount
+    $effect(() => {
+        fetch('/linjer.json')
+            .then(res => res.json())
+            .then(data => linjeData = data);
+    });
 </script>
+
+<svelte:head>
+    <title>Åpen dag på Elvebakken</title>
+    <meta name="description" content="Velkommen til Åpen dag på Elvebakken! Her kan du se opplegget til tirsdag 20. januar og torsdag 22. januar. Du kan også lese mer om de ulike studieretningene på Elvebakken." />
+    <meta name="keywords" content="Åpen dag, Elvebakken, tirsdag 20. januar, torsdag 22. januar, studieretninger, Elvebakken VGS, Elvebakken VGS Åpen dag, Åpen dag på Elvebakken, Åpendag VGS Oslo" />
+</svelte:head>
 
 <div class="filler"></div>
 <div class="container">
@@ -55,6 +62,9 @@ $effect(() => {
     </div>
 </div>
 {/if}
+
+<Noemer />
+
 <style>
     .filler {
         height: 10vh;
@@ -164,6 +174,7 @@ $effect(() => {
         z-index: -1;
         width: 100%;
         height: 100%;
+        overflow: hidden;
         /* background-image: 
             linear-gradient(90deg, 
                 var(--color-pink) 0%, 
