@@ -95,7 +95,7 @@
 
 	.hero-title {
 		font-family: 'Oslo Sans', sans-serif;
-		font-size: clamp(2rem, 5vw, 3rem);
+		font-size: clamp(1.5rem, 4vw, 2.5rem);
 		font-weight: 500;
 		margin: 0 0 1rem 0;
 		line-height: 1.2;
@@ -104,7 +104,7 @@
 
 	.hero-subtitle {
 		font-family: 'Oslo Sans', sans-serif;
-		font-size: clamp(1.25rem, 3vw, 1.75rem);
+		font-size: clamp(.8rem, 2vw, 1.3rem);
 		font-weight: 300;
 		margin: 0;
 		opacity: 0.95;

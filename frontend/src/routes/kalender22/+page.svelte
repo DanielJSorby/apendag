@@ -1,6 +1,7 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import AktivitetsBoks from '$lib/components/aktivitetsBoks.svelte';
+    import HeroSection from '$lib/components/HeroSection.svelte';
 
     let arrangementer: any = null;
 
@@ -21,13 +22,14 @@
     <meta name="keywords" content="Åpen dag, Elvebakken, torsdag 22. januar, studieretninger, Elvebakken VGS, Elvebakken VGS Åpen dag, Åpen dag på Elvebakken, Åpendag VGS Oslo" />
 </svelte:head>
 
-<div class="velkomst-container">
-    <h1>Velkommen til påmelding for åpen dag den 22. januar!</h1>
-    <p>
-        Meld deg på et av kursene under.
-        Bruk knappene for å velge tidspunkt, og trykk deretter på "Meld deg på".
-    </p>
-</div>
+<HeroSection 
+    image="/images/Elvebakken eksteriør 3.jpg"
+    title="Velkommen til påmelding for åpen dag den 22. januar!"
+    subtitle="Meld deg på et av kursene under. Bruk knappene for å velge tidspunkt, og trykk deretter på 'Meld deg på'."
+    height="50vh"
+    overlayOpacity={0.6}
+/>
+
 
 <div class="aktiviteter">
     <div id="alleAktiviteter">
@@ -38,12 +40,6 @@
 </div>
 
 <style>
-    .velkomst-container {
-        text-align: center;
-        margin: 2rem auto;
-        max-width: 600px;
-        margin-top: 5rem;
-    }
     .aktiviteter {
         margin-top: 2rem;
         margin-bottom: 2rem;
