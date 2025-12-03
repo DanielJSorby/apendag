@@ -18,7 +18,7 @@
 <div class="velkomst-container">
     <h1>Velkommen til påmelding for åpen dag den 22. januar!</h1>
     <p>
-        Meld deg på kursene under. Du kan velge ett kurs før lunsj og ett kurs etter lunsj.
+        Meld deg på et av kursene under.
         Bruk knappene for å velge tidspunkt, og trykk deretter på "Meld deg på".
     </p>
 </div>
