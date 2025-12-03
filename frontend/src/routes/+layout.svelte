@@ -59,6 +59,10 @@
 		font-family: 'Oslo Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 	}
 
+	:global(*) {
+		box-sizing: border-box;
+	}
+
 	:global(.page-wrapper) {
 		padding-top: 10vh;
 	}

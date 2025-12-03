@@ -15,12 +15,15 @@
 <style>
     .noemer-section {
         width: 100%;
+        max-width: 100vw;
         min-height: 50vh;
         display: flex;
         align-items: center;
         justify-content: center;
         padding: 4rem 2rem;
         background-color: var(--color-white);
+        box-sizing: border-box;
+        overflow-x: hidden;
     }
 
     .content-wrapper {
@@ -29,6 +32,7 @@
         display: flex;
         flex-direction: column;
         gap: 2rem;
+        box-sizing: border-box;
     }
 
     .heading {
@@ -51,6 +55,8 @@
         color: var(--color-black);
         margin: 0;
         text-align: left;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
     }
 
     /* Tablet styles */
