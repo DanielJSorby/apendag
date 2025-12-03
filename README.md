@@ -86,11 +86,11 @@ npm install
 3. **Konfigurer miljøvariabler:**
 Opprett en `.env`-fil i `frontend/`-mappen:
 ```env
-DB_HOST=100.67.100.69
-DB_PORT=3306
-DB_USER=root
-DB_PASSWORD=ditt_passord
-DB_NAME=apendag
+DB_HOST
+DB_PORT
+DB_USER
+DB_PASSWORD
+DB_NAME
 ```
 
 4. **Sett opp database:**
