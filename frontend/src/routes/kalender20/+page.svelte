@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import Linjeknapp from '$lib/components/Linjeknapp.svelte';
+	import HeroSection from '$lib/components/HeroSection.svelte';
 
 	let arrangement: any = null;
 	let linjeData: any = {};
@@ -93,14 +94,12 @@
 		<p>Laster...</p>
 	</div>
 {:else}
-	<div class="backgroundSearch">
-		<div class="searchSection">
-			<div class="hero-content">
-				<h1 class="hero-title">{arrangement.arrangement}</h1>
-				<p class="hero-date">{arrangement.dag} {arrangement.dato}</p>
-			</div>
-		</div>
-	</div>
+	<HeroSection 
+		image="/images/Elvebakken fra elven STOT 1.jpg"
+		title={arrangement.arrangement}
+		subtitle="{arrangement.dag} {arrangement.dato}"
+		height="40vh"
+	/>
 
 	<!-- Main Content -->
 	<div class="body">
@@ -156,60 +155,6 @@
 	.loading p {
 		color: #1a1a1a;
 		font-size: 1.125rem;
-	}
-
-	.backgroundSearch {
-		height: 40vh;
-		width: 100vw;
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		background-image: url('/images/Elvebakken fra elven STOT 1.jpg');
-		background-size: cover;
-		background-position: center;
-		background-repeat: no-repeat;
-		position: relative;
-	}
-
-	.backgroundSearch::before {
-		content: '';
-		position: absolute;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		background: rgba(0, 0, 0, 0.5);
-		z-index: 1;
-	}
-
-	.searchSection {
-		margin-top: 80px;
-		text-align: center;
-		color: white;
-		position: relative;
-		z-index: 2;
-	}
-
-	.hero-content {
-		max-width: 800px;
-		padding: 0 2rem;
-	}
-
-	.hero-title {
-		font-family: 'Oslo Sans', sans-serif;
-		font-size: clamp(2rem, 5vw, 3rem);
-		font-weight: 500;
-		margin: 0 0 1rem 0;
-		line-height: 1.2;
-		text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 0, 0, 0.5);
-	}
-
-	.hero-date {
-		font-family: 'Oslo Sans', sans-serif;
-		font-size: clamp(1.25rem, 3vw, 1.75rem);
-		font-weight: 300;
-		margin: 0 0 1rem 0;
-		opacity: 0.95;
 	}
 
 	.body {
@@ -307,18 +252,6 @@
 
 	/* Mobile styles */
 	@media (max-width: 570px) {
-		.backgroundSearch {
-			height: 50vh;
-		}
-
-		.searchSection {
-			margin-top: 40px;
-		}
-
-		.hero-content {
-			padding: 0 1rem;
-		}
-
 		.show-grid {
 			grid-template-columns: 1fr;
 		}
