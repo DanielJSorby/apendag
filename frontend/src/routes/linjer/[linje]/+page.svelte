@@ -50,9 +50,10 @@
     }
 
     .hero-section {
+        margin-top: 10vh;
         position: relative;
         width: 100%;
-        height: 100vh;
+        height: 90vh;
         max-height: 100vh;
         display: flex;
         align-items: center;
