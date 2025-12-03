@@ -1,15 +1,16 @@
 <script lang="ts">
-import Linjeknapp from '$lib/components/Linjeknapp.svelte';
+    import Linjeknapp from '$lib/components/Linjeknapp.svelte';
+    import Noemer from '$lib/components/noemer.svelte';
 
-let selectedLinje = $state<'st' | 'kda' | 'mk' | 'im' | 'el'>('st');
-let linjeData = $state<any>({});
+    let selectedLinje = $state<'st' | 'kda' | 'mk' | 'im' | 'el'>('st');
+    let linjeData = $state<any>({});
 
-// Load JSON data on mount
-$effect(() => {
-    fetch('/linjer.json')
-        .then(res => res.json())
-        .then(data => linjeData = data);
-});
+    // Load JSON data on mount
+    $effect(() => {
+        fetch('/linjer.json')
+            .then(res => res.json())
+            .then(data => linjeData = data);
+    });
 </script>
 
 <svelte:head>
@@ -61,6 +62,9 @@ $effect(() => {
     </div>
 </div>
 {/if}
+
+<Noemer />
+
 <style>
     .filler {
         height: 10vh;

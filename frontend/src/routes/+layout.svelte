@@ -62,4 +62,9 @@
 	:global(.page-wrapper) {
 		padding-top: 10vh;
 	}
+
+	:global(.hiddenDot) {
+		opacity: 0;
+		margin: -8px;
+	}
 </style>
