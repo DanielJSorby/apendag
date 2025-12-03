@@ -67,7 +67,7 @@
         height: 100%;
         display: block;
         object-fit: cover;
-        object-position: center top;
+        object-position: center 25%;
     }
 
     .hero-overlay {
