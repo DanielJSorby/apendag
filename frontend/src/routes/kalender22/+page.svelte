@@ -15,6 +15,12 @@
     });
 </script>
 
+<svelte:head>
+    <title>Åpen dag på Elvebakken - Torsdag 22. januar</title>
+    <meta name="description" content="Velkommen til Åpen dag på Elvebakken! Her kan du se opplegget til torsdag 22. januar. Du kan også lese mer om de ulike studieretningene på Elvebakken." />
+    <meta name="keywords" content="Åpen dag, Elvebakken, torsdag 22. januar, studieretninger, Elvebakken VGS, Elvebakken VGS Åpen dag, Åpen dag på Elvebakken, Åpendag VGS Oslo" />
+</svelte:head>
+
 <div class="velkomst-container">
     <h1>Velkommen til påmelding for åpen dag den 22. januar!</h1>
     <p>

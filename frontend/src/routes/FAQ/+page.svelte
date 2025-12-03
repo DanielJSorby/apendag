@@ -57,7 +57,9 @@
 </script>
 
 <svelte:head>
-    <title>FAQ | Åpen dag</title>
+    <title>FAQ - Åpen dag på Elvebakken</title>
+    <meta name="description" content="Frequently Asked Questions about Åpen dag på Elvebakken" />
+    <meta name="keywords" content="FAQ, Åpen dag, Elvebakken, VGS, Oslo" />
 </svelte:head>
 
 <div class="backgroundSearch">

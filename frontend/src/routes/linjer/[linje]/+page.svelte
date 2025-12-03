@@ -3,6 +3,12 @@
     const linje = data.linje;
 </script>
 
+<svelte:head>
+    <title>{linje.tittel} - Åpen dag på Elvebakken</title>
+    <meta name="description" content={linje.beskrivelse} />
+    <meta name="keywords" content="{linje.tittel}, {linje.beskrivelse}, Åpen dag på Elvebakken, Elvebakken VGS, Elvebakken VGS Åpen dag, Åpen dag på Elvebakken, Åpendag VGS Oslo" />
+</svelte:head>
+
 <div class="container">
     <div class="hero-section">
         {#if linje.bilde}
@@ -23,6 +29,11 @@
         <div class="text-section">
             {#if linje.langBeskrivelse}
                 {@html linje.langBeskrivelse.split('\n\n').map((paragraph: string) => `<p class="paragraph">${paragraph}</p>`).join('')}
+            {/if}
+            {#if linje.eksternLenke}
+                <a href={linje.eksternLenke} target="_blank">
+                    <p class="paragraph">Les mer om {linje.tittel}</p>
+                </a>
             {/if}
         </div>
     </div>

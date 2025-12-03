@@ -12,6 +12,12 @@ $effect(() => {
 });
 </script>
 
+<svelte:head>
+    <title>Åpen dag på Elvebakken</title>
+    <meta name="description" content="Velkommen til Åpen dag på Elvebakken! Her kan du se opplegget til tirsdag 20. januar og torsdag 22. januar. Du kan også lese mer om de ulike studieretningene på Elvebakken." />
+    <meta name="keywords" content="Åpen dag, Elvebakken, tirsdag 20. januar, torsdag 22. januar, studieretninger, Elvebakken VGS, Elvebakken VGS Åpen dag, Åpen dag på Elvebakken, Åpendag VGS Oslo" />
+</svelte:head>
+
 <div class="filler"></div>
 <div class="container">
     <div class="fillerbilde"></div>
