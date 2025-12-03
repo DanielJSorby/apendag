@@ -27,7 +27,7 @@
 
 <style>
     footer {
-        background-color: var(--color-grey);
+        background-color: var(--color-white);
         color: #212529;
         padding: 3rem 1rem;
         text-align: center;

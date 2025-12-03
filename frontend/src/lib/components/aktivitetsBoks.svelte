@@ -150,7 +150,7 @@
     }
     #aktivitetBoks {
         padding: 3rem;
-        background-color: var(--color-grey);
+        background-color: var(--color-white);
         border-radius: 1rem;
         border: 1px solid;
     }

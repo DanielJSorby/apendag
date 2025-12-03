@@ -58,6 +58,7 @@
 		margin: 0;
 		padding: 0;
 		font-family: 'Oslo Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+		background-color: var(--color-grey);
 	}
 
 	:global(*) {
