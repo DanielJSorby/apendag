@@ -8,6 +8,7 @@
             <p class="paragraph">
                 Elvebakkenrevyen og oppstartsprogrammet på Lunde er blitt til opplevelser som bygger en spesiell Bakkakultur.
             </p>
+            <a href="/noe-mer" class="les-mer-knapp styled-btn">Les mer</a>
         </div>
     </div>
 </div>
@@ -59,6 +60,40 @@
         overflow-wrap: break-word;
     }
 
+    .les-mer-knapp {
+        display: inline-block;
+        margin-top: 0.5rem;
+        text-decoration: none;
+        align-self: flex-start;
+    }
+
+    .styled-btn {
+        padding: 0.875rem 2rem;
+        border: 2px solid var(--color-pink);
+        border-radius: 12px;
+        background-color: var(--color-white);
+        color: var(--color-pink);
+        font-size: 1.1rem;
+        font-weight: 500;
+        font-family: 'Oslo Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: var(--color-pink) 0px 0px 15px -3px;
+        display: inline-block;
+        text-decoration: none;
+    }
+
+    .styled-btn:hover {
+        background-color: var(--color-pink);
+        color: var(--color-white);
+        box-shadow: var(--color-pink) 0px 0px 20px -2px;
+        transform: translateY(-2px);
+    }
+
+    .styled-btn:active {
+        transform: translateY(0);
+    }
+
     /* Tablet styles */
     @media (max-width: 1024px) {
         .noemer-section {
@@ -92,6 +127,11 @@
         .paragraph {
             font-size: 1rem;
             line-height: 1.6;
+        }
+
+        .styled-btn {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
         }
     }
 </style>
