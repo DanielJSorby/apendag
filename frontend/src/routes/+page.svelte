@@ -144,6 +144,8 @@
         flex-wrap: wrap;
     }
 
+    
+
     .linje-tekst {
         margin-top: 20px;
         display: flex;
@@ -278,15 +280,20 @@
     }
 
     .fillerbilde {
-        height: 30vh;
+        height: 25vh;
         width: 100%;
     }
 
     .tekst-boks{
         padding-left: 5vw;
+        color: #000000;
     }
     .content h1 {
         font-size: 1.2rem;
+    }
+
+    .content h2 {
+        font-size: 1rem;
     }
 
     .content p {
@@ -312,6 +319,56 @@
 
     .linje-tekst {
         width: 90vw;
+    }
+}
+
+/* Tablet styles */
+@media (min-width: 571px) and (max-width: 1024px) {
+    .container {
+        min-height: 70vh;
+    }
+
+    .content {
+        width: 50%;
+        padding: 20px;
+    }
+
+    .tekst-boks h1 {
+        font-size: 2.5rem;
+    }
+
+    .tekst-boks h2 {
+        font-size: 2rem;
+    }
+
+    .buttons {
+        flex-direction: column;
+        gap: 15px;
+        width: 100%;
+    }
+
+    button {
+        width: 100%;
+        padding: 15px;
+    }
+
+    .linjeknapper {
+        gap: 15px;
+        padding: 0 20px;
+    }
+
+    .linje-tekst {
+        width: 85vw;
+        padding: 20px;
+    }
+
+    .linje-tekst h1 {
+        font-size: 2rem;
+    }
+
+    .linje-tekst p {
+        font-size: 1rem;
+        line-height: 1.6;
     }
 }
 </style>

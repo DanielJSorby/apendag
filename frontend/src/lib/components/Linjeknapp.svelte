@@ -28,31 +28,39 @@
 </a>
 
 <style>
+    /* Desktop / Default størrelse */
     button.linjeknapp {
         display: flex;
         flex-direction: column;
         align-items: center;
-        width: 15vw;
-        height: 15vh;
-        border: 4px solid;
+        justify-content: space-between;
+        gap: 10px;
+        width: 180px;
+        min-height: 160px;
+        border: 3px solid;
         border-radius: 15px;
         cursor: pointer;
         transition: background-color 0.3s, transform 0.3s, border-color 0.3s;
         text-align: center;
-        padding: 15px;
+        padding: 15px 12px;
         overflow: hidden;
+        box-sizing: border-box;
     }
 
     button.linjeknapp:hover {
-        transform: scale(1.1);
+        transform: scale(1.05);
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
 
     button.linjeknapp h1 {
-        font-size: 1.1rem;
-        margin: 0 0 10px 0;
+        font-size: 0.95rem;
+        margin: 0;
         font-weight: bold;
-        justify-self: flex-start;
+        line-height: 1.2;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        hyphens: auto;
+        flex-shrink: 0;
     }
 
     a {
@@ -61,25 +69,51 @@
     }
 
     button.linjeknapp p {
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         margin: 0;
         opacity: 0.8;
-        justify-self: flex-end;
+        line-height: 1.3;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
     }
 
+     /* Mobil størrelse */
      @media (max-width: 570px) {
         button.linjeknapp {
-            width: 40vw;
-            height: 20vh;
-            padding: 10px;
+            width: 42vw;
+            min-height: 140px;
+            padding: 12px 8px;
+            gap: 6px;
         }
 
         button.linjeknapp h1 {
-            font-size: 1rem;
+            font-size: 0.85rem;
+            line-height: 1.1;
+        }
+
+        button.linjeknapp p {
+            font-size: 0.65rem;
+            line-height: 1.2;
+        }
+    }
+
+    /* Tablet størrelse */
+    @media (min-width: 571px) and (max-width: 1024px) {
+        button.linjeknapp {
+            width: 170px;
+            min-height: 150px;
+            padding: 14px 10px;
+            gap: 8px;
+        }
+
+        button.linjeknapp h1 {
+            font-size: 0.9rem;
+            line-height: 1.15;
         }
 
         button.linjeknapp p {
             font-size: 0.75rem;
+            line-height: 1.25;
         }
     }
 </style>
