@@ -9,7 +9,7 @@
             <div class="icons">
                 <a href="https://facebook.com/elvebakkenvgs" target="_blank" aria-label="Facebook" class="facebook"><i class="fab fa-facebook-f"></i></a>
                 <a href="https://instagram.com/elvebakkenvgs" target="_blank" aria-label="Instagram" class="instagram"><i class="fab fa-instagram"></i></a>
-                <a href="https://tiktok.com/elvebakkenvgs" target="_blank" aria-label="Tiktok" class="tiktok"><i class="fab fa-tiktok"></i></a>
+                <a href="https://tiktok.com/@elvebakkenvgs" target="_blank" aria-label="Tiktok" class="tiktok"><i class="fab fa-tiktok"></i></a>
             </div>
         </div>
         <div class="contact-info">
@@ -18,6 +18,7 @@
             <p>Vestre Elvebakke 3, 0182 Oslo</p>
             <p>Telefon: <a href="tel:22996600">22 99 66 00</a></p>
             <p>E-post: <a href="mailto:post@elvebakken.vgs.no">post@elvebakken.vgs.no</a></p>
+            <p>Hjemmeside: <a href="https://elvebakken.vgs.no/">elvebakken.vgs.no</a></p>
         </div>
     </div>
     <div class="copy-right">

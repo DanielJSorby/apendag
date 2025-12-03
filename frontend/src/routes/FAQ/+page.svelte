@@ -11,6 +11,7 @@
     let loadButtonText = "Vis mer"
     let showLoadMore = true;
     let rotationIcon = "360deg";
+    let noQuestion = false
 
     const getData = async () => {
         const response = await fetch("/api/faq.json");
@@ -35,6 +36,11 @@
     $: if (searchQuery) {
         data = allData.filter(item => item.question.toLowerCase().includes(searchQuery.toLowerCase())|| item.answer.toLowerCase().includes(searchQuery.toLowerCase()));;
         showLoadMore = false;
+        if (data.length == 0) {
+            noQuestion = true
+        } else {
+            noQuestion = false
+        }
         // Denne funksjonen filtrerer dataen basert på søkeordet og setter data til å være lik den filtrerte listen
     } else {
         data = allData.slice(0, questionsShown);
@@ -70,12 +76,15 @@
 <div class="body">
     <div class="FAQBody">
         <div class="headerBody">
-            <h1 class="medium">Du Leter<br> Kanskje Etter<br><span class="accent-blue"></span></h1>
+            <h1 class="medium">Du Leter<br> Kanskje Etter<br></h1>
         </div>
         <div class="questions">
             {#each data as question (question.id)} <!-- Denne løkken kjører antall objekter i listen ganger og setter hvert objekt til en variabel questions som tilsvarer det nåværende objektet av data  -->
                 <Question title={question.question} id={question.id} answerText={question.answer} />
             {/each}
+            {#if noQuestion}
+                <h1 id="noQuestions">Fant ingen spørsmål for ditt søk. Prøv å søk etter noe annet eller kontakt oss.</h1>
+            {/if}
         </div>
         {#if showLoadMore}
         <div class="allMore">
@@ -89,6 +98,10 @@
 </div>
 
 <style>
+#noQuestions {
+    font-size: 20px;
+    margin-bottom: 2rem;
+}
 #inputTop {
     border: none;
     width: 20rem;
@@ -140,13 +153,13 @@ a::after {
     margin-top: 80px;
 }
 
-@keyframes color-change {
+/* @keyframes color-change {
     0% { background-color: var(--color-blue); }
     25% { background-color: var(--color-pink); }
     50% { background-color: var(--color-green); }
     75% { background-color: var(--color-orange); }
     100% { background-color: var(--color-blue); }
-}
+} */
 
 .backgroundSearch {
     height: 40vh;
@@ -154,7 +167,13 @@ a::after {
     display: flex;
     justify-content: center;
     align-items: center;
-    animation: color-change 20s infinite;
+    background-image: url("/images/Elvebakken fra elven STOT 1.jpg");
+    background-size: cover;
+    background-position: center;
+	background-repeat: no-repeat;
+	position: relative;
+    
+/*     animation: color-change 20s infinite; */
 }
 
 .questions {
