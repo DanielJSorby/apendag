@@ -58,4 +58,8 @@
 		padding: 0;
 		font-family: 'Oslo Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 	}
+
+	:global(.page-wrapper) {
+		padding-top: 10vh;
+	}
 </style>
