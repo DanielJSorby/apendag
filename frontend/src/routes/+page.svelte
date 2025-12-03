@@ -56,10 +56,6 @@
         <Linjeknapp linje="im" linjeData={linjeData} onclick={() => selectedLinje = 'im'} />
         <Linjeknapp linje="el" linjeData={linjeData} onclick={() => selectedLinje = 'el'} />
     </div>
-    <div class="linje-tekst">
-        <h1 style="color: {linjeData[selectedLinje].farge};">{@html linjeData[selectedLinje].tittel}</h1>
-        <p>{linjeData[selectedLinje].langBeskrivelse}</p>
-    </div>
 </div>
 {/if}
 
