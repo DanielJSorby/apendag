@@ -158,27 +158,36 @@
 		font-size: 1.125rem;
 	}
 
-	@keyframes color-change {
-		0% { background-color: var(--color-blue); }
-		25% { background-color: var(--color-pink); }
-		50% { background-color: var(--color-green); }
-		75% { background-color: var(--color-orange); }
-		100% { background-color: var(--color-blue); }
-	}
-
 	.backgroundSearch {
 		height: 40vh;
 		width: 100vw;
 		display: flex;
 		justify-content: center;
 		align-items: center;
-		animation: color-change 20s infinite;
+		background-image: url('/images/Elvebakken fra elven STOT 1.jpg');
+		background-size: cover;
+		background-position: center;
+		background-repeat: no-repeat;
+		position: relative;
+	}
+
+	.backgroundSearch::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: rgba(0, 0, 0, 0.5);
+		z-index: 1;
 	}
 
 	.searchSection {
 		margin-top: 80px;
 		text-align: center;
 		color: white;
+		position: relative;
+		z-index: 2;
 	}
 
 	.hero-content {
@@ -192,6 +201,7 @@
 		font-weight: 500;
 		margin: 0 0 1rem 0;
 		line-height: 1.2;
+		text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 0, 0, 0.5);
 	}
 
 	.hero-date {
