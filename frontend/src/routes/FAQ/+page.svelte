@@ -167,7 +167,7 @@ a::after {
     display: flex;
     justify-content: center;
     align-items: center;
-    background-image: url("/images/Elvebakken fra elven STOT 1.jpg");
+    background-image: url("/images/biblioteket.jpg");
     background-size: cover;
     background-position: center;
 	background-repeat: no-repeat;

@@ -15,32 +15,26 @@
 		"@sveltejs/adapter-auto": "^7.0.0",
 		"@sveltejs/kit": "^2.47.1",
 		"@sveltejs/vite-plugin-svelte": "^6.2.1",
-<<<<<<< Updated upstream
 		"@types/cors": "^2.8.19",
 		"@types/express": "^5.0.5",
 		"@types/node": "^24.10.1",
 		"@types/ws": "^8.18.1",
-=======
 		"@types/node": "^24.10.1",
 		"nodemon": "^3.1.11",
->>>>>>> Stashed changes
 		"svelte": "^5.41.0",
 		"svelte-check": "^4.3.3",
 		"typescript": "^5.9.3",
 		"vite": "^7.1.10"
 	},
 	"dependencies": {
-<<<<<<< Updated upstream
 		"cors": "^2.8.5",
 		"dotenv": "^17.2.3",
 		"express": "^5.1.0",
 		"mariadb": "^3.4.5",
 		"sequelize": "^6.37.7",
-		"ws": "^8.18.3"
-=======
+		"ws": "^8.18.3",
 		"dotenv": "^17.2.3",
 		"mysql2": "^3.15.3",
 		"uuid": "^13.0.0"
->>>>>>> Stashed changes
 	}
 }
