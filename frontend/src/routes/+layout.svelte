@@ -1,8 +1,83 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
+	import { navigating, page } from '$app/stores';
 	import ElvebakkenLogo from '$lib/assets/ElvebakkenLogo.svg';
 	import Footer from '$lib/components/footer.svelte';
 	import Navbar from '$lib/components/navbar.svelte';
+	import LoadingScreen from '$lib/components/LoadingScreen.svelte';
+	
 	let { children } = $props();
+	let initialLoad = $state(true);
+	let imagesLoading = $state(true);
+
+	function preloadImage(src: string): Promise<void> {
+		return new Promise((resolve, reject) => {
+			const img = new Image();
+			img.onload = () => resolve();
+			img.onerror = () => resolve(); // Resolve even on error to not block
+			img.src = src;
+		});
+	}
+
+	function waitForImages() {
+		imagesLoading = true;
+		
+		// Wait a bit for DOM to update
+		setTimeout(() => {
+			const images: HTMLImageElement[] = Array.from(document.querySelectorAll('img'));
+			const backgroundImages: string[] = [];
+			
+			// Find all elements with background-image
+			const allElements = document.querySelectorAll('*');
+			allElements.forEach((el) => {
+				const bgImage = window.getComputedStyle(el).backgroundImage;
+				if (bgImage && bgImage !== 'none') {
+					const match = bgImage.match(/url\(['"]?([^'"]+)['"]?\)/);
+					if (match && match[1]) {
+						backgroundImages.push(match[1]);
+					}
+				}
+			});
+
+			const imagePromises: Promise<void>[] = [];
+			
+			// Preload all img tags
+			images.forEach((img) => {
+				if (img.src && !img.complete) {
+					imagePromises.push(preloadImage(img.src));
+				}
+			});
+
+			// Preload all background images
+			backgroundImages.forEach((bgSrc) => {
+				imagePromises.push(preloadImage(bgSrc));
+			});
+
+			if (imagePromises.length === 0) {
+				imagesLoading = false;
+			} else {
+				Promise.all(imagePromises).then(() => {
+					imagesLoading = false;
+				});
+			}
+		}, 100);
+	}
+
+	onMount(() => {
+		waitForImages();
+		// Also wait for initial load
+		setTimeout(() => {
+			initialLoad = false;
+		}, 300);
+	});
+
+	$effect(() => {
+		if ($navigating) {
+			imagesLoading = true;
+		} else if (!$navigating && !initialLoad) {
+			waitForImages();
+		}
+	});
 </script>
 
 <svelte:head>
@@ -14,6 +89,10 @@
     <meta name="bingbot" content="index, follow" />
 </svelte:head>
 <Navbar />
+
+{#if $navigating || initialLoad || imagesLoading}
+	<LoadingScreen />
+{/if}
 
 {@render children()}
 

@@ -89,11 +89,7 @@
 	/>
 </svelte:head>
 
-{#if !arrangement}
-	<div class="loading">
-		<p>Laster...</p>
-	</div>
-{:else}
+{#if arrangement}
 	<HeroSection 
 		image="/images/Elvebakken fra elven STOT 1.jpg"
 		title={arrangement.arrangement}
@@ -143,20 +139,6 @@
 {/if}
 
 <style>
-	.loading {
-		min-height: 100vh;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		background: var(--color-grey);
-		font-family: 'Oslo Sans', sans-serif;
-	}
-
-	.loading p {
-		color: #1a1a1a;
-		font-size: 1.125rem;
-	}
-
 	.body {
 		display: flex;
 		justify-content: center;
