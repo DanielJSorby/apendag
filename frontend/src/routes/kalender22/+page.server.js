@@ -4,31 +4,43 @@ import { db } from '$lib/server/db';
 export async function load({ locals }) {
     const user = locals.user;
     let paameldtKursId = null;
-    let paameldtTidspunktTekst = null; // Ny variabel for tidspunkt
+    let paameldtTidspunktTekst = null;
+    let kursListe = [];
 
-    // Hvis brukeren er "innlogget" (via hooks.server.js)
-    if (user) {
-        try {
-            // Henter både kurs-ID og tidspunkt-tekst fra databasen
-            const [rows] = await db.query(
+    try {
+        // Henter all kursinformasjon fra den nye 'kurs'-tabellen
+        const [kursRows] = await db.query('SELECT * FROM kurs');
+        // @ts-ignore
+        kursListe = kursRows;
+
+        // Henter påmeldingsstatus for den innloggede brukeren, hvis brukeren finnes
+        if (user) {
+            const [userRows] = await db.query(
                 'SELECT paameldt_kurs_id, paameldt_tidspunkt_tekst FROM bruker WHERE id = ?',
                 [user.id]
             );
             
             // @ts-ignore
-            if (rows.length > 0 && rows[0].paameldt_kurs_id) {
+            if (userRows.length > 0 && userRows[0].paameldt_kurs_id) {
                 // @ts-ignore
-                paameldtKursId = rows[0].paameldt_kurs_id;
+                paameldtKursId = userRows[0].paameldt_kurs_id;
                 // @ts-ignore
-                paameldtTidspunktTekst = rows[0].paameldt_tidspunkt_tekst;
+                paameldtTidspunktTekst = userRows[0].paameldt_tidspunkt_tekst;
             }
-        } catch (error) {
-            console.error("Databasefeil ved henting av påmeldt kurs:", error);
         }
+    } catch (error) {
+        console.error("Databasefeil ved lasting av kalenderside:", error);
+        // Returnerer tomme data ved feil for å unngå at siden krasjer
+        return {
+            kursListe: [],
+            paameldtKursId: null,
+            paameldtTidspunktTekst: null
+        };
     }
 
-    // Sender begge verdiene til frontend
+    // Sender all data til frontend
     return {
+        kursListe: kursListe,
         paameldtKursId: paameldtKursId,
         paameldtTidspunktTekst: paameldtTidspunktTekst
     };
