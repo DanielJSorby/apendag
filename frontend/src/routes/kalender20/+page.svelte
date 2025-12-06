@@ -201,8 +201,8 @@
 
 	.show-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-		gap: 1.5rem;
+		grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+		gap: clamp(1rem, 2vw, 1.5rem);
 		max-width: 900px;
 		margin: 0 auto;
 	}
@@ -210,13 +210,14 @@
 	.show-slot {
 		color: white;
 		border-radius: 12px;
-		padding: 2rem 1.5rem;
+		padding: clamp(1.25rem, 3vw, 2rem) clamp(0.75rem, 1.5vw, 1.5rem);
 		text-align: center;
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 		transition: transform 0.2s, box-shadow 0.2s;
 		border: none;
 		cursor: pointer;
 		font-family: inherit;
+		min-width: 0;
 	}
 
 	.show-slot:hover {
@@ -230,8 +231,10 @@
 
 	.show-slot-text {
 		font-family: 'Oslo Sans', sans-serif;
-		font-size: 1.25rem;
+		font-size: clamp(0.9rem, 2vw, 1.25rem);
 		font-weight: 500;
+		word-break: keep-all;
+		white-space: nowrap;
 	}
 
 	/* Linjer Section */
@@ -250,10 +253,27 @@
 		flex-wrap: wrap;
 	}
 
+	/* Tablet styles */
+	@media (max-width: 900px) and (min-width: 571px) {
+		.show-grid {
+			grid-template-columns: repeat(2, 1fr);
+			gap: 1.25rem;
+		}
+	}
+
 	/* Mobile styles */
 	@media (max-width: 570px) {
 		.show-grid {
 			grid-template-columns: 1fr;
+			gap: 1rem;
+		}
+
+		.show-slot {
+			padding: 1.25rem 1rem;
+		}
+
+		.show-slot-text {
+			font-size: 1rem;
 		}
 
 		.linjeknapper {
