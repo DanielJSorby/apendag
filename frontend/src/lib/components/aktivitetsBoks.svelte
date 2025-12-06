@@ -14,10 +14,14 @@
     export let plasserfør: number = 0;
     export let plasseretter: number = 0;
     export let plassersiste: number = 0;
+    export let kurs: number; // Mottar kurs-ID fra +page.svelte
+
     let valgtTidspunkt: 'forLunsj' | 'etterLunsj' | 'siste' = 'forLunsj';
     let visOverlayEL = false
     let erPåmeldt = false
     let tidspunktTekst: string;
+    let isLoading = false;
+    let errorMessage = '';
 
     onMount(() => {
         tidspunktTekst = tidspunkt.forLunsj;
@@ -34,11 +38,43 @@
             tidspunktTekst = tidspunkt.siste;
         }
     })
-    const visOverlay = (()=> {
-        if (erPåmeldt) return;
-        visOverlayEL = true 
-        erPåmeldt = true
-    })
+
+    async function meldPaa() {
+        if (erPåmeldt || isLoading) return;
+
+        isLoading = true;
+        errorMessage = '';
+
+        try {
+            const response = await fetch('/api/meld-paa-kurs', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    kursId: kurs, // Sender den unike kurs-IDen
+                    tidspunkt: valgtTidspunkt 
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Noe gikk galt under påmelding');
+            }
+
+            // Vellykket
+            erPåmeldt = true;
+            visOverlayEL = true; // Viser din eksisterende bekreftelses-overlay
+
+        } catch (error: any) {
+            errorMessage = error.message;
+            // Viser feilmelding i konsollen slik at det ikke påvirker utseendet
+            console.error("Påmeldingsfeil:", errorMessage); 
+            alert(`Påmelding feilet: ${errorMessage}`); // Bruker en enkel alert for feil
+        } finally {
+            isLoading = false;
+        }
+    }
 
     const lukkOverlay = (() => {
         visOverlayEL = false
@@ -85,9 +121,11 @@
       
     </div>
     <div class="meldPåKnapp-wrapper">
-        <button on:click={visOverlay} id="meldPåKnapp" class:påmeldt={erPåmeldt}>
+        <button on:click={meldPaa} id="meldPåKnapp" class:påmeldt={erPåmeldt} disabled={isLoading}>
             {#if erPåmeldt}
                 Meldt på!
+            {:else if isLoading}
+                Melder på...
             {:else}
                 Meld deg på ({tidspunktTekst})
             {/if}
@@ -142,6 +180,10 @@
         background-color: #4CAF50;
         color: white;
         cursor: not-allowed;
+    }
+    #meldPåKnapp:disabled {
+        cursor: not-allowed;
+        opacity: 0.6;
     }
     #valgAvKurs {
         display: flex;

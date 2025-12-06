@@ -34,7 +34,7 @@
 <div class="aktiviteter">
     <div id="alleAktiviteter">
         {#each (arrangementer?.dager?.[1]?.kurs ?? []) as arrangement}
-            <AktivitetsBoks title={arrangement["navn"]} plasserfør={arrangement["plasser"]} plasseretter={10} tidspunkt={arrangement["tid"]} farge={arrangement["farge"]} plassersiste={5}/>
+            <AktivitetsBoks kurs={arrangement["id"]} title={arrangement["navn"]} plasserfør={arrangement["plasser"]} plasseretter={10} tidspunkt={arrangement["tid"]} farge={arrangement["farge"]} plassersiste={5}/>
         {/each}
     </div>
 </div>
