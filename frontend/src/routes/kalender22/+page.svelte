@@ -1,23 +1,11 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
     import AktivitetsBoks from '$lib/components/aktivitetsBoks.svelte';
     import HeroSection from '$lib/components/HeroSection.svelte';
 
     // Mottar nå begge verdiene fra serveren
     export let data;
-    const { paameldtKursId, paameldtTidspunktTekst } = data;
+    const { kursListe, paameldtKursId, paameldtTidspunktTekst } = data;
 
-    let arrangementer: any = null;
-
-    async function getData() {
-        const response = await fetch('/aktiviteter.json');
-        arrangementer = await response.json();
-
-    }
-
-    onMount(async () => {
-        await getData();
-    });
 </script>
 
 <svelte:head>
@@ -37,16 +25,14 @@
 
 <div class="aktiviteter">
     <div id="alleAktiviteter">
-        {#each (arrangementer?.dager?.[1]?.kurs ?? []) as arrangement}
+        {#each (kursListe ?? []) as arrangement}
             <AktivitetsBoks 
-                kurs={arrangement["id"]} 
-                title={arrangement["navn"]} 
-                plasserfør={arrangement["plasser"]} 
-                plasseretter={10} 
-                tidspunkt={arrangement["tid"]} 
-                farge={arrangement["farge"]} 
-                plassersiste={5}
-                erAlleredePaameldt={paameldtKursId === arrangement["id"]}
+                kurs={arrangement.id} 
+                title={arrangement.navn} 
+                plasser={arrangement.plasser}
+                tidspunkt={arrangement.tid} 
+                farge={arrangement.farge} 
+                erAlleredePaameldt={paameldtKursId === arrangement.id}
                 globaltPaameldtKursId={paameldtKursId}
                 paameldtTidspunkt={paameldtTidspunktTekst}
             />

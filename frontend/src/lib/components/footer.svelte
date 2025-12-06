@@ -4,6 +4,10 @@
 
 <footer>
     <div class="footer-container">
+        <div class="attributors">
+            <h3>Siden er laget av:</h3>
+            <p>Elever fra vg3 IM<br></p>
+        </div>
         <div class="social-media">
             <h3>Følg oss</h3>
             <div class="icons">
@@ -34,20 +38,25 @@
         text-align: center;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
         border-top: 1px solid #e9ecef;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
     }
 
     .footer-container {
         display: flex;
-        justify-content: space-around;
+        justify-content: center;
+        align-items: flex-start;
         flex-wrap: wrap;
-        max-width: 800px;
-        margin: 0 auto 2rem auto;
+        flex-direction: row;
         gap: 2rem;
+        width: 100%;
     }
 
-    .social-media, .contact-info {
+    .social-media, .contact-info, .attributors {
         flex: 1;
         min-width: 250px;
+        text-align: center;
     }
 
     h3 {

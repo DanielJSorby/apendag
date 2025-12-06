@@ -4,16 +4,12 @@
         title?: string
         tidspunkt?: { forLunsj: string, etterLunsj: string, siste: string }
         farge?: string
-        plasserfør?: number
-        plasseretter?: number
-        plassersiste?: number
+        plasser?: { forLunsj: number, etterLunsj: number, siste: number }
     }
     export let title: string = "";
     export let tidspunkt: { forLunsj: string, etterLunsj: string, siste: string } = { forLunsj: "", etterLunsj: "", siste: "" };
     export let farge: string = "";
-    export let plasserfør: number = 0;
-    export let plasseretter: number = 0;
-    export let plassersiste: number = 0;
+    export let plasser: { forLunsj: number, etterLunsj: number, siste: number } = { forLunsj: 0, etterLunsj: 0, siste: 0 };
     export let kurs: number;
     export let erAlleredePaameldt: boolean = false;
     export let globaltPaameldtKursId: number | null;
@@ -132,19 +128,19 @@
       </div>  
       <div class="visesIForholdTilTid">
         {#if valgtTidspunkt === 'forLunsj'}
-            <div style="background-color: {farge};" class="plasser">
-                <h1 id="tilgjengeligePlasser">{plasserfør}</h1>
-                <h3 id="plassState">Plasser</h3>
+            <div class="plasser" style="background-color: {farge};">
+                <h1 id="plassState">{plasser.forLunsj}</h1>
+                <h3 id="tilgjengeligePlasser">plasser</h3>
             </div>
         {:else if valgtTidspunkt === 'etterLunsj'}
-            <div style="background-color: {farge};" class="plasser">
-                <h1 id="tilgjengeligePlasser">{plasseretter}</h1>
-                <h3 id="plassState">Plasser</h3>
+            <div class="plasser" style="background-color: {farge};">
+                <h1 id="plassState">{plasser.etterLunsj}</h1>
+                <h3 id="tilgjengeligePlasser">plasser</h3>
             </div>
         {:else}
-            <div style="background-color: {farge};" class="plasser">
-                <h1 id="tilgjengeligePlasser">{plassersiste}</h1>
-                <h3 id="plassState">Plasser</h3>
+            <div class="plasser" style="background-color: {farge};">
+                <h1 id="plassState">{plasser.siste}</h1>
+                <h3 id="tilgjengeligePlasser">plasser</h3>
             </div>
         {/if}
 

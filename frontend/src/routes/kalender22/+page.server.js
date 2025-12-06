@@ -40,7 +40,19 @@ export async function load({ locals }) {
 
     // Sender all data til frontend
     return {
-        kursListe: kursListe,
+        kursListe: kursListe.map(kurs => ({
+            ...kurs,
+            tid: {
+                forLunsj: kurs.tid_for_lunsj,
+                etterLunsj: kurs.tid_etter_lunsj,
+                siste: kurs.tid_siste
+            },
+            plasser: {
+                forLunsj: kurs.plasser_for,
+                etterLunsj: kurs.plasser_etter,
+                siste: kurs.plasser_siste
+            }
+        })),
         paameldtKursId: paameldtKursId,
         paameldtTidspunktTekst: paameldtTidspunktTekst
     };
