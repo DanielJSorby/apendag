@@ -136,9 +136,35 @@
 			{/if}
 		</div>
 	</div>
+	<a href="/images/skolekart.png" target="_blank">
+		<div class="skole-kart-container">
+			<img src="/images/skolekart.png" alt="Kart over Skolen, og hvor du kan finne de ulike studieretningene" class="skole-kart">
+		</div>
+	</a>
 {/if}
 
 <style>
+	.skole-kart-container {
+		display: flex;
+		justify-content: center;
+		width: 100%;
+		background: var(--color-grey);
+		padding: 2rem 0;
+	}
+
+	.skole-kart {
+		width: 90%;
+		object-fit: contain;
+		border-radius: 12px;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+		transition: transform 0.2s, box-shadow 0.2s;
+		border: none;
+		cursor: pointer;
+		font-family: inherit;
+		min-width: 0;
+	}
+
+
 	.body {
 		display: flex;
 		justify-content: center;
