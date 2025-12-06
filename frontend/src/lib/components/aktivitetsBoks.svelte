@@ -14,29 +14,38 @@
     export let plasserfør: number = 0;
     export let plasseretter: number = 0;
     export let plassersiste: number = 0;
-    export let kurs: number; // Mottar kurs-ID fra +page.svelte
+    export let kurs: number;
+    export let erAlleredePaameldt: boolean = false;
+    export let globaltPaameldtKursId: number | null;
+    export let paameldtTidspunkt: string | null; // Ny prop for påmeldt tidspunkt
 
     let valgtTidspunkt: 'forLunsj' | 'etterLunsj' | 'siste' = 'forLunsj';
     let visOverlayEL = false
-    let erPåmeldt = false
+    let erPåmeldt = erAlleredePaameldt;
     let tidspunktTekst: string;
     let isLoading = false;
     let errorMessage = '';
+    let hoverAvmeld = false; // Styrer hover-effekten for avmeldingsknappen
 
     onMount(() => {
-        tidspunktTekst = tidspunkt.forLunsj;
+        // Setter start-tidspunktet basert på hva som er lagret i databasen
+        if (erAlleredePaameldt && paameldtTidspunkt) {
+            if (paameldtTidspunkt === tidspunkt.forLunsj) {
+                valgtTidspunkt = 'forLunsj';
+            } else if (paameldtTidspunkt === tidspunkt.etterLunsj) {
+                valgtTidspunkt = 'etterLunsj';
+            } else if (paameldtTidspunkt === tidspunkt.siste) {
+                valgtTidspunkt = 'siste';
+            }
+        }
+        // Oppdaterer den synlige teksten
+        tidspunktTekst = tidspunkt[valgtTidspunkt];
     });
 
     const byttFørEtter = ((førEtter: 'forLunsj' | 'etterLunsj' | 'siste')=> {
         if (erPåmeldt) return;
         valgtTidspunkt = førEtter;
-        if (førEtter === "etterLunsj") {
-            tidspunktTekst = tidspunkt.etterLunsj;
-        } else if (førEtter === 'forLunsj') {
-            tidspunktTekst = tidspunkt.forLunsj;
-        } else {
-            tidspunktTekst = tidspunkt.siste;
-        }
+        tidspunktTekst = tidspunkt[førEtter];
     })
 
     async function meldPaa() {
@@ -52,8 +61,8 @@
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ 
-                    kursId: kurs, // Sender den unike kurs-IDen
-                    tidspunkt: valgtTidspunkt 
+                    kursId: kurs,
+                    tidspunktTekst: tidspunktTekst // Korrigert: Sender den faktiske teksten
                 })
             });
 
@@ -62,15 +71,36 @@
                 throw new Error(errorData.message || 'Noe gikk galt under påmelding');
             }
 
-            // Vellykket
             erPåmeldt = true;
-            visOverlayEL = true; // Viser din eksisterende bekreftelses-overlay
+            visOverlayEL = true;
 
         } catch (error: any) {
             errorMessage = error.message;
-            // Viser feilmelding i konsollen slik at det ikke påvirker utseendet
-            console.error("Påmeldingsfeil:", errorMessage); 
-            alert(`Påmelding feilet: ${errorMessage}`); // Bruker en enkel alert for feil
+            alert(`Påmelding feilet: ${errorMessage}`);
+        } finally {
+            isLoading = false;
+        }
+    }
+
+    async function meldAv() {
+        if (isLoading) return;
+        isLoading = true;
+
+        try {
+            const response = await fetch('/api/meld-av-kurs', {
+                method: 'POST'
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Avmelding feilet');
+            }
+
+            // Laster siden på nytt for å oppdatere all status
+            window.location.reload();
+
+        } catch (error: any) {
+            alert(error.message);
         } finally {
             isLoading = false;
         }
@@ -78,6 +108,7 @@
 
     const lukkOverlay = (() => {
         visOverlayEL = false
+        window.location.reload(); // Laster siden på nytt for å oppdatere status på alle knapper
     })
 
 </script>
@@ -121,15 +152,35 @@
       
     </div>
     <div class="meldPåKnapp-wrapper">
-        <button on:click={meldPaa} id="meldPåKnapp" class:påmeldt={erPåmeldt} disabled={isLoading}>
-            {#if erPåmeldt}
-                Meldt på!
-            {:else if isLoading}
-                Melder på...
-            {:else}
-                Meld deg på ({tidspunktTekst})
-            {/if}
-        </button>
+        {#if erPåmeldt}
+            <button 
+                on:click={meldAv} 
+                on:mouseenter={() => hoverAvmeld = true}
+                on:mouseleave={() => hoverAvmeld = false}
+                class="paameldt-knapp"
+                disabled={isLoading}
+            >
+                {#if isLoading}
+                    ...
+                {:else if hoverAvmeld}
+                    Meld av!
+                {:else}
+                    Meldt på!
+                {/if}
+            </button>
+        {:else}
+            <button 
+                on:click={meldPaa} 
+                id="meldPåKnapp" 
+                disabled={isLoading || globaltPaameldtKursId !== null}
+            >
+                {#if isLoading}
+                    Melder på...
+                {:else}
+                    Meld deg på ({tidspunktTekst})
+                {/if}
+            </button>
+        {/if}
     </div>  
 </div>
 <style>
@@ -176,15 +227,26 @@
         background-color: #4CAF50; /* En grønnfarge for valgt knapp */
         color: white;
     }
-    button.påmeldt {
+
+    .paameldt-knapp {
         background-color: #4CAF50;
         color: white;
-        cursor: not-allowed;
+        width: 15rem;
+        height: 3rem;
+        border-radius: 1rem;
+        font-size: 1rem;
+        transition: background-color 0.2s ease;
     }
-    #meldPåKnapp:disabled {
+
+    .paameldt-knapp:hover {
+        background-color: #f44336; /* Rød farge ved hover */
+    }
+
+    button:disabled {
         cursor: not-allowed;
         opacity: 0.6;
     }
+
     #valgAvKurs {
         display: flex;
         flex-direction: row;

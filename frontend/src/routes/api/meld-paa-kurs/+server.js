@@ -11,10 +11,11 @@ export async function POST(event) {
         return json({ message: 'Du må være logget inn for å melde deg på.' }, { status: 401 });
     }
 
-    const { kursId, tidspunkt } = await event.request.json(); // Endret til kursId
+    // Endret for å motta 'tidspunktTekst' fra frontend
+    const { kursId, tidspunktTekst } = await event.request.json();
 
-    // Valider at vi har fått det vi trenger
-    if (!kursId || !tidspunkt) {
+    // Validerer den nye variabelen
+    if (!kursId || !tidspunktTekst) {
         return json({ message: 'Mangler kurs-ID eller tidspunkt i forespørselen.' }, { status: 400 });
     }
 
@@ -28,8 +29,9 @@ export async function POST(event) {
         }
 
         // Oppdater databasen med det nye kurset og tidspunktet
-        const sql = 'UPDATE bruker SET paameldt_kurs_id = ?, paameldt_tidspunkt = ? WHERE id = ?';
-        await db.query(sql, [kursId, tidspunkt, user.id]);
+        const sql = 'UPDATE bruker SET paameldt_kurs_id = ?, paameldt_tidspunkt_tekst = ? WHERE id = ?';
+        // Bruker den nye variabelen i SQL-spørringen
+        await db.query(sql, [kursId, tidspunktTekst, user.id]);
 
         // Send en suksessmelding tilbake
         return json({ message: 'Du er nå påmeldt kurset!' }, { status: 200 });

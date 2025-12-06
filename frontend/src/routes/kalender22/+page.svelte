@@ -3,6 +3,10 @@
     import AktivitetsBoks from '$lib/components/aktivitetsBoks.svelte';
     import HeroSection from '$lib/components/HeroSection.svelte';
 
+    // Mottar nå begge verdiene fra serveren
+    export let data;
+    const { paameldtKursId, paameldtTidspunktTekst } = data;
+
     let arrangementer: any = null;
 
     async function getData() {
@@ -34,7 +38,18 @@
 <div class="aktiviteter">
     <div id="alleAktiviteter">
         {#each (arrangementer?.dager?.[1]?.kurs ?? []) as arrangement}
-            <AktivitetsBoks kurs={arrangement["id"]} title={arrangement["navn"]} plasserfør={arrangement["plasser"]} plasseretter={10} tidspunkt={arrangement["tid"]} farge={arrangement["farge"]} plassersiste={5}/>
+            <AktivitetsBoks 
+                kurs={arrangement["id"]} 
+                title={arrangement["navn"]} 
+                plasserfør={arrangement["plasser"]} 
+                plasseretter={10} 
+                tidspunkt={arrangement["tid"]} 
+                farge={arrangement["farge"]} 
+                plassersiste={5}
+                erAlleredePaameldt={paameldtKursId === arrangement["id"]}
+                globaltPaameldtKursId={paameldtKursId}
+                paameldtTidspunkt={paameldtTidspunktTekst}
+            />
         {/each}
     </div>
 </div>
