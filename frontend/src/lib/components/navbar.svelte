@@ -9,7 +9,7 @@
 <div class="container">
     <a href="/" class="content-left">
         <div class="logo"></div>
-        <h1>Åpen Dag</h1>
+        <h1><span class="storå">Å</span>PEN DAG</h1>
     </a>
     <div class="content-right">
         <div class="nav-links">
@@ -51,6 +51,10 @@
 
     }
 
+    .storå {
+        font-size: 28px;
+    }
+
     .content-left {
         display: flex;
         align-items: center;
@@ -68,7 +72,7 @@
 
     .content-left h1 {
         font-family: 'Oslo Sans', sans-serif;
-        font-size: 24px;
+        font-size: 20px;
         color: #333333;
         cursor: pointer;
     }
