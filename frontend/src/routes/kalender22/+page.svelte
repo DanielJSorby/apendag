@@ -19,7 +19,7 @@
     title="Velkommen til påmelding for åpen dag den 22. januar!"
     subtitle="Meld deg på et av kursene under. Bruk knappene for å velge tidspunkt, og trykk deretter på 'Meld deg på'."
     height="50vh"
-    overlayOpacity={0.6}
+    overlayOpacity={0.67}
 />
 
 

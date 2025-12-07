@@ -31,7 +31,7 @@
 				<h1 class="hero-title">{title}</h1>
 			{/if}
 			{#if subtitle}
-				<p class="hero-subtitle">{subtitle}</p>
+				<p class="hero-subtitle">{@html subtitle}</p>
 			{/if}
 		</slot>
 	</div>
