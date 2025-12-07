@@ -40,7 +40,7 @@
             <button onclick={() => window.location.href = '/kalender22'}>
                 <div class="">
                 <h2>Torsdag 22. januar</h2>
-                <p>Åpen dag med spesielle kurs kun for elever</p>
+                <p>Åpen dag med spesielle kurs kun for 10. klasse elever</p>
                 </div>
                 <p>Trykk her for mer informasjon!</p>
             </button>
