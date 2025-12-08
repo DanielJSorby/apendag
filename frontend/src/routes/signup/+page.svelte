@@ -30,17 +30,17 @@
             const data = await response.json();
             
             if (data.ok) {
-                successMessage = 'Verification link sent! Please check your email to complete signup.';
+                successMessage = 'Verifiseringslenke er sendt! Sjekk e-posten din for å fullføre registreringen.';
                 errorMessage = ''; // Clear any errors
                 name = ''; // Clear inputs after sending
                 email = ''; // Clear inputs after sending
             } else {
-                errorMessage = data.message || 'Failed to send verification link';
+                errorMessage = data.message || 'Kunne ikke sende verifiseringslenke';
                 successMessage = ''; // Clear success message on error
             }
         } catch (error) {
             console.error(error);
-            errorMessage = 'An error occurred while creating your account';
+            errorMessage = 'Et problem oppstod ved oppretting av kontoen din';
             successMessage = ''; // Clear success message on error
         }
     }
@@ -49,8 +49,8 @@
 <div class="login">
     <div class="container">
         <div class="header">
-            <h1>Sign Up</h1>
-            <p>Create an account to get started</p>
+            <h1>Registrer deg</h1>
+            <p>Opprett en konto for å komme i gang. Du vil bli tilsendt en verifiseringslenke på e-post.</p>
         </div>
         {#if errorMessage}
             <div class="error-message">
@@ -63,14 +63,14 @@
             </div>
         {/if}
         <form on:submit|preventDefault={handleSubmit}>
-            <label for="name">Name</label>
+            <label for="name">Fullt navn</label>
             <input type="text" id="name" placeholder="John Doe" bind:value={name} required />
-            <label for="email">Email</label>
+            <label for="email">E-post</label>
             <input type="email" id="email" placeholder="john@email.com" bind:value={email} required />
-            <button class="button filled" type="submit">Sign Up</button>
+            <button class="button filled" type="submit">Registrer deg</button>
         </form>
         <div class="bottom-message">
-            <p>Already have an account? <a href="/login">Log in</a></p>
+            <p>Har du allerede en konto? <a href="/login">Logg inn</a></p>
         </div>
     </div>
 </div>
