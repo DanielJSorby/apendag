@@ -1,16 +1,19 @@
 /**
- * Server-side database connection pool
+ * Server-side database connection and ORM setup
  * 
- * This file provides low-level database connection pool management.
- * Use getDb() when you need direct access to the connection pool.
+ * This file provides database connection pooling using mysql2,
+ * and sets up Sequelize ORM with models and relationships.
  * 
- * For convenient query wrapper and Sequelize models, use '$lib/db' instead.
+ * For direct database queries, use the 'db' export.
+ * For Sequelize operations, use the 'sequelize' export and the defined models.
  */
 import { config } from "dotenv";
 import * as mysql from "mysql2/promise";
+import { Sequelize, DataTypes } from 'sequelize';
 
 config();
 
+// --- mysql2 connection pool ---
 let dbPool: mysql.Pool | null = null;
 let initializationPromise: Promise<mysql.Pool> | null = null;
 
@@ -55,5 +58,95 @@ export async function getDb(): Promise<mysql.Pool> {
     return initializationPromise;
 }
 
-// Note: For a convenient db.query() wrapper, use the 'db' export from '$lib/db.ts'
-// This file only exports getDb() for direct pool access when needed
+// --- db.query wrapper ---
+export const db = {
+    query: async (sql: string, params?: any): Promise<any> => {
+        const pool = await getDb();
+        return pool.query(sql, params);
+    }
+};
+
+// --- Sequelize setup ---
+export const sequelize = new Sequelize(
+	process.env.DB_NAME || '',
+	process.env.DB_USER || '',
+	process.env.DB_PASSWORD || '',
+	{
+		host: process.env.DB_HOST,
+		port: parseInt(process.env.DB_PORT || '3306'),
+		dialect: 'mysql',
+		dialectModule: mysql.createConnection, // Use mysql2 promise-based connection for Sequelize
+		logging: false
+	}
+);
+
+// --- Sequelize Models ---
+export const User = sequelize.define(
+	'User',
+	{
+		id: {
+			type: DataTypes.STRING(255),
+			primaryKey: true,
+			allowNull: false
+		},
+		navn: {
+			type: DataTypes.STRING(255),
+			allowNull: true
+		},
+		email: {
+			type: DataTypes.STRING(255),
+			allowNull: true
+		},
+		kursfor: {
+			type: DataTypes.STRING(255),
+			allowNull: true
+		},
+		kursetter: {
+			type: DataTypes.STRING(255),
+			allowNull: true
+		}
+	},
+	{
+		tableName: 'bruker',
+		timestamps: false
+	}
+);
+
+export const Message = sequelize.define(
+	'Message',
+	{
+		id: {
+			type: DataTypes.STRING(255),
+			primaryKey: true,
+			allowNull: false
+		},
+		brukerID: {
+			type: DataTypes.STRING(255),
+			allowNull: false
+		},
+		melding: {
+			type: DataTypes.STRING(255),
+			allowNull: true
+		}
+	},
+	{
+		tableName: 'chat',
+		timestamps: false
+	}
+);
+
+// --- Relationships ---
+Message.belongsTo(User, { foreignKey: 'brukerID', targetKey: 'id' });
+User.hasMany(Message, { foreignKey: 'brukerID', sourceKey: 'id' });
+
+// --- Database Initialization Function ---
+export async function initDB() {
+	try {
+		await sequelize.authenticate();
+		console.log('Database connection established');
+		return true;
+	} catch (error) {
+		console.error('Unable to connect to database:', error);
+		return false;
+	}
+}
