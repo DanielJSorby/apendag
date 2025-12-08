@@ -6,16 +6,9 @@
     let errorMessage = $state('');
     let successMessage = $state('');
 
-/*     onMount(async () => {
-        const userId = getCookie('UserId');
-        if (userId) {
-            window.location.href = '/dashboard';
-        }
-    }); */
-
     async function handleSubmit() {
         try {
-            errorMessage = ''; // Clear previous error
+            errorMessage = ''; 
             
             const response = await fetch('/api/user/log-in', {
                 method: 'POST',
@@ -59,16 +52,16 @@
             const data = await response.json();
 
             if (data.ok) {
-                successMessage = 'Magic link successfully sent!';
+                successMessage = 'En verifiseringslenke er sendt til e-posten din. Trykk på den for å logge inn.';
                 errorMessage = ''; // Clear any errors
                 email = ''; // Clear email input after sending
             } else {
-                errorMessage = data.message || 'Failed to send magic link';
+                errorMessage = data.message || 'Et problem oppstod ved sending av linken';
                 successMessage = ''; // Clear success message on error
             }
         } catch (err) {
             console.error(err);
-            errorMessage = 'An error occurred while sending the magic link';
+            errorMessage = 'Et problem oppstod ved sending av linken';
             successMessage = ''; // Clear success message on error
         }
     }
@@ -77,8 +70,8 @@
 <div class="login">
     <div class="container">
         <div class="header">
-            <h1>Log In</h1>
-            <p>Enter your credentials to access your account</p>
+            <h1>Logg inn</h1>
+            <p>Skriv inn e-postadressen din for å få en verifiseringslenke tilsendt.</p>
         </div>
         {#if errorMessage}
             <div class="error-message">
@@ -91,12 +84,12 @@
             </div>
         {/if}
         <form on:submit|preventDefault={handleMagicLink}>
-            <label for="email">Email</label>
+            <label for="email">E-post</label>
             <input type="email" id="email" placeholder="john@email.com" bind:value={email} required/>
-            <button class="button filled" type="submit">Log In</button>
+            <button class="button filled" type="submit">Logg inn</button>
         </form>
         <div class="bottom-message">
-            <p>Don't have an account? <a href="/signup">Sign up</a></p>
+            <p>Ingen bruker? <a href="/signup">Registrer deg</a></p>
         </div>
     </div>
 </div>
