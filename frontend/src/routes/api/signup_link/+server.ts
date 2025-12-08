@@ -32,14 +32,42 @@ export const POST: RequestHandler = async ({ request, url }) => {
     const magicLink = `${baseUrl}/magic-login?token=${token}&signup=true&name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}`;
 
     // Send verification email
+    let emailSent = false;
+    let emailError: string | null = null;
+    
     try {
         await sendMagicLinkEmail(email, magicLink, name);
-    } catch (error) {
-        console.error('Failed to send email (continuing anyway):', error);
+        emailSent = true;
+        console.log(`[SIGNUP] Verification email sent successfully to ${email}`);
+    } catch (error: any) {
+        emailError = error?.message || 'Failed to send email';
+        console.error('[SIGNUP] Failed to send verification email:', error);
+        
+        // In production, return error if email fails
+        const isDevelopment = process.env.NODE_ENV === 'development';
+        if (!isDevelopment) {
+            // Clean up the magic link record since we failed to send email
+            try {
+                await db.query('DELETE FROM magic_link WHERE token = ?', [token]);
+            } catch (cleanupError) {
+                console.error('[SIGNUP] Failed to cleanup magic_link record:', cleanupError);
+            }
+            
+            return json({ 
+                ok: false, 
+                message: 'Failed to send verification email. Please check your email configuration or try again later.',
+                error: emailError
+            }, { status: 500 });
+        }
+        // In development, continue (might want to log the link)
     }
 
     return json({ 
         ok: true, 
-        message: 'Verification link sent! Please check your email to complete signup.'
+        message: emailSent 
+            ? 'Verification link sent! Please check your email to complete signup.'
+            : (process.env.NODE_ENV === 'development' 
+                ? 'Verification link created, but email failed. Check server logs for the link.'
+                : 'Verification link sent! Please check your email to complete signup.')
     });
 };

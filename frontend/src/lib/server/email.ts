@@ -34,12 +34,22 @@ async function getResend() {
 
 export async function sendMagicLinkEmail(to: string, magicLink: string, userName?: string): Promise<void> {
     const resendInstance = await getResend();
+    const isDevelopment = process.env.NODE_ENV === 'development';
     
-    // If Resend is not configured, log and continue (for development)
+    // If Resend is not configured, handle differently in dev vs production
     if (!resendInstance) {
-        console.log(`[DEV MODE] Magic link for ${to}: ${magicLink}`);
-        console.log('To enable email sending, install Resend: npm install resend');
-        return;
+        const errorMessage = 'RESEND_API_KEY not set in environment variables. Cannot send email.';
+        console.error('[EMAIL ERROR]', errorMessage);
+        
+        // In development, log the link but warn
+        if (isDevelopment) {
+            console.log(`[DEV MODE] Magic link for ${to}: ${magicLink}`);
+            console.log('To enable email sending, set RESEND_API_KEY in your .env file');
+            return; // Allow dev mode to continue
+        }
+        
+        // In production, throw error to prevent silent failures
+        throw new Error(errorMessage);
     }
 
     const fromEmail = process.env.FROM_EMAIL || 'onboarding@resend.dev'; // Resend's test domain
