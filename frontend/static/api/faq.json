@@ -2,93 +2,108 @@
     "questions": [
         {
             "id": 1,
-            "question": "Er det vanskeligere å oppnå gode karakterer på en skole med høyt snitt?",
-            "answer": "Lærerne oppleves som rettferdige, så det skal ikke være noe vanskeligere enn på andre skoler!"
-        },
-        {
-            "id": 2,
-            "question": "Kan man ta alle realfag hvis man går KDA?",
-            "answer": "Ja, på Elvebakken har vi lagt mange fag parallelt i timeplanen og dermed har hver elev stor fleksibilitet i fagene hen kan velge. Det er mulig å få flere realfag på timeplanen selv om du går på KDA eller MK. :) Vi liker å si at vi har det bredeste fagutvalget i hele byen! Mange elever fra ST kan velge kreative fag fra MK og KDA også! Fysikk + lyddesign? Kunst og skapende arbeid + biologi? Psykologi + design og bærekraft? Mange artige kombinasjoner!"
-        },
-        {
-            "id": 3,
-            "question": "Har man flere timer i uken med MK?",
-            "answer": "Ja, på MK har elevene fem skoletimer mer per uke enn på studieforberedende. Men elevene jobber mer praktisk og har noe mindre hjemmearbeid."
-        },
-        {
-            "id": 4,
-            "question": "Går det an å velge noen kreative fag ved siden av studiespes?",
-            "answer": "Ja, det kan du! Siden Elvebakken har en stor MK-avdeling og KDA-avdeling, så får dere på studiespes også mange kreative fag å velge mellom. Som Kunst og skapende arbeid, arkitektur og samfunn, design og bærekraft, foto og grafikk fra KDA og bilde(foro/film/VFX animasjon), grafisk design, lyddesign, tekst og medieutvikling fra MK!"
-        },
-        {
-            "id": 5,
-            "question": "Hvordan er miljøet på Elvebakken? Er det et bra miljø hvor det er mulighet til å være seg selv, hva synes elevene?",
-            "answer": "Jeg trives ekstremt på Elvebakken og har lagt merke til at de andre elevene også trives! Vi har elever fra hele Oslo og er den skolen i Oslo med det bredeste fagtilbudet. Det fører til at det er mange ulike mennesker med ulike interesser og væremåter. Jeg tror alle mennesker kan finne noen venner som passer til deg og dine interesser!"
-        },
-        {
-            "id": 6,
-            "question": "Går det an å ta spansk som fremmedspråk?",
-            "answer": "Ja, du kan ta spansk på alle nivåer på Elvebakken. Vi har også kinesisk, fransk II og tysk II"
-        },
-        {
-            "id": 7,
-            "question": "Jeg gruer meg til å starte på vgs, hva kommer dere til å gjøre de første dagene for å ta elevene godt imot?",
-            "answer": "Hei! Vi drar på tur! Alle klassene på Vg1 drar på tur til Lunde hvor vi blir kjent, gjør morsomme aktiviteter, snakker sammen, spiser sammen, bader sammen, ler sammen :)"
-        },
-        {
-            "id": 8,
             "question": "Hvordan er IMST? er det basically yrkesfag de to første årene og påbygg det siste?",
             "answer": "På IM har man en blanding det første året med litt av medie og it, senere i VG2 velger man ett av disse man skal fordype seg i, og sist men ikke minst har man resten av fagene man ikke har hatt til nå, det siste året. :)"
         },
         {
-            "id": 9,
+            "id": 2,
             "question": "Kan man bli lærling etter ELST?",
             "answer": "Ja, både på IMST og ELST har man mulighet til å bli lærling etter at man har fått studiekompetanse. Det er det som gjør dette til et veldig smart valg."
         },
         {
+            "id": 3,
+            "question": "Elektrofag med ST",
+            "answer": "Dette programmet heter ELST og du har alle vanlige elektrofag og utplassering, men du går tre år på Elvebakken og får studiekompetanse når du er ferdig. Du har mulighet til å bli lærling etter Vg3."
+        },
+        {
+            "id": 4,
+            "question": "Elektrofag og datateknologi (yrkesfag)",
+            "answer": "du går to år på skolen og du har utplassering i bedrift både på Vg1 og Vg2. Etter Vg2 blir du lærling og får fagbrev. Fagbrevet ditt kan være grunnlaget for å starte på elektroingeniør (y-vei). Du kan også ta påbygg enten rett etter Vg2 eller etter Vg3."
+        },
+        {
+            "id": 5,
+            "question": "Hvilke programfag kan man velge på Elvebakken?",
+            "answer": "Vi har et veldig bredt tilbud med fag. Innen Realfag tilbyr vi matematikk, fysikk, kjemi, biologi, geofag, IT og teknologi og forsningslære. Innen SSØ tilbyr vi historie og filosofi, psykologi, rettslære, engelsk, samfunnsøkonomi, entreprenørskap, markesføring, sosiologi og sosialantropologi, politikk og menneskerettigheter og samfunnsgeografi, i tillegg nivå tre i fransk og spansk. Vi tilbyr også fag fra KDA (Kunst og skapende eller foto/grafikk eller design og bærekraft) eller fra MK (grafisk design, lyddesign, medieutvikling, film, foto, tekst. I tillegg har vi breddeidrett og friluftsliv. En hel haug av muligheter og kombinasjoner."
+        },
+        {
+            "id": 6,
+            "question": "Kan man ta alle realfag hvis man går KDA?",
+            "answer": "Ja, på Elvebakken har vi lagt mange fag parallelt i timeplanen og dermed har hver elev stor fleksibilitet i fagene hen kan velge. Det er mulig å få flere realfag på timeplanen selv om du går på KDA eller MK. :) Vi liker å si at vi har det bredeste fagutvalget i hele byen! Mange elever fra ST kan velge kreative fag fra MK og KDA også! Fysikk + lyddesign? Kunst og skapende arbeid + biologi? Psykologi + design og bærekraft? Mange artige kombinasjoner!"
+        },
+        {
+            "id": 7,
+            "question": "Har man flere timer i uken med MK?",
+            "answer": "Ja, på MK har elevene fem skoletimer mer per uke enn på studieforberedende. Men elevene jobber mer praktisk og har noe mindre hjemmearbeid."
+        },
+        {
+            "id": 8,
+            "question": "Går det an å velge noen kreative fag ved siden av studiespes?",
+            "answer": "Ja, det kan du! Siden Elvebakken har en stor MK-avdeling og KDA-avdeling, så får dere på studiespes også mange kreative fag å velge mellom. Som Kunst og skapende arbeid, arkitektur og samfunn, design og bærekraft, foto og grafikk fra KDA og bilde(foro/film/VFX animasjon), grafisk design, lyddesign, tekst og medieutvikling fra MK!"
+        },
+        {
+            "id": 9,
+            "question": "Hvordan er miljøet på Elvebakken? Er det et bra miljø hvor det er mulighet til å være seg selv, hva synes elevene?",
+            "answer": "Jeg trives ekstremt på Elvebakken og har lagt merke til at de andre elevene også trives! Vi har elever fra hele Oslo og er den skolen i Oslo med det bredeste fagtilbudet. Det fører til at det er mange ulike mennesker med ulike interesser og væremåter. Jeg tror alle mennesker kan finne noen venner som passer til deg og dine interesser!"
+        },
+        {
             "id": 10,
+            "question": "Går det an å ta spansk som fremmedspråk?",
+            "answer": "Ja, du kan ta spansk på alle nivåer på Elvebakken. Vi har også kinesisk, fransk II og tysk II"
+        },
+        {
+            "id": 11,
+            "question": "Jeg gruer meg til å starte på vgs, hva kommer dere til å gjøre de første dagene for å ta elevene godt imot?",
+            "answer": "Hei! Vi drar på tur! Alle klassene på Vg1 drar på tur til Lunde hvor vi blir kjent, gjør morsomme aktiviteter, snakker sammen, spiser sammen, bader sammen, ler sammen :)"
+        },
+        {
+            "id": 12,
             "question": "Hvis man har MK, kan man ha engelsk i 2. og 3. klasse, eller bare i første?",
             "answer": "Du kan velge Engelsk 1 på vg2 og Engelsk 2 på Vg3. Engelsk er bare obligatorisk på vg1."
         },
         {
-            "id": 11,
+            "id": 13,
             "question": "Hvordan fungerer fordelingen av klasser?",
             "answer": "På Elvebakken kommer det elever fra hele byen og det er mange som ikke kjenner noen. Vi forsøker å spre elever  fra samme skole, slik at det er mest mulig likt for alle. Vi ønsker at elevene skal bli kjent med nye folk og de første ukene handler om å skape et godt og trygt klassemiljø."
         },
         {
-            "id": 12,
+            "id": 14,
             "question": "Er det sikret lærlingplass hvis man går elektro?",
             "answer": "Veldig mange blir lærlinger etter Vg2 elenergi fordi man har blitt godt kjent med bransjen i løpet av utplassering i bedrift som skjer både i Vg1 og Vg2. Dessuten begynner man å tjene penger som lærling og mange ønsker det. Man kan alltid gå videre etter oppnådd fagbrev, enten y-veien, forkurs eller ta påbygg."
         },
         {
-            "id": 13,
+            "id": 15,
             "question": "Hvilke fag kan man velge i Vg2?",
             "answer": "Elever fra ST velger tre fag i tillegg til matematikk i Vg2. Dette kan være f.eks rettslære, psykologi, fysikk, kjemi, IT, samfunnsøkonomi eller politikk og menneskerettigheter. I tillegg kan elever fra ST velge fag fra KDA og MK. Elever på KDA og MK kan velge fag fra studiespes, så på Elvebakken kan man få en helt unik timeplan."
         },
         {
-            "id": 14,
+            "id": 16,
             "question": "Hvordan er maten i kantina?",
             "answer": "Det serveres varm mat og ulike baguetter/rundstykker hver dag. Det er hyggelige folk som jobber i kantina :)"
         },
         {
-            "id": 15,
+            "id": 17,
             "question": "Hvor lenge varer en økt/ time på Elvebakken?",
             "answer": "De varer stort sett 1,5 time, men du kan også ha enkelttime på 45 min på timeplanen din."
         },
         {
-            "id": 16,
+            "id": 18,
             "question": "Hvordan er det med kollektiv transport til skolen? Er det mye trafikk og forsentkomminger?",
             "answer": "Buss 34 og 54 stopper rett utenfor og det er 10 min å ga til T-bane og tog. Bussene går ofte,"
         },
         {
-            "id": 17,
+            "id": 19,
             "question": "Får alle som søker være med på utveksling til Durham i Vg2?",
             "answer": "Dessverre får ikke alle som søker vært med til Durham hvis mange søker, men alle på Vg1 ST, KDA og MK får muligheten til å søke. Som oftest får de aller fleste være med."
         },
         {
-            "id": 18,
+            "id": 20,
             "question": "Er det vanskelig å få venner på Elvebakken?",
             "answer": "Vi har både faddere, vennskapsklasser, et aktivt elevråd og mange ulike aktiveteter særlig ved skolestart som gjør at du skal bli godt kjent med nye klassekamerater. Blant annet drar alle Vg1-elever på tur helt ved skolestart til et leirsted hvor man bader, spiser taco, gjør gruppeoppgaver og får møte tidligere elever som har tips til hvordan man kan få sine beste år på Elvebakken :)"
+        },
+        {
+            "id": 21,
+            "question": "Er det vanskeligere å oppnå gode karakterer på en skole med høyt snitt?",
+            "answer": "Lærerne oppleves som rettferdige, så det skal ikke være noe vanskeligere enn på andre skoler!"
         }
     ]
 }
