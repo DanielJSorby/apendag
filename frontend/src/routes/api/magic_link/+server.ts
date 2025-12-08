@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { randomBytes } from 'crypto';
-import { db } from '$lib/db';
+import { db } from '$lib/server/db';
 import { sendMagicLinkEmail } from '$lib/server/email';
 
 export const POST: RequestHandler = async ({ request, url }) => {
