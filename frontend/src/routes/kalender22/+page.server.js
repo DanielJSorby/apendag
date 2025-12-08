@@ -1,4 +1,4 @@
-import { db } from '$lib/server/db';
+import { db } from '$lib/db';
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load({ locals }) {
