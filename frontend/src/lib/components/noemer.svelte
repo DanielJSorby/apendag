@@ -22,7 +22,7 @@
         align-items: center;
         justify-content: center;
         padding: 4rem 2rem;
-        background-color: var(--color-white);
+        background-color: var(--color-grey);
         box-sizing: border-box;
         overflow-x: hidden;
     }
