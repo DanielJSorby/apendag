@@ -77,7 +77,7 @@
         <div class="nav-links">
             <a href="/kalender20">Tirsdag 20.</a>
             <a href="/kalender22">Torsdag 22.</a>
-            <a href="/chatside">Spørsmål</a>
+            <a href="/FAQ">Spørsmål</a>
             {#if isLoggedIn}
                 <div class="user-menu-container">
                     <button class="user-button" onclick={toggleUserMenu} aria-label="User menu">
@@ -106,7 +106,7 @@
     <div class="mobile-menu">
         <a href="/kalender20" onclick={toggleMenu}>Tirsdag 20.</a>
         <a href="/kalender22" onclick={toggleMenu}>Torsdag 22.</a>
-        <a href="/chatside" onclick={toggleMenu}>Spørsmål</a>
+        <a href="/FAQ" onclick={toggleMenu}>Spørsmål</a>
         {#if isLoggedIn}
             <div class="mobile-user-info">
                 <span>Logget inn som: {userName || 'Bruker'}</span>
