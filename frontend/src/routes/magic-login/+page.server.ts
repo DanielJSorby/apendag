@@ -58,7 +58,15 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
     await db.query('UPDATE magic_link SET used = TRUE WHERE id = ?', [link.id]);
 
     // Set cookie and redirect
-    cookies.set('UserId', userId, { path: '/', httpOnly: true });
+
+    const isSecure = url.protocol === 'https:';
+    cookies.set('UserId', userId, { 
+        path: '/', 
+        httpOnly: true,
+        secure: isSecure,
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 24 * 30 // 30 days
+    });
 
     throw redirect(302, '/');
 };
