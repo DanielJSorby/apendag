@@ -26,13 +26,10 @@
 		"vite": "^7.1.10"
 	},
 	"dependencies": {
-		"cors": "^2.8.5",
 		"dotenv": "^17.2.3",
-		"express": "^5.1.0",
-		"mariadb": "^3.4.5",
 		"mysql2": "^3.15.3",
-		"sequelize": "^6.37.7",
+		"resend": "^6.5.2",
 		"uuid": "^13.0.0",
-		"ws": "^8.18.3"
+		"sequelize": "^6.37.7"
 	}
 }

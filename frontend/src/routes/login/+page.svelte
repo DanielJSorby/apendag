@@ -4,6 +4,7 @@
     let email = $state('');
     let password = $state('');
     let errorMessage = $state('');
+    let successMessage = $state('');
 
 /*     onMount(async () => {
         const userId = getCookie('UserId');
@@ -34,13 +35,41 @@
             
             if (data.status === 200) {
                 document.cookie = `UserId=${data.userId}; path=/;`;
-                window.location.href = '/dashboard';
+                window.location.href = '/';
             } else {
                 errorMessage = data.error || 'An error occurred';
             }
         } catch (error) {
             console.error(error);
             errorMessage = 'An error occurred while logging in';
+        }
+    }
+
+    async function handleMagicLink() {
+        try {
+            errorMessage = '';
+            successMessage = '';
+
+            const response = await fetch('/api/magic_link', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
+            });
+
+            const data = await response.json();
+
+            if (data.ok) {
+                successMessage = 'Magic link successfully sent!';
+                errorMessage = ''; // Clear any errors
+                email = ''; // Clear email input after sending
+            } else {
+                errorMessage = data.message || 'Failed to send magic link';
+                successMessage = ''; // Clear success message on error
+            }
+        } catch (err) {
+            console.error(err);
+            errorMessage = 'An error occurred while sending the magic link';
+            successMessage = ''; // Clear success message on error
         }
     }
 </script>
@@ -56,7 +85,12 @@
                 {errorMessage}
             </div>
         {/if}
-        <form on:submit|preventDefault={handleSubmit}>
+        {#if successMessage}
+            <div class="success-message">
+                {successMessage}
+            </div>
+        {/if}
+        <form on:submit|preventDefault={handleMagicLink}>
             <label for="email">Email</label>
             <input type="email" id="email" placeholder="john@email.com" bind:value={email} required/>
             <button class="button filled" type="submit">Log In</button>
@@ -72,6 +106,17 @@
         background-color: #fef2f2;
         border: 1px solid #fecaca;
         color: #dc2626;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        text-align: center;
+        font-weight: 500;
+    }
+
+    .success-message {
+        background-color: #f0fdf4;
+        border: 1px solid #86efac;
+        color: #166534;
         padding: 1rem;
         border-radius: 8px;
         margin-bottom: 1rem;

@@ -1,19 +1,35 @@
+/**
+ * Server-side database connection pool
+ * 
+ * This file provides low-level database connection pool management.
+ * Use getDb() when you need direct access to the connection pool.
+ * 
+ * For convenient query wrapper and Sequelize models, use '$lib/db' instead.
+ */
 import { config } from "dotenv";
-import mysql from "mysql2/promise";
+import * as mysql from "mysql2/promise";
 
 config();
 
 let dbPool: mysql.Pool | null = null;
-let isInitializing = false;
+let initializationPromise: Promise<mysql.Pool> | null = null;
 
-export async function getDb() {
-    console.log('getDb called, pool exists:', !!dbPool, 'isInitializing:', isInitializing);
+export async function getDb(): Promise<mysql.Pool> {
+    // If pool already exists, return it
+    if (dbPool) {
+        return dbPool;
+    }
     
-    if (!dbPool && !isInitializing) {
-        isInitializing = true;
+    // If initialization is in progress, wait for it
+    if (initializationPromise) {
+        return initializationPromise;
+    }
+    
+    // Start initialization
+    initializationPromise = (async () => {
         console.log('Creating new database pool...');
         try {
-            dbPool = await mysql.createPool({
+            const pool = await mysql.createPool({
                 host: process.env.DB_HOST,
                 user: process.env.DB_USER,
                 password: process.env.DB_PASSWORD,
@@ -23,29 +39,21 @@ export async function getDb() {
             });
             
             // Test the connection to ensure it's working
-            await dbPool.query('SELECT 1');
+            await pool.query('SELECT 1');
             console.log('Database pool created and tested successfully');
-            isInitializing = false;
+            
+            dbPool = pool;
+            return pool;
         } catch (error) {
             console.error('Error creating database pool:', error);
-            isInitializing = false;
+            // Reset promise so we can retry
+            initializationPromise = null;
             throw error;
         }
-    } else if (isInitializing) {
-        // Wait for initialization to complete
-        while (isInitializing) {
-            await new Promise(resolve => setTimeout(resolve, 10));
-        }
-    }
+    })();
     
-    return dbPool;
+    return initializationPromise;
 }
 
-// For backward compatibility
-export const db = {
-    query: async (...args: any[]) => {
-        const pool = await getDb();
-        // @ts-ignore
-        return pool.query(...args);
-    }
-};
+// Note: For a convenient db.query() wrapper, use the 'db' export from '$lib/db.ts'
+// This file only exports getDb() for direct pool access when needed

@@ -1,5 +1,6 @@
 import { Sequelize, DataTypes } from 'sequelize';
 import dotenv from 'dotenv';
+import mysql2 from 'mysql2';
 
 dotenv.config();
 
@@ -11,12 +12,21 @@ export const sequelize = new Sequelize(
 	{
 		host: process.env.DB_HOST,
 		port: parseInt(process.env.DB_PORT || '3306'),
-		dialect: 'mariadb',
+		dialect: 'mysql',
+		dialectModule: mysql2,
 		logging: false
 	}
 );
 
-// User Model (bruker table)
+import { getDb } from '$lib/server/db';
+
+export const db = {
+    query: async (sql: string, params?: any): Promise<any> => {
+        const pool = await getDb();
+        return pool.query(sql, params);
+    }
+};
+
 export const User = sequelize.define(
 	'User',
 	{

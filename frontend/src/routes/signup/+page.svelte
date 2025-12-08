@@ -5,42 +5,43 @@
     let email = $state('');
     let password = $state('');
     let errorMessage = $state('');
+    let successMessage = $state('');
 
     onMount(async () => {
         const userId = getCookie('UserId');
         if (userId) {
-            window.location.href = '/dashboard';
+            window.location.href = '/';
         }
     });
 
     async function handleSubmit() {
         try {
-            errorMessage = ''; // Clear previous error
+            errorMessage = '';
+            successMessage = '';
             
-            const response = await fetch('/api/user/lagBruker', {
+            const response = await fetch('/api/signup_link', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ name, email}),
+                body: JSON.stringify({ name, email }),
             });
             
             const data = await response.json();
-            console.log(data);
             
-            if (data.status === 409) {
-                errorMessage = data.error;
-                return;
-            }
-            
-            if (data.status === 200) {
-                document.cookie = `UserId=${data.userId}; path=/;`;
+            if (data.ok) {
+                successMessage = 'Verification link sent! Please check your email to complete signup.';
+                errorMessage = ''; // Clear any errors
+                name = ''; // Clear inputs after sending
+                email = ''; // Clear inputs after sending
             } else {
-                errorMessage = data.error || 'An error occurred';
+                errorMessage = data.message || 'Failed to send verification link';
+                successMessage = ''; // Clear success message on error
             }
         } catch (error) {
             console.error(error);
             errorMessage = 'An error occurred while creating your account';
+            successMessage = ''; // Clear success message on error
         }
     }
 </script>
@@ -54,6 +55,11 @@
         {#if errorMessage}
             <div class="error-message">
                 {errorMessage}
+            </div>
+        {/if}
+        {#if successMessage}
+            <div class="success-message">
+                {successMessage}
             </div>
         {/if}
         <form on:submit|preventDefault={handleSubmit}>
@@ -74,6 +80,17 @@
         background-color: #fef2f2;
         border: 1px solid #fecaca;
         color: #dc2626;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        text-align: center;
+        font-weight: 500;
+    }
+
+    .success-message {
+        background-color: #f0fdf4;
+        border: 1px solid #86efac;
+        color: #166534;
         padding: 1rem;
         border-radius: 8px;
         margin-bottom: 1rem;
