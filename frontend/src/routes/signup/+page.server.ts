@@ -11,6 +11,3 @@ export const load: PageServerLoad = async ({ cookies }) => {
     // Return empty data if not logged in (page will render normally)
     return {};
 };
-
-
-
