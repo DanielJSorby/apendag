@@ -295,9 +295,11 @@
 	}
 	#plassState {
 		margin: 0;
+        color: var(--color-white);
 	}
 	#tilgjengeligePlasser {
 		margin: 0;
+        color: var(--color-white);
 	}
 	@keyframes blob {
 		0%,
