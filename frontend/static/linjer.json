@@ -31,8 +31,8 @@
     "bilde": "/images/linjer/Skolebrosjyre_IM.jpg",
     "beskrivelse": "Programmering og medieproduksjon",
     "langBeskrivelse": "Har du lyst til å jobbe kreativt og praktisk med ny teknologi og kommunikasjon? \n\nEr du interessert i å jobbe med IT-sikkerhet, programmering og nettverk? Eller har du lyst til å lære mer om design, UX, VFX, 3D, AI, webutvikling, film eller lyd? På IM lærer du blant annet foto/video/lyd-produksjon, programmering, webdesign, oppsett og drift av nettverk og spillutvikling. Du lærer å jobbe selvstendig og holde deadlines, tenke løsningsorientert. Du lærer også å jobbe kreativt og å kommunisere med oppdragsgivere. På IM Elvebakken jobber vi for å skape et profesjonsfellesskap med lærere og elever som en arbeidsplass med unge medarbeidere, sjefer og veiledere. Informasjonsteknologi og medieproduksjon er et yrkesfaglig utdanningsprogram med to år i skole og to år som lærling i bedrift. \n\nPå VG1 lærer du grunnleggende kommunikasjon, kreativitet, teknologiforståelse, design, programmering, bruk av digitale verktøy og ny teknologi. \n\nPå Vg2 må du søke enten Informasjonsteknologi eller Medieproduksjon. Elvebakken tilbyr begge studieretninger. Her jobber vi yrkesnært og praktisk med oppdrag, kurs og prosjekter, ofte i samarbeid med bransje. Elevene har i tillegg mulighet til å være ute i praksis ila skoleåret. \n\nEtter Vg2 Informasjonsteknologi kan du søke læra som IT-driftstekniker eller IT-utvikler. Etter Vg2 Medieproduksjon kan du søke læra som innholdsprodusent, mediedesigner eller medietekniker. Dersom du ikke ønsker å bli lærling, kan du søke Vg3 påbygg og få generell studiekompetanse. ",
-    "farge": "var(--color-pink)",
-    "lysfarge": "var(--color-pink-light)",
+    "farge": "var(--color-orange)",
+    "lysfarge": "var(--color-orange-light)",
     "eksternLenke": "https://elvebakken.vgs.no/fagtilbud/informasjonsteknolog-og-medieproduksjon/Informasjonsteknologi-og-medieproduksjon-yrkesfaglig/"
   },
   "el": {
