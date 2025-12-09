@@ -144,17 +144,6 @@
         flex-wrap: wrap;
     }
 
-    
-
-    .linje-tekst {
-        margin-top: 20px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        width: 80vw;
-    }
-
     /* splashbilde */
     .fillerbilde {
         position: absolute;
@@ -228,10 +217,6 @@
         border-radius: 1rem;
         border-width: 3px;
     }
-
-    .linje-tekst {
-        width: 90vw;
-    }
 }
 
 /* Tablet styles */
@@ -267,20 +252,6 @@
     .linjeknapper {
         gap: 15px;
         padding: 0 20px;
-    }
-
-    .linje-tekst {
-        width: 85vw;
-        padding: 20px;
-    }
-
-    .linje-tekst h1 {
-        font-size: 2rem;
-    }
-
-    .linje-tekst p {
-        font-size: 1rem;
-        line-height: 1.6;
     }
 }
 </style>
