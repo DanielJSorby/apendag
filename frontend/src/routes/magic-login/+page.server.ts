@@ -1,6 +1,6 @@
 import { redirect, error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { db } from '$lib/db';
+import { db } from '$lib/server/db';
 import { v4 as uuidv4 } from 'uuid';
 
 export const load: PageServerLoad = async ({ url, cookies }) => {
