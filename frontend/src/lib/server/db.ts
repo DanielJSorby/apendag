@@ -97,11 +97,15 @@ export const User = sequelize.define(
 			type: DataTypes.STRING(255),
 			allowNull: true
 		},
-		kursfor: {
+		paameldt_kurs_id: {
+			type: DataTypes.INTEGER,
+			allowNull: true
+		},
+		paameldt_tidspunkt_tekst: {
 			type: DataTypes.STRING(255),
 			allowNull: true
 		},
-		kursetter: {
+		studiesuppe: {
 			type: DataTypes.STRING(255),
 			allowNull: true
 		}

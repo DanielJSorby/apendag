@@ -6,6 +6,7 @@
     let isLoggedIn = $state(false);
     let userName = $state<string | null>(null);
     let userMenuOpen = $state(false);
+    let isAdmin = $state(false);
 
     function toggleMenu() {
         menuOpen = !menuOpen;
@@ -20,10 +21,11 @@
             const response = await fetch('/api/user/current');
             const data = await response.json();
             isLoggedIn = data.loggedIn || false;
+            isAdmin = data.isAdmin || false;
             userName = data.user?.name || null;
         } catch (error) {
-            console.error('Error checking login status:', error);
             isLoggedIn = false;
+            isAdmin = false;
         }
     }
 
@@ -40,7 +42,6 @@
             // Redirect to home page
             goto('/');
         } catch (error) {
-            console.error('Error during logout:', error);
             // Still update local state and redirect even if API call fails
             isLoggedIn = false;
             userName = null;
@@ -78,6 +79,9 @@
             <a href="/kalender20">Tirsdag 20.</a>
             <a href="/kalender22">Torsdag 22.</a>
             <a href="/FAQ">Spørsmål</a>
+            {#if isAdmin}
+                <a href="/adminpanel" class="admin-link">Admin</a>
+            {/if}
             {#if isLoggedIn}
                 <div class="user-menu-container">
                     <button class="user-button" onclick={toggleUserMenu} aria-label="User menu">
@@ -107,6 +111,9 @@
         <a href="/kalender20" onclick={toggleMenu}>Tirsdag 20.</a>
         <a href="/kalender22" onclick={toggleMenu}>Torsdag 22.</a>
         <a href="/FAQ" onclick={toggleMenu}>Spørsmål</a>
+        {#if isAdmin}
+            <a href="/adminpanel" onclick={toggleMenu} class="admin-link">Admin</a>
+        {/if}
         {#if isLoggedIn}
             <div class="mobile-user-info">
                 <span>Logget inn som: {userName || 'Bruker'}</span>
@@ -174,6 +181,13 @@
 
     .nav-links a:hover {
         color: #fe9094;
+        transform: translateY(-2px);
+    }
+
+    .admin-link {
+        color: white;
+        padding: 8px 16px;
+        transition: all 0.3s ease;
     }
 
     .content-left {
