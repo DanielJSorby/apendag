@@ -1,6 +1,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { Message, User, initDB } from '$lib/server/db';
+import { getDb } from '$lib/server/db';
 
 export const GET: RequestHandler = async () => {
 	try {
