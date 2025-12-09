@@ -1,16 +1,33 @@
+import { db } from '$lib/server/db';
+
 /** @type {import('@sveltejs/kit').Handle} */
 export async function handle({ event, resolve }) {
-    // --- TESTBRUKER ---
-    // Denne koden simulerer at brukeren 'apendag' alltid er logget inn.
-    // Dette er kun for testing.
-    // Fjern eller kommenter ut dette når du har et ekte innloggingssystem.
-    event.locals.user = {
-        id: '3633537c-caca-441c-a330-75a115cd9ef2', // ID-en til testbrukeren 'apendag'
-        navn: 'Henrik',
-        email: 'helua011@osloskolen.no'
-    };
-    // --- SLUTT PÅ TESTBRUKER ---
+	const userId = event.cookies.get('UserId');
 
-    // Fortsetter til SvelteKits vanlige håndtering av forespørselen
-    return resolve(event);
+	if (userId) {
+		try {
+			const [userRows] = await db.query('SELECT id, navn, email FROM bruker WHERE id = ?', [userId]);
+			// @ts-ignore
+			if (userRows.length > 0) {
+				// @ts-ignore
+				event.locals.user = {
+					// @ts-ignore
+					id: userRows[0].id,
+					// @ts-ignore
+					navn: userRows[0].navn,
+					// @ts-ignore
+					email: userRows[0].email
+				};
+			} else {
+				event.locals.user = null;
+			}
+		} catch (error) {
+			console.error('Databasefeil i hooks:', error);
+			event.locals.user = null;
+		}
+	} else {
+		event.locals.user = null;
+	}
+
+	return resolve(event);
 }
