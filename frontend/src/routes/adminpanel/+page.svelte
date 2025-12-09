@@ -1,4 +1,6 @@
 <script lang="ts">
+import { onMount } from 'svelte';
+
 let { data } = $props();
 
 type User = {
@@ -10,14 +12,41 @@ type User = {
     studiesuppe: string | null;
 };
 
-// Kurs-mapping basert på ID
-const kursMap: Record<number, string> = {
-    1: 'Studiespesialisering (ST)',
-    2: 'Kunst, design og arkitektur (KDA)',
-    3: 'Medier og Kommunikasjon (MK)',
-    4: 'Informasjonsteknologi og medieproduksjon (IM)',
-    5: 'Elektro og datateknologi (EL)'
+type Kurs = {
+    id: number;
+    linje: string;
+    navn: string;
+    plasser: number;
+    tid: {
+        forLunsj: string;
+        etterLunsj: string;
+        siste: string;
+    };
+    farge: string;
 };
+
+// Kurs-mapping basert på aktiviteter.json
+let kursMap = $state<Record<number, string>>({});
+let kursListe = $state<Kurs[]>([]);
+
+onMount(async () => {
+    try {
+        const response = await fetch('/aktiviteter.json');
+        const data = await response.json();
+        const apenSkoledag = data.dager.find((d: any) => d.arrangement === "Åpen skoledag for 10. trinn");
+        
+        if (apenSkoledag && apenSkoledag.kurs) {
+            kursListe = apenSkoledag.kurs;
+            kursMap = {};
+            apenSkoledag.kurs.forEach((kurs: Kurs) => {
+                kursMap[kurs.id] = kurs.navn;
+            });
+        }
+    } catch (error) {
+        // Fallback til tom mapping hvis det feiler
+        kursMap = {};
+    }
+});
 
 function getKursNavn(id: number | null): string {
     if (!id) return '-';
@@ -242,11 +271,9 @@ async function removeAdmin(userId: string) {
                         <input type="email" placeholder="E-post" bind:value={newUser.email} />
                         <select bind:value={newUser.paameldt_kurs_id}>
                             <option value={null}>Ingen kurs</option>
-                            <option value={1}>Studiespesialisering (ST)</option>
-                            <option value={2}>Kunst, design og arkitektur (KDA)</option>
-                            <option value={3}>Medier og Kommunikasjon (MK)</option>
-                            <option value={4}>Informasjonsteknologi og medieproduksjon (IM)</option>
-                            <option value={5}>Elektro og datateknologi (EL)</option>
+                            {#each kursListe as kurs}
+                                <option value={kurs.id}>{kurs.navn}</option>
+                            {/each}
                         </select>
                         <input type="text" placeholder="Påmeldt tidspunkt" bind:value={newUser.paameldt_tidspunkt_tekst} />
                         <input type="text" placeholder="Studiesuppe" bind:value={newUser.studiesuppe} />
@@ -286,11 +313,9 @@ async function removeAdmin(userId: string) {
                                     <td>
                                         <select bind:value={editingUser.paameldt_kurs_id}>
                                             <option value={null}>Ingen kurs</option>
-                                            <option value={1}>ST</option>
-                                            <option value={2}>KDA</option>
-                                            <option value={3}>MK</option>
-                                            <option value={4}>IM</option>
-                                            <option value={5}>EL</option>
+                                            {#each kursListe as kurs}
+                                                <option value={kurs.id}>{kurs.linje.toUpperCase()}</option>
+                                            {/each}
                                         </select>
                                     </td>
                                     <td>
@@ -303,7 +328,7 @@ async function removeAdmin(userId: string) {
                                     </td>
                                     <td>
                                         <select bind:value={editingUser.studiesuppe}>
-                                            <option value={false}>-</option>
+                                            <option value={null}>-</option>
                                             <option value="Ja">Ja</option>
                                         </select>
                                     </td>
