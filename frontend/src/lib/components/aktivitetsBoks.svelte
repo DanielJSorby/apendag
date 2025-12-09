@@ -50,6 +50,15 @@
         isLoading = true;
         errorMessage = '';
 
+        // Sjekk for studiesuppe
+        const erSisteTidspunkt = valgtTidspunkt === 'siste';
+        let vilHaStudiesuppe = false;
+        if (erSisteTidspunkt) {
+            if (confirm('Ønsker du å melde deg på studiesuppe?')) {
+                vilHaStudiesuppe = true;
+            }
+        }
+
         try {
             const response = await fetch('/api/meld-paa-kurs', {
                 method: 'POST',
@@ -58,7 +67,8 @@
                 },
                 body: JSON.stringify({ 
                     kursId: kurs,
-                    tidspunktTekst: tidspunktTekst // Korrigert: Sender den faktiske teksten
+                    tidspunktTekst: tidspunktTekst,
+                    studiesuppe: vilHaStudiesuppe // Sender med studiesuppe-valget
                 })
             });
 
@@ -113,7 +123,7 @@
         <div class="overlay-innhold" on:click|stopPropagation>
             <h1>Du har nå meldt deg på {title}!</h1>
             <p>Tidspunkt: {tidspunktTekst}</p>
-            <button on:click={lukkOverlay}>Lukk</button>
+            <button on:click={lukkOverlay}>Lagre</button>
         </div>
     </div>
 {/if}
@@ -168,6 +178,7 @@
             <button 
                 on:click={meldPaa} 
                 id="meldPåKnapp" 
+                type="button"
                 disabled={isLoading || globaltPaameldtKursId !== null}
             >
                 {#if isLoading}

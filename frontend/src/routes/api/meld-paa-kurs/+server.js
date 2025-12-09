@@ -11,7 +11,7 @@ export async function POST(event) {
         return json({ message: 'Du må være logget inn for å melde deg på.' }, { status: 401 });
     }
 
-    const { kursId, tidspunktTekst } = await event.request.json();
+    const { kursId, tidspunktTekst, studiesuppe } = await event.request.json();
 
     if (!kursId || !tidspunktTekst) {
         return json({ message: 'Mangler kurs-ID eller tidspunkt i forespørselen.' }, { status: 400 });
@@ -73,8 +73,9 @@ export async function POST(event) {
         await connection.query(updateKursSql, [kursId]);
 
         // 2. Oppdater brukerens påmelding
-        const updateUserSql = 'UPDATE bruker SET paameldt_kurs_id = ?, paameldt_tidspunkt_tekst = ? WHERE id = ?';
-        await connection.query(updateUserSql, [kursId, tidspunktTekst, user.id]);
+        const studiesuppeVerdi = studiesuppe ? 'ja' : null;
+        const updateUserSql = 'UPDATE bruker SET paameldt_kurs_id = ?, paameldt_tidspunkt_tekst = ?, studiesuppe = ? WHERE id = ?';
+        await connection.query(updateUserSql, [kursId, tidspunktTekst, studiesuppeVerdi, user.id]);
 
         await connection.commit();
 

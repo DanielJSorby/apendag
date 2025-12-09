@@ -61,8 +61,8 @@ export async function POST(event) {
         const updateKursSql = `UPDATE kurs SET ${tidspunktKolonne} = ${tidspunktKolonne} + 1 WHERE id = ?`;
         await connection.query(updateKursSql, [kursId]);
 
-        // 2. Fjern påmeldingen fra 'bruker'-tabellen
-        const updateUserSql = 'UPDATE bruker SET paameldt_kurs_id = NULL, paameldt_tidspunkt_tekst = NULL WHERE id = ?';
+        // 2. Fjern påmeldingen fra 'bruker'-tabellen og nullstill studiesuppe
+        const updateUserSql = 'UPDATE bruker SET paameldt_kurs_id = NULL, paameldt_tidspunkt_tekst = NULL, studiesuppe = NULL WHERE id = ?';
         await connection.query(updateUserSql, [user.id]);
 
         await connection.commit();
