@@ -7,7 +7,7 @@ export const POST: RequestHandler = async ({ request, cookies, url }) => {
     try {
         const pool = await getDb();
         const isLocalhost = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
-        const currentUserId = cookies.get('user_id') || (isLocalhost ? 'dev-admin-localhost' : null);
+        const currentUserId = cookies.get('UserId') || (isLocalhost ? 'dev-admin-localhost' : null);
         
         if (!currentUserId) {
             return json({ error: 'Ikke autorisert' }, { status: 403 });
@@ -55,7 +55,7 @@ export const DELETE: RequestHandler = async ({ request, cookies, url }) => {
     try {
         const pool = await getDb();
         const isLocalhost = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
-        const currentUserId = cookies.get('user_id') || (isLocalhost ? 'dev-admin-localhost' : null);
+        const currentUserId = cookies.get('UserId') || (isLocalhost ? 'dev-admin-localhost' : null);
         
         if (!currentUserId) {
             return json({ error: 'Ikke autorisert' }, { status: 403 });

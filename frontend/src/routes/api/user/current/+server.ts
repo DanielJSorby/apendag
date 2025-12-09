@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { db } from '$lib/server/db';
+import { getDb } from '$lib/server/db';
 
 export const GET: RequestHandler = async ({ cookies, url }) => {
     const userId = cookies.get('UserId');
@@ -13,8 +13,10 @@ export const GET: RequestHandler = async ({ cookies, url }) => {
     }
 
     try {
-        const [rows] = await db.query('SELECT id, navn, email FROM bruker WHERE id = ?', [userId]);
-        const user = rows[0];
+        const pool = await getDb();
+        const [rows] = await pool.query('SELECT id, navn, email FROM bruker WHERE id = ?', [userId]);
+        const users = rows as any[];
+        const user = users.length > 0 ? users[0] : null;
 
         if (!user) {
             // User ID in cookie but doesn't exist in database
@@ -24,8 +26,9 @@ export const GET: RequestHandler = async ({ cookies, url }) => {
         let isAdmin = isLocalhost;
         
         if (!isLocalhost) {
-            const [adminRows] = await db.query('SELECT bruker_id FROM admin WHERE bruker_id = ?', [userId]);
-            isAdmin = adminRows.length > 0;
+            const [adminRows] = await pool.query('SELECT bruker_id FROM admin WHERE bruker_id = ?', [userId]);
+            const admins = adminRows as any[];
+            isAdmin = admins.length > 0;
         }
 
         return json({

@@ -9,7 +9,7 @@ export const load: PageServerLoad = async ({ cookies, url }) => {
         // Automatisk admin på localhost for utvikling
         const isLocalhost = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
         
-        let userId = cookies.get('user_id');
+        let userId = cookies.get('UserId');
         let isDevelopmentAdmin = false;
         
         if (isLocalhost && !userId) {
