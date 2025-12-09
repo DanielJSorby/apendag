@@ -54,7 +54,7 @@
             </div>
         {/if}
         <form onsubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
-            <label for="name">Fullt navn</label>
+            <label for="name">Name</label>
             <input type="text" id="name" placeholder="John Doe" bind:value={name} required />
             <label for="email">E-post</label>
             <input type="email" id="email" placeholder="john@email.com" bind:value={email} required />
