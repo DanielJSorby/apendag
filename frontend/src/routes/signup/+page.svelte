@@ -92,7 +92,7 @@
             const data = await response.json();
             
             if (data.ok) {
-                successMessage = 'Verifiseringslenke er sendt! Sjekk e-posten din for å fullføre registreringen.';
+                successMessage = 'Verifiseringslenke er sendt! Sjekk e-post/søppelpost for å fullføre registreringen.';
                 errorMessage = '';
                 name = '';
                 email = '';
