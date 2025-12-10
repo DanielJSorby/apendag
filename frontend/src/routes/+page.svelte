@@ -2,7 +2,7 @@
     import Linjeknapp from '$lib/components/Linjeknapp.svelte';
     import Noemer from '$lib/components/noemer.svelte';
 
-    let selectedLinje = $state<'st' | 'kda' | 'mk' | 'im' | 'el'>('st');
+    let selectedLinje = $state<'st' | 'kda' | 'mk' | 'im' | 'el' | 'stx'>('st');
     let linjeData = $state<any>({});
 
     // Load JSON data on mount
@@ -55,6 +55,7 @@
         <Linjeknapp linje="mk" linjeData={linjeData} onclick={() => selectedLinje = 'mk'} />
         <Linjeknapp linje="im" linjeData={linjeData} onclick={() => selectedLinje = 'im'} />
         <Linjeknapp linje="el" linjeData={linjeData} onclick={() => selectedLinje = 'el'} />
+        <Linjeknapp linje="stx" linjeData={linjeData} onclick={() => selectedLinje = 'stx'} />
     </div>
 </div>
 {/if}

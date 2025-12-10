@@ -1,6 +1,6 @@
 <script lang="ts">
     interface LinjeProps {
-        linje: 'st' | 'kda' | 'mk' | 'im' | 'el';
+        linje: 'st' | 'kda' | 'mk' | 'im' | 'el' | 'stx';
         onclick?: () => void;
         linjeData?: any;
     }
