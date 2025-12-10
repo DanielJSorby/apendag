@@ -131,7 +131,6 @@
 					<Linjeknapp linje="mk" linjeData={linjeData} />
 					<Linjeknapp linje="im" linjeData={linjeData} />
 					<Linjeknapp linje="el" linjeData={linjeData} />
-					<Linjeknapp linje="stx" linjeData={linjeData} />
 				</div>
 			</section>
 			{/if}
