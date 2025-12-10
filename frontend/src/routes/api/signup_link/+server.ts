@@ -23,7 +23,7 @@ export const POST: RequestHandler = async ({ request, url }) => {
 
     // Store signup token (bruker_id is null since user doesn't exist yet)
     await db.query(
-        'INSERT INTO magic_link (id, bruker_id, token, expires_at) VALUES (?, ?, ?, ?)',
+        'INSERT INTO magic_link (id, bruker_id, token, expires_at, use_count) VALUES (?, ?, ?, ?, 0)',
         [crypto.randomUUID(), null, token, expiresAt]
     );
 
