@@ -8,13 +8,17 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
     if (!token) throw error(400, 'No token provided');
 
     const [rows] = await db.query(
-        'SELECT * FROM magic_link WHERE token = ? AND used = FALSE',
+        'SELECT * FROM magic_link WHERE token = ? AND (use_count IS NULL OR use_count < 2)',
         [token]
     );
     const link = rows[0];
 
     if (!link) throw error(400, 'Invalid or used token');
     if (new Date(link.expires_at) < new Date()) throw error(400, 'Token expired');
+    
+    // Check if token has been used too many times (backward compatibility with used field)
+    const useCount = link.use_count ?? (link.used ? 1 : 0);
+    if (useCount >= 2) throw error(400, 'Token has already been used');
 
     // Check if this is a signup (bruker_id is null)
     const isSignup = url.searchParams.get('signup') === 'true' || link.bruker_id === null;
@@ -82,8 +86,12 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
         userId = link.bruker_id;
     }
 
-    // Mark token as used
-    await db.query('UPDATE magic_link SET used = TRUE WHERE id = ?', [link.id]);
+    // Increment use count (allow up to 2 uses: one for email scanner, one for user)
+    const currentUseCount = link.use_count ?? (link.used ? 1 : 0);
+    await db.query(
+        'UPDATE magic_link SET use_count = ?, used = TRUE WHERE id = ?',
+        [currentUseCount + 1, link.id]
+    );
 
     // Set cookie and redirect
 

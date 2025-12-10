@@ -22,7 +22,7 @@ export const POST: RequestHandler = async ({ request, url }) => {
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 min
 
     await db.query(
-        'INSERT INTO magic_link (id, bruker_id, token, expires_at) VALUES (?, ?, ?, ?)',
+        'INSERT INTO magic_link (id, bruker_id, token, expires_at, use_count) VALUES (?, ?, ?, ?, 0)',
         [crypto.randomUUID(), user.id, token, expiresAt]
     );
 
