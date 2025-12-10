@@ -205,7 +205,7 @@
             <input 
                 type="tel" 
                 id="telefon" 
-                placeholder="+47 123 45 678" 
+                placeholder="123 45 678" 
                 bind:value={telefon}
                 required
             />
