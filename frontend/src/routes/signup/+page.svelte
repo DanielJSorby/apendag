@@ -75,7 +75,79 @@
     </div>
 </div>
 
+<div class="background-shapes">
+		<div class="shape shape-1"></div>
+		<div class="shape shape-2"></div>
+		<div class="shape shape-3"></div>
+		<div class="shape shape-4"></div>
+	</div>
+
 <style>
+    .background-shapes {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		overflow: hidden;
+		z-index: -200;
+	}
+
+	.shape {
+		position: absolute;
+		border-radius: 50%;
+		opacity: 0.1;
+		animation: float 20s ease-in-out infinite;
+	}
+
+	.shape-1 {
+		width: 300px;
+		height: 300px;
+		background: var(--color-blue);
+		top: -150px;
+		left: -150px;
+		animation-delay: 0s;
+	}
+
+	.shape-2 {
+		width: 200px;
+		height: 200px;
+		background: var(--color-pink);
+		top: 20%;
+		right: -100px;
+		animation-delay: -5s;
+	}
+
+	.shape-3 {
+		width: 250px;
+		height: 250px;
+		background: var(--color-green);
+		bottom: -125px;
+		left: 10%;
+		animation-delay: -10s;
+	}
+
+	.shape-4 {
+		width: 180px;
+		height: 180px;
+		background: var(--color-orange);
+		bottom: 10%;
+		right: 15%;
+		animation-delay: -15s;
+	}
+
+	@keyframes float {
+		0%, 100% {
+			transform: translate(0, 0) scale(1);
+		}
+		33% {
+			transform: translate(30px, -30px) scale(1.1);
+		}
+		66% {
+			transform: translate(-20px, 20px) scale(0.9);
+		}
+	}
+    
     .error-message {
         background-color: #fef2f2;
         border: 1px solid #fecaca;
