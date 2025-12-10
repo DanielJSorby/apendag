@@ -27,21 +27,17 @@
             <h2>VELKOMMEN TIL</h2>
             <h1>ÅPEN DAG PÅ</h1>
             <h1>ELVEBAKKEN</h1>
-            <p>Hvilken dag vil du se på opplegge til?</p>
+            <p>Hvilken dag vil du se på opplegget til?</p>
         </div>
         <div class="buttons">
             <button onclick={() => window.location.href = '/kalender20'}>
-                <div class="">
                 <h2>Tirsdag 20. januar</h2>
                 <p>Åpen dag for alle interesserte på ettermiddagen</p>
-                </div>
                 <p>Trykk her for mer informasjon!</p>
             </button>
             <button onclick={() => window.location.href = '/kalender22'}>
-                <div class="">
                 <h2>Torsdag 22. januar</h2>
                 <p>En smak av Elvebakken kun for 10. klasse elever</p>
-                </div>
                 <p>Trykk her for en smak av Elvebakken!</p>
             </button>
         </div>
@@ -112,6 +108,7 @@
     }
 
     button {
+        width: 100%;
         padding: 10px 20px;
         border: 2px solid var(--color-pink);
         border-radius: 15px;
@@ -119,7 +116,6 @@
         color: var(--color-pink);
         box-shadow: var(--color-pink) 0px 0px 10px -2px;
         cursor: pointer;
-        transition: background-color 0.3s, color 0.3s;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
