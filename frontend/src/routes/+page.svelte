@@ -33,16 +33,16 @@
             <button onclick={() => window.location.href = '/kalender20'}>
                 <div class="">
                 <h2>Tirsdag 20. januar</h2>
-                <p>Åpent fra 15:00-20:00<br/>Åpen dag for alle interesserte</p>
+                <p>Åpen dag for alle interesserte på ettermiddagen</p>
                 </div>
                 <p>Trykk her for mer informasjon!</p>
             </button>
             <button onclick={() => window.location.href = '/kalender22'}>
                 <div class="">
                 <h2>Torsdag 22. januar</h2>
-                <p>En smak av Elvebakken med spesielle kurs kun for 10. klasse elever</p>
+                <p>Åpen dag med spesielle kurs kun for 10. klasse elever</p>
                 </div>
-                <p>Trykk her for påmelding</p>
+                <p>Trykk her for mer informasjon!</p>
             </button>
         </div>
     </div>
