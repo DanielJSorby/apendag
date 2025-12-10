@@ -5,10 +5,13 @@
 	import Footer from '$lib/components/footer.svelte';
 	import Navbar from '$lib/components/navbar.svelte';
 	import LoadingScreen from '$lib/components/LoadingScreen.svelte';
+	import CookieConsent from '$lib/components/CookieConsent.svelte';
+	import { getCookie } from '$lib/functions/getCookie';
 	
 	let { children } = $props();
 	let initialLoad = $state(true);
 	let imagesLoading = $state(true);
+	let showCookieConsent = $state(false);
 
 	function preloadImage(src: string): Promise<void> {
 		return new Promise((resolve, reject) => {
@@ -69,7 +72,17 @@
 		setTimeout(() => {
 			initialLoad = false;
 		}, 300);
+		
+		// Sjekk om brukeren allerede har akseptert cookies
+		const cookieConsent = getCookie('cookieConsent');
+		if (!cookieConsent) {
+			showCookieConsent = true;
+		}
 	});
+
+	function handleCookieAccepted() {
+		showCookieConsent = false;
+	}
 
 	$effect(() => {
 		if ($navigating) {
@@ -89,6 +102,10 @@
     <meta name="bingbot" content="index, follow" />
 </svelte:head>
 <Navbar />
+
+{#if showCookieConsent}
+	<CookieConsent on:accepted={handleCookieAccepted} />
+{/if}
 
 {#if $navigating || initialLoad || imagesLoading}
 	<LoadingScreen />
