@@ -49,6 +49,8 @@ onMount(async () => {
     
     // Load FAQ questions
     await loadFAQ();
+    // Load linjer
+    await loadLinjer();
 });
 
 async function loadFAQ() {
@@ -75,7 +77,20 @@ type FAQ = {
     display_order: number;
 };
 
-let activeTab = $state<'users' | 'stats' | 'faq'>('users');
+type Linje = {
+    id: string;
+    tittel: string;
+    beskrivelse: string;
+    langBeskrivelse: string | null;
+    bilde: string;
+    farge: string;
+    lysfarge: string;
+    eksternLenke: string | null;
+};
+
+let activeTab = $state<'users' | 'stats' | 'faq' | 'linjer'>('users');
+let linjer = $state<Linje[]>([]);
+let editingLinje = $state<Linje | null>(null);
 let faqQuestions = $state<FAQ[]>([]);
 let editingFAQ = $state<FAQ | null>(null);
 let isCreatingFAQ = $state(false);
@@ -358,6 +373,36 @@ let filteredFAQ = $derived(
         faq.answer?.toLowerCase().includes(faqSearch.toLowerCase())
     )
 );
+
+// Linjer Functions
+async function loadLinjer() {
+    try {
+        const response = await fetch('/api/admin/linjer');
+        if (response.ok) {
+            const data = await response.json();
+            linjer = data.linjer || [];
+        }
+    } catch (error) {
+        console.error('Error loading linjer:', error);
+    }
+}
+
+async function updateLinje(linje: Linje) {
+    try {
+        const response = await fetch('/api/admin/linjer', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(linje)
+        });
+        
+        if (response.ok) {
+            editingLinje = null;
+            await loadLinjer();
+        }
+    } catch (error) {
+        console.error('Error updating linje:', error);
+    }
+}
 </script>
 
 <svelte:head>
@@ -392,6 +437,14 @@ let filteredFAQ = $derived(
                 await loadFAQ();
             }}>
             FAQ ({faqQuestions.length})
+        </button>
+        <button 
+            class:active={activeTab === 'linjer'}
+            onclick={async () => { 
+                activeTab = 'linjer';
+                await loadLinjer();
+            }}>
+            Linjer ({linjer.length})
         </button>
     </nav>
 
@@ -666,6 +719,86 @@ let filteredFAQ = $derived(
                                     <button onclick={() => deleteFAQ(faq.id)} class="btn-small btn-danger">
                                         Slett
                                     </button>
+                                </div>
+                            </div>
+                        {/if}
+                    </div>
+                {/each}
+            </div>
+        </section>
+    {/if}
+
+    {#if activeTab === 'linjer'}
+        <section class="content-section">
+            <div class="section-header">
+                <h2>Linjer</h2>
+            </div>
+
+            <div class="linjer-list">
+                {#each linjer as linje (linje.id)}
+                    <div class="linje-item">
+                        {#if editingLinje?.id === linje.id}
+                            <div class="linje-edit-form">
+                                <div class="form-grid">
+                                    <div style="grid-column: 1 / -1;">
+                                        <label>ID (kan ikke endres)</label>
+                                        <input type="text" value={editingLinje.id} disabled />
+                                    </div>
+                                    <div style="grid-column: 1 / -1;">
+                                        <label>Tittel</label>
+                                        <input type="text" bind:value={editingLinje.tittel} />
+                                    </div>
+                                    <div style="grid-column: 1 / -1;">
+                                        <label>Beskrivelse</label>
+                                        <textarea bind:value={editingLinje.beskrivelse} rows="2"></textarea>
+                                    </div>
+                                    <div style="grid-column: 1 / -1;">
+                                        <label>Lang beskrivelse</label>
+                                        <textarea bind:value={editingLinje.langBeskrivelse} rows="8"></textarea>
+                                    </div>
+                                    <div style="grid-column: 1 / -1;">
+                                        <label>Bilde path</label>
+                                        <input type="text" bind:value={editingLinje.bilde} />
+                                    </div>
+                                    <div>
+                                        <label>Farge</label>
+                                        <input type="text" bind:value={editingLinje.farge} />
+                                    </div>
+                                    <div>
+                                        <label>Lysfarge</label>
+                                        <input type="text" bind:value={editingLinje.lysfarge} />
+                                    </div>
+                                    <div style="grid-column: 1 / -1;">
+                                        <label>Ekstern lenke</label>
+                                        <input type="text" bind:value={editingLinje.eksternLenke} />
+                                    </div>
+                                </div>
+                                <div class="linje-actions">
+                                    <button onclick={() => updateLinje(editingLinje)} class="btn-small btn-success">
+                                        Lagre
+                                    </button>
+                                    <button onclick={() => editingLinje = null} class="btn-small btn-cancel">
+                                        Avbryt
+                                    </button>
+                                </div>
+                            </div>
+                        {:else}
+                            <div class="linje-content">
+                                <div class="linje-header">
+                                    <h3>{linje.tittel}</h3>
+                                    <div class="linje-actions">
+                                        <button onclick={() => { editingLinje = {...linje}; }} class="btn-small btn-edit">
+                                            Rediger
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="linje-details">
+                                    <p><strong>Beskrivelse:</strong> {linje.beskrivelse}</p>
+                                    <p><strong>Bilde:</strong> {linje.bilde}</p>
+                                    <p><strong>Farge:</strong> <span style="color: {linje.farge};">{linje.farge}</span></p>
+                                    {#if linje.eksternLenke}
+                                        <p><strong>Ekstern lenke:</strong> <a href={linje.eksternLenke} target="_blank">{linje.eksternLenke}</a></p>
+                                    {/if}
                                 </div>
                             </div>
                         {/if}
@@ -1395,5 +1528,108 @@ let filteredFAQ = $derived(
             width: 100%;
             justify-content: flex-end;
         }
+    }
+
+    .linjer-list {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .linje-item {
+        background: white;
+        border: 2px solid #f0f0f0;
+        border-radius: 15px;
+        padding: 25px;
+        transition: all 0.3s ease;
+    }
+
+    .linje-item:hover {
+        border-color: var(--color-pink);
+        box-shadow: 0 4px 15px rgba(217, 59, 96, 0.1);
+    }
+
+    .linje-content {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .linje-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    .linje-header h3 {
+        margin: 0;
+        color: #333;
+        font-size: 1.3rem;
+    }
+
+    .linje-details {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .linje-details p {
+        margin: 0;
+        color: #666;
+        line-height: 1.6;
+    }
+
+    .linje-details a {
+        color: var(--color-pink);
+        text-decoration: none;
+    }
+
+    .linje-details a:hover {
+        text-decoration: underline;
+    }
+
+    .linje-edit-form {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .linje-edit-form label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .linje-edit-form input,
+    .linje-edit-form textarea {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        font-family: inherit;
+        resize: vertical;
+        box-sizing: border-box;
+    }
+
+    .linje-edit-form input:disabled {
+        background: #f5f5f5;
+        cursor: not-allowed;
+    }
+
+    .linje-edit-form input:focus,
+    .linje-edit-form textarea:focus {
+        outline: none;
+        border-color: var(--color-pink);
+        box-shadow: 0 0 0 3px rgba(217, 59, 96, 0.1);
+    }
+
+    .linje-actions {
+        display: flex;
+        gap: 10px;
+        align-items: center;
     }
 </style>

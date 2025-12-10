@@ -13,7 +13,7 @@
 	}
 
 	async function getLinjeData() {
-		const response = await fetch('/linjer.json');
+		const response = await fetch('/api/linjer');
 		const data = await response.json();
 		linjeData = data;
 	}

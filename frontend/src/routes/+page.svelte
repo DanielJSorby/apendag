@@ -7,7 +7,7 @@
 
     // Load JSON data on mount
     $effect(() => {
-        fetch('/linjer.json')
+        fetch('/api/linjer')
             .then(res => res.json())
             .then(data => linjeData = data);
     });
