@@ -9,7 +9,7 @@
             <p>Elever fra vg3 IM<br></p>
         </div>
         <div class="social-media">
-            <h3>Kontak Oss</h3>
+            <h3>Kontakt Oss</h3>
             <div class="icons">
                 <a href="https://facebook.com/elvebakkenvgs" target="_blank" aria-label="Facebook" class="facebook"><i class="fab fa-facebook-f"></i></a>
                 <a href="https://instagram.com/elvebakkenvgs" target="_blank" aria-label="Instagram" class="instagram"><i class="fab fa-instagram"></i></a>
