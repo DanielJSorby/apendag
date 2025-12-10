@@ -92,7 +92,7 @@
             const data = await response.json();
             
             if (data.ok) {
-                successMessage = 'Verifiseringslenke er sendt! Sjekk e-posten din for å fullføre registreringen.';
+                successMessage = 'Verifiseringslenke er sendt! Sjekk e-post/søppelpost for å fullføre registreringen.';
                 errorMessage = '';
                 name = '';
                 email = '';
@@ -117,7 +117,7 @@
     <div class="container">
         <div class="header">
             <h1>Registrer deg</h1>
-            <p>Opprett en konto for å melde deg på kurs. Du vil bli tilsendt en verifiseringslenke på e-post. Informasjonen brukes kun av rådgivere for å holde orden på påmelding av kurs og slettes etter åpen dag.</p>
+            <p>Opprett en konto for å melde deg på kurs. Du vil bli tilsendt en verifiseringslenke på e-post. Hvis du ikke finner den, sjekk spam-mappen din. Informasjonen din brukes kun av rådgivere for å holde orden på påmelding av kurs og slettes etter åpen dag.</p>
         </div>
         {#if errorMessage}
             <div class="error-message">

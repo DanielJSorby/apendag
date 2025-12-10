@@ -3,9 +3,16 @@ import type { RequestHandler } from './$types';
 import { randomBytes } from 'crypto';
 import { db } from '$lib/server/db';
 import { sendMagicLinkEmail } from '$lib/server/email';
+import { isDisposableEmail } from '$lib/server/disposableEmailCheck';
 
 export const POST: RequestHandler = async ({ request, url }) => {
     const { email } = await request.json();
+
+    // Check if email uses a disposable domain
+    const isDisposable = await isDisposableEmail(email);
+    if (isDisposable) {
+        return json({ ok: false, message: 'Ugyldig e-postadresse. Disposable e-postadresser er ikke tillatt.' }, { status: 400 });
+    }
 
     const [rows] = await db.query('SELECT * FROM bruker WHERE email = ?', [email]);
     const user = rows[0];
@@ -15,7 +22,7 @@ export const POST: RequestHandler = async ({ request, url }) => {
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 min
 
     await db.query(
-        'INSERT INTO magic_link (id, bruker_id, token, expires_at) VALUES (?, ?, ?, ?)',
+        'INSERT INTO magic_link (id, bruker_id, token, expires_at, use_count) VALUES (?, ?, ?, ?, 0)',
         [crypto.randomUUID(), user.id, token, expiresAt]
     );
 
