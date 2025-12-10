@@ -6,7 +6,7 @@
     <div class="footer-container">
         <div class="attributors">
             <h3>Siden er laget av:</h3>
-            <p>Elever fra vg3 IM<br></p>
+            <p>Elever fra vg3 IMST<br></p>
         </div>
         <div class="social-media">
             <h3>Kontakt Oss</h3>
@@ -20,8 +20,8 @@
             <h3>Om Oss</h3>
             <p>Elvebakken VGS</p>
             <p>Vestre Elvebakke 3, 0182 Oslo</p>
-            <p>Telefon: <a href="tel:22996600">22 99 66 00</a></p>
-            <p>E-post: <a href="mailto:post@elvebakken.vgs.no">post@elvebakken.vgs.no</a></p>
+            <p>Telefon: <a href="tel:23467300">234 67 300</a></p>
+            <p>E-post: <a href="mailto:postmottak.elvebakken.vgs@osloskolen.no">postmottak.elvebakken.vgs@osloskolen.no</a></p>
             <p>Hjemmeside: <a href="https://elvebakken.vgs.no/">elvebakken.vgs.no</a></p>
         </div>
     </div>
