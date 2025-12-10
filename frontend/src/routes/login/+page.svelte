@@ -2,41 +2,15 @@
     import { onMount } from 'svelte';
     import { getCookie } from '$lib/functions/getCookie';
     let email = $state('');
-    let password = $state('');
     let errorMessage = $state('');
     let successMessage = $state('');
 
-    async function handleSubmit() {
-        try {
-            errorMessage = ''; 
-            
-            const response = await fetch('/api/user/log-in', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ email }),
-            });
-            
-            const data = await response.json();
-            console.log(data);
-            
-            if (data.status === 401) {
-                errorMessage = data.error;
-                return;
-            }
-            
-            if (data.status === 200) {
-                document.cookie = `UserId=${data.userId}; path=/;`;
-                window.location.href = '/';
-            } else {
-                errorMessage = data.error || 'An error occurred';
-            }
-        } catch (error) {
-            console.error(error);
-            errorMessage = 'An error occurred while logging in';
+    onMount(() => {
+        const userId = getCookie('UserId');
+        if (userId) {
+            window.location.href = '/';
         }
-    }
+    });
 
     async function handleMagicLink() {
         try {
@@ -53,16 +27,16 @@
 
             if (data.ok) {
                 successMessage = 'En verifiseringslenke er sendt til e-posten din. Trykk på den for å logge inn.';
-                errorMessage = ''; // Clear any errors
-                email = ''; // Clear email input after sending
+                errorMessage = '';
+                email = '';
             } else {
                 errorMessage = data.message || 'Et problem oppstod ved sending av linken';
-                successMessage = ''; // Clear success message on error
+                successMessage = '';
             }
         } catch (err) {
             console.error(err);
             errorMessage = 'Et problem oppstod ved sending av linken';
-            successMessage = ''; // Clear success message on error
+            successMessage = '';
         }
     }
 </script>
@@ -83,7 +57,7 @@
                 {successMessage}
             </div>
         {/if}
-        <form on:submit|preventDefault={handleMagicLink}>
+        <form onsubmit={(e) => { e.preventDefault(); handleMagicLink(); }}>
             <label for="email">E-post</label>
             <input type="email" id="email" placeholder="john@email.com" bind:value={email} required/>
             <button type="submit">Logg inn</button>

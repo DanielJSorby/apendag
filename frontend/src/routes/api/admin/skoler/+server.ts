@@ -3,12 +3,14 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 
 // GET - Hent alle skoler (alfabetisk sortert)
-export const GET: RequestHandler = async () => {
+export const GET: RequestHandler = async ({ url }) => {
     try {
         const pool = await getDb();
-        const [schools] = await pool.query(
-            'SELECT * FROM ungdomsskoler WHERE aktiv = TRUE ORDER BY navn ASC'
-        );
+        const includeInactive = url.searchParams.get('includeInactive') === 'true';
+        const query = includeInactive 
+            ? 'SELECT * FROM ungdomsskoler ORDER BY aktiv DESC, navn ASC'
+            : 'SELECT * FROM ungdomsskoler WHERE aktiv = TRUE ORDER BY navn ASC';
+        const [schools] = await pool.query(query);
         return json(schools || []);
     } catch (error) {
         console.error('Error fetching schools:', error);
@@ -52,6 +54,16 @@ export const POST: RequestHandler = async ({ request, cookies, url }) => {
         );
         
         if (Array.isArray(existing) && existing.length > 0) {
+            const existingSchool = existing[0];
+            // Hvis skolen eksisterer men er deaktivert, aktiver den
+            if (!existingSchool.aktiv) {
+                await pool.query(
+                    'UPDATE ungdomsskoler SET aktiv = TRUE WHERE id = ?',
+                    [existingSchool.id]
+                );
+                return json({ success: true, message: 'Skole aktivert', id: existingSchool.id });
+            }
+            // Hvis skolen allerede er aktiv, returner feil
             return json({ error: 'Skolen eksisterer allerede' }, { status: 409 });
         }
         

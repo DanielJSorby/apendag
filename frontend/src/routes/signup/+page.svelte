@@ -66,6 +66,16 @@
             
             const ungdomskole = getSelectedSchoolName();
             
+            if (!ungdomskole || ungdomskole.trim() === '') {
+                errorMessage = 'Vennligst velg eller skriv inn ungdomskole';
+                return;
+            }
+            
+            if (!telefon || telefon.trim() === '') {
+                errorMessage = 'Telefonnummer er påkrevd';
+                return;
+            }
+            
             const response = await fetch('/api/signup_link', {
                 method: 'POST',
                 headers: {
@@ -74,8 +84,8 @@
                 body: JSON.stringify({ 
                     name, 
                     email, 
-                    ungdomskole: ungdomskole || null,
-                    telefon: telefon || null
+                    ungdomskole: ungdomskole.trim(),
+                    telefon: telefon.trim()
                 }),
             });
             
@@ -120,13 +130,13 @@
             </div>
         {/if}
         <form onsubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
-            <label for="name">Fullt navn</label>
+            <label for="name">Fullt navn <span style="color: var(--color-pink);">*</span></label>
             <input type="text" id="name" placeholder="John Doe" bind:value={name} required />
             
-            <label for="email">E-post</label>
+            <label for="email">E-post <span style="color: var(--color-pink);">*</span></label>
             <input type="email" id="email" placeholder="john@email.com" bind:value={email} required />
             
-            <label for="school">Ungdomsskole</label>
+            <label for="school">Ungdomsskole <span style="color: var(--color-pink);">*</span></label>
             <div class="school-selector">
                 <input 
                     type="text" 
@@ -140,6 +150,8 @@
                         }
                     }}
                     autocomplete="off"
+                    required={!showCustomInput}
+                    aria-required="true"
                 />
                 {#if showSchoolDropdown && !showCustomInput}
                     <div class="school-dropdown">
@@ -183,11 +195,13 @@
                         class="custom-school-input"
                         placeholder="Skriv inn skolenavn"
                         bind:value={customSchool}
+                        required
+                        aria-required="true"
                     />
                 {/if}
             </div>
             
-            <label for="telefon">Telefonnummer</label>
+            <label for="telefon">Telefonnummer <span style="color: var(--color-pink);">*</span></label>
             <input 
                 type="tel" 
                 id="telefon" 

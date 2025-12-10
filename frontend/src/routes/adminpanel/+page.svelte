@@ -211,10 +211,11 @@ let editingSchoolSearch = $state('');
 let showEditingSchoolDropdown = $state(false);
 let editingUserSchoolSearch = $state('');
 let showEditingUserSchoolDropdown = $state(false);
+let schoolErrorMessage = $state('');
 
 async function loadSchools() {
     try {
-        const response = await fetch('/api/admin/skoler');
+        const response = await fetch('/api/admin/skoler?includeInactive=true');
         if (response.ok) {
             const data = await response.json();
             schools = Array.isArray(data) ? data : [];
@@ -224,10 +225,16 @@ async function loadSchools() {
     }
 }
 
+let showInactiveSchools = $state(false);
+
 let filteredSchools = $derived(
-    schools.filter(s => 
-        s.navn.toLowerCase().includes(schoolSearch.toLowerCase())
-    )
+    schools.filter(s => {
+        const matchesSearch = s.navn.toLowerCase().includes(schoolSearch.toLowerCase());
+        if (showInactiveSchools) {
+            return matchesSearch;
+        }
+        return matchesSearch && s.aktiv;
+    })
 );
 
 function filteredSchoolsForEdit(searchTerm: string) {
@@ -255,36 +262,54 @@ function selectSchoolForUser(schoolName: string) {
 }
 
 async function createSchool() {
-    if (!newSchoolName.trim()) return;
+    if (!newSchoolName.trim()) {
+        schoolErrorMessage = 'Skolenavn er påkrevd';
+        return;
+    }
+    
+    schoolErrorMessage = '';
+    
     try {
         const response = await fetch('/api/admin/skoler', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ navn: newSchoolName.trim() })
         });
+        
+        const data = await response.json();
+        
         if (response.ok) {
             await loadSchools();
             newSchoolName = '';
             isCreatingSchool = false;
+            schoolErrorMessage = '';
+        } else {
+            schoolErrorMessage = data.error || 'Kunne ikke opprette skole';
+            console.error('Error creating school:', data);
         }
     } catch (error) {
         console.error('Error creating school:', error);
+        schoolErrorMessage = 'En uventet feil oppstod ved oppretting av skole';
     }
 }
 
-async function deleteSchool(schoolId: string) {
-    if (!confirm('Er du sikker på at du vil deaktivere denne skolen?')) return;
+async function toggleSchoolStatus(schoolId: string, currentStatus: boolean) {
+    const action = currentStatus ? 'deaktivere' : 'aktivere';
+    if (!confirm(`Er du sikker på at du vil ${action} denne skolen?`)) return;
     try {
         const response = await fetch('/api/admin/skoler', {
-            method: 'DELETE',
+            method: currentStatus ? 'DELETE' : 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: schoolId })
+            body: JSON.stringify({ 
+                id: schoolId,
+                aktiv: !currentStatus 
+            })
         });
         if (response.ok) {
             await loadSchools();
         }
     } catch (error) {
-        console.error('Error deleting school:', error);
+        console.error('Error toggling school status:', error);
     }
 }
 
@@ -1061,6 +1086,13 @@ async function updateLinje(linje: Linje) {
                         bind:value={schoolSearch}
                         class="search-input"
                     />
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input 
+                            type="checkbox" 
+                            bind:checked={showInactiveSchools}
+                        />
+                        Vis deaktiverte
+                    </label>
                     <button onclick={() => isCreatingSchool = !isCreatingSchool} class="btn-primary">
                         Ny skole
                     </button>
@@ -1070,6 +1102,11 @@ async function updateLinje(linje: Linje) {
             {#if isCreatingSchool}
                 <div class="create-form">
                     <h3>Opprett ny skole</h3>
+                    {#if schoolErrorMessage}
+                        <div class="error-message" style="margin-bottom: 1rem; padding: 0.75rem; background-color: #fef2f2; border: 2px solid #fecaca; color: #dc2626; border-radius: 6px; font-size: 0.9rem;">
+                            {schoolErrorMessage}
+                        </div>
+                    {/if}
                     <div class="form-grid">
                         <input 
                             type="text" 
@@ -1086,7 +1123,11 @@ async function updateLinje(linje: Linje) {
                         <button onclick={createSchool} class="btn-success">
                             Opprett
                         </button>
-                        <button onclick={() => { isCreatingSchool = false; newSchoolName = ''; }} class="btn-cancel">
+                        <button onclick={() => { 
+                            isCreatingSchool = false; 
+                            newSchoolName = '';
+                            schoolErrorMessage = '';
+                        }} class="btn-cancel">
                             Avbryt
                         </button>
                     </div>
@@ -1176,8 +1217,11 @@ async function updateLinje(linje: Linje) {
                                         }} class="btn-small btn-edit">
                                             Rediger
                                         </button>
-                                        <button onclick={() => deleteSchool(school.id)} class="btn-small btn-danger">
-                                            Deaktiver
+                                        <button 
+                                            onclick={() => toggleSchoolStatus(school.id, school.aktiv)} 
+                                            class={school.aktiv ? "btn-small btn-danger" : "btn-small btn-success"}
+                                        >
+                                            {school.aktiv ? 'Deaktiver' : 'Aktiver'}
                                         </button>
                                     </td>
                                 {/if}
