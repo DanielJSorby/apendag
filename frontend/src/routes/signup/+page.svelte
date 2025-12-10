@@ -3,45 +3,102 @@
     import { getCookie } from '$lib/functions/getCookie';
     let name = $state('');
     let email = $state('');
-    let password = $state('');
+    let telefon = $state('');
     let errorMessage = $state('');
     let successMessage = $state('');
+    let schools = $state<Array<{id: string, navn: string}>>([]);
+    let schoolSearch = $state('');
+    let selectedSchool = $state<string | null>(null);
+    let customSchool = $state('');
+    let showSchoolDropdown = $state(false);
+    let showCustomInput = $state(false);
 
     onMount(async () => {
         const userId = getCookie('UserId');
         if (userId) {
             window.location.href = '/';
         }
+        loadSchools();
     });
+
+    async function loadSchools() {
+        try {
+            const response = await fetch('/api/admin/skoler');
+            const data = await response.json();
+            schools = Array.isArray(data) ? data : [];
+        } catch (error) {
+            console.error('Error loading schools:', error);
+        }
+    }
+
+    function filteredSchools() {
+        if (!schoolSearch) return schools;
+        const searchLower = schoolSearch.toLowerCase();
+        return schools.filter(school => 
+            school.navn.toLowerCase().includes(searchLower)
+        );
+    }
+
+    function selectSchool(schoolName: string) {
+        if (schoolName === 'Annet') {
+            showCustomInput = true;
+            selectedSchool = null;
+            schoolSearch = '';
+        } else {
+            selectedSchool = schoolName;
+            schoolSearch = schoolName;
+            showCustomInput = false;
+        }
+        showSchoolDropdown = false;
+    }
+
+    function getSelectedSchoolName(): string {
+        if (showCustomInput && customSchool) {
+            return customSchool;
+        }
+        return selectedSchool || '';
+    }
 
     async function handleSubmit() {
         try {
             errorMessage = '';
             successMessage = '';
             
+            const ungdomskole = getSelectedSchoolName();
+            
             const response = await fetch('/api/signup_link', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ name, email }),
+                body: JSON.stringify({ 
+                    name, 
+                    email, 
+                    ungdomskole: ungdomskole || null,
+                    telefon: telefon || null
+                }),
             });
             
             const data = await response.json();
             
             if (data.ok) {
                 successMessage = 'Verifiseringslenke er sendt! Sjekk e-posten din for å fullføre registreringen.';
-                errorMessage = ''; // Clear any errors
-                name = ''; // Clear inputs after sending
-                email = ''; // Clear inputs after sending
+                errorMessage = '';
+                name = '';
+                email = '';
+                telefon = '';
+                selectedSchool = null;
+                customSchool = '';
+                schoolSearch = '';
+                showCustomInput = false;
             } else {
                 errorMessage = data.message || 'Kunne ikke sende verifiseringslenke';
-                successMessage = ''; // Clear success message on error
+                successMessage = '';
             }
         } catch (error) {
             console.error(error);
             errorMessage = 'Et problem oppstod ved oppretting av kontoen din';
-            successMessage = ''; // Clear success message on error
+            successMessage = '';
         }
     }
 </script>
@@ -62,17 +119,96 @@
                 {successMessage}
             </div>
         {/if}
-        <form on:submit|preventDefault={handleSubmit}>
+        <form onsubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
             <label for="name">Fullt navn</label>
             <input type="text" id="name" placeholder="John Doe" bind:value={name} required />
+            
             <label for="email">E-post</label>
             <input type="email" id="email" placeholder="john@email.com" bind:value={email} required />
+            
+            <label for="school">Ungdomsskole</label>
+            <div class="school-selector">
+                <input 
+                    type="text" 
+                    id="school" 
+                    placeholder="Søk eller velg skole..." 
+                    bind:value={schoolSearch}
+                    onfocus={() => showSchoolDropdown = true}
+                    oninput={() => {
+                        if (schoolSearch && !showCustomInput) {
+                            showSchoolDropdown = true;
+                        }
+                    }}
+                    autocomplete="off"
+                />
+                {#if showSchoolDropdown && !showCustomInput}
+                    <div class="school-dropdown">
+                        {#if filteredSchools().length > 0}
+                            {#each filteredSchools() as school}
+                                <div 
+                                    class="school-option"
+                                    onclick={() => selectSchool(school.navn)}
+                                    role="button"
+                                    tabindex="0"
+                                    onkeydown={(e) => {
+                                        if (e.key === 'Enter' || e.key === ' ') {
+                                            e.preventDefault();
+                                            selectSchool(school.navn);
+                                        }
+                                    }}
+                                >
+                                    {school.navn}
+                                </div>
+                            {/each}
+                        {/if}
+                        <div 
+                            class="school-option school-option-other"
+                            onclick={() => selectSchool('Annet')}
+                            role="button"
+                            tabindex="0"
+                            onkeydown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    selectSchool('Annet');
+                                }
+                            }}
+                        >
+                            Annet...
+                        </div>
+                    </div>
+                {/if}
+                {#if showCustomInput}
+                    <input 
+                        type="text" 
+                        class="custom-school-input"
+                        placeholder="Skriv inn skolenavn"
+                        bind:value={customSchool}
+                    />
+                {/if}
+            </div>
+            
+            <label for="telefon">Telefonnummer</label>
+            <input 
+                type="tel" 
+                id="telefon" 
+                placeholder="+47 123 45 678" 
+                bind:value={telefon}
+                required
+            />
+            
             <button type="submit">Registrer deg</button>
         </form>
         <div class="bottom-message">
             <p>Har du allerede en konto? <a href="/login">Logg inn</a></p>
         </div>
     </div>
+</div>
+
+<div class="background-shapes">
+    <div class="shape shape-1"></div>
+    <div class="shape shape-2"></div>
+    <div class="shape shape-3"></div>
+    <div class="shape shape-4"></div>
 </div>
 
 <style>
@@ -83,6 +219,7 @@
         min-height: calc(100vh - 10vh);
         padding: 2rem 1rem;
         background-color: var(--color-grey);
+        position: relative;
     }
 
     .container {
@@ -92,6 +229,8 @@
         background-color: var(--color-white);
         border-radius: 15px;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        position: relative;
+        z-index: 2;
     }
 
     .header {
@@ -145,6 +284,52 @@
 
     input::placeholder {
         color: #999;
+    }
+
+    .school-selector {
+        position: relative;
+    }
+
+    .school-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background-color: var(--color-white);
+        border: 2px solid var(--color-pink);
+        border-radius: 15px;
+        max-height: 300px;
+        overflow-y: auto;
+        z-index: 1000;
+        margin-top: 4px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .school-option {
+        padding: 12px 16px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .school-option:last-child {
+        border-bottom: none;
+    }
+
+    .school-option:hover,
+    .school-option:focus {
+        background-color: var(--color-pink-light);
+        outline: none;
+    }
+
+    .school-option-other {
+        font-weight: 500;
+        color: var(--color-pink);
+        border-top: 2px solid #f0f0f0;
+    }
+
+    .custom-school-input {
+        margin-top: 8px;
     }
 
     button {
@@ -213,6 +398,71 @@
         color: #b82d4d;
     }
 
+    .background-shapes {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        z-index: 1;
+    }
+
+    .shape {
+        position: absolute;
+        border-radius: 50%;
+        opacity: 0.1;
+        animation: float 20s ease-in-out infinite;
+    }
+
+    .shape-1 {
+        width: 300px;
+        height: 300px;
+        background: var(--color-blue);
+        top: -150px;
+        left: -150px;
+        animation-delay: 0s;
+    }
+
+    .shape-2 {
+        width: 200px;
+        height: 200px;
+        background: var(--color-pink);
+        top: 20%;
+        right: -100px;
+        animation-delay: -5s;
+    }
+
+    .shape-3 {
+        width: 250px;
+        height: 250px;
+        background: var(--color-green);
+        bottom: -125px;
+        left: 10%;
+        animation-delay: -10s;
+    }
+
+    .shape-4 {
+        width: 180px;
+        height: 180px;
+        background: var(--color-orange);
+        bottom: 10%;
+        right: 15%;
+        animation-delay: -15s;
+    }
+
+    @keyframes float {
+        0%, 100% {
+            transform: translate(0, 0) scale(1);
+        }
+        33% {
+            transform: translate(30px, -30px) scale(1.1);
+        }
+        66% {
+            transform: translate(-20px, 20px) scale(0.9);
+        }
+    }
+
     @media (max-width: 570px) {
         .login {
             min-height: calc(100vh - 10vh);
@@ -230,5 +480,40 @@
         .header p {
             font-size: 0.9rem;
         }
+
+        .school-dropdown {
+            max-height: 200px;
+        }
+
+        .shape-1 {
+            width: 200px;
+            height: 200px;
+            top: -100px;
+            left: -100px;
+        }
+
+        .shape-2 {
+            width: 150px;
+            height: 150px;
+            right: -75px;
+        }
+
+        .shape-3 {
+            width: 180px;
+            height: 180px;
+            bottom: -90px;
+        }
+
+        .shape-4 {
+            width: 120px;
+            height: 120px;
+        }
     }
 </style>
+
+<svelte:window onclick={(e) => {
+    const target = e.target as HTMLElement;
+    if (!target.closest('.school-selector')) {
+        showSchoolDropdown = false;
+    }
+}} />

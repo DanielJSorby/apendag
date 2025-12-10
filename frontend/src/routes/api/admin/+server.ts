@@ -19,11 +19,11 @@ export const POST: RequestHandler = async ({ request }) => {
     try {
         const pool = await getDb();
         const data = await request.json();
-        const { id, navn, email, paameldt_kurs_id, paameldt_tidspunkt_tekst, studiesuppe } = data;
+        const { id, navn, email, paameldt_kurs_id, paameldt_tidspunkt_tekst, studiesuppe, ungdomskole, telefon } = data;
         
         await pool.query(
-            'INSERT INTO bruker (id, navn, email, paameldt_kurs_id, paameldt_tidspunkt_tekst, studiesuppe) VALUES (?, ?, ?, ?, ?, ?)',
-            [id, navn, email, paameldt_kurs_id, paameldt_tidspunkt_tekst, studiesuppe]
+            'INSERT INTO bruker (id, navn, email, paameldt_kurs_id, paameldt_tidspunkt_tekst, studiesuppe, ungdomskole, telefon) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            [id, navn, email, paameldt_kurs_id, paameldt_tidspunkt_tekst, studiesuppe, ungdomskole || null, telefon || null]
         );
         
         return json({ success: true, message: 'Bruker opprettet' });
@@ -38,11 +38,11 @@ export const PUT: RequestHandler = async ({ request }) => {
     try {
         const pool = await getDb();
         const data = await request.json();
-        const { id, navn, email, paameldt_kurs_id, paameldt_tidspunkt_tekst, studiesuppe } = data;
+        const { id, navn, email, paameldt_kurs_id, paameldt_tidspunkt_tekst, studiesuppe, ungdomskole, telefon } = data;
         
         await pool.query(
-            'UPDATE bruker SET navn = ?, email = ?, paameldt_kurs_id = ?, paameldt_tidspunkt_tekst = ?, studiesuppe = ? WHERE id = ?',
-            [navn, email, paameldt_kurs_id, paameldt_tidspunkt_tekst, studiesuppe, id]
+            'UPDATE bruker SET navn = ?, email = ?, paameldt_kurs_id = ?, paameldt_tidspunkt_tekst = ?, studiesuppe = ?, ungdomskole = ?, telefon = ? WHERE id = ?',
+            [navn, email, paameldt_kurs_id, paameldt_tidspunkt_tekst, studiesuppe, ungdomskole || null, telefon || null, id]
         );
         
         return json({ success: true, message: 'Bruker oppdatert' });

@@ -12,6 +12,8 @@ type User = {
     paameldt_kurs_id: number | null;
     paameldt_tidspunkt_tekst: string | null;
     studiesuppe: string | null;
+    ungdomskole: string | null;
+    telefon: string | null;
 };
 
 type Kurs = {
@@ -52,7 +54,8 @@ onMount(async () => {
     // Load all data on mount to show correct counts
     await Promise.all([
         loadFAQ(),
-        loadLinjer()
+        loadLinjer(),
+        loadSchools()
     ]);
 });
 
@@ -92,20 +95,20 @@ type Linje = {
 };
 
 // Initialize activeTab from URL parameter or default to 'users'
-function getInitialTab(): 'users' | 'stats' | 'faq' | 'linjer' {
+function getInitialTab(): 'users' | 'stats' | 'faq' | 'linjer' | 'skoler' {
     const tabParam = $page.url.searchParams.get('tab');
-    if (tabParam === 'users' || tabParam === 'stats' || tabParam === 'faq' || tabParam === 'linjer') {
+    if (tabParam === 'users' || tabParam === 'stats' || tabParam === 'faq' || tabParam === 'linjer' || tabParam === 'skoler') {
         return tabParam;
     }
     return 'users';
 }
 
-let activeTab = $state<'users' | 'stats' | 'faq' | 'linjer'>(getInitialTab());
+let activeTab = $state<'users' | 'stats' | 'faq' | 'linjer' | 'skoler'>(getInitialTab());
 
 // Update activeTab when URL parameter changes
 $effect(() => {
     const tabParam = $page.url.searchParams.get('tab');
-    if (tabParam === 'users' || tabParam === 'stats' || tabParam === 'faq' || tabParam === 'linjer') {
+    if (tabParam === 'users' || tabParam === 'stats' || tabParam === 'faq' || tabParam === 'linjer' || tabParam === 'skoler') {
         if (activeTab !== tabParam) {
             activeTab = tabParam;
         }
@@ -120,7 +123,7 @@ $effect(() => {
     }
 });
 
-function setActiveTab(tab: 'users' | 'stats' | 'faq' | 'linjer') {
+function setActiveTab(tab: 'users' | 'stats' | 'faq' | 'linjer' | 'skoler') {
     activeTab = tab;
     goto(`/adminpanel?tab=${tab}`, { replaceState: true, noScroll: true });
 }
@@ -172,8 +175,95 @@ let newUser = $state({
     email: '',
     paameldt_kurs_id: null as number | null,
     paameldt_tidspunkt_tekst: '',
-    studiesuppe: ''
+    studiesuppe: '',
+    ungdomskole: '',
+    telefon: ''
 });
+
+// Schools management
+type School = {
+    id: string;
+    navn: string;
+    aktiv: boolean;
+};
+
+let schools = $state<School[]>([]);
+let schoolSearch = $state('');
+let editingSchool = $state<School | null>(null);
+let isCreatingSchool = $state(false);
+let newSchoolName = $state('');
+
+async function loadSchools() {
+    try {
+        const response = await fetch('/api/admin/skoler');
+        if (response.ok) {
+            const data = await response.json();
+            schools = Array.isArray(data) ? data : [];
+        }
+    } catch (error) {
+        console.error('Error loading schools:', error);
+    }
+}
+
+let filteredSchools = $derived(
+    schools.filter(s => 
+        s.navn.toLowerCase().includes(schoolSearch.toLowerCase())
+    )
+);
+
+async function createSchool() {
+    if (!newSchoolName.trim()) return;
+    try {
+        const response = await fetch('/api/admin/skoler', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ navn: newSchoolName.trim() })
+        });
+        if (response.ok) {
+            await loadSchools();
+            newSchoolName = '';
+            isCreatingSchool = false;
+        }
+    } catch (error) {
+        console.error('Error creating school:', error);
+    }
+}
+
+async function deleteSchool(schoolId: string) {
+    if (!confirm('Er du sikker på at du vil deaktivere denne skolen?')) return;
+    try {
+        const response = await fetch('/api/admin/skoler', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: schoolId })
+        });
+        if (response.ok) {
+            await loadSchools();
+        }
+    } catch (error) {
+        console.error('Error deleting school:', error);
+    }
+}
+
+async function updateSchool(school: School) {
+    try {
+        const response = await fetch('/api/admin/skoler', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                id: school.id, 
+                navn: school.navn,
+                aktiv: school.aktiv 
+            })
+        });
+        if (response.ok) {
+            await loadSchools();
+            editingSchool = null;
+        }
+    } catch (error) {
+        console.error('Error updating school:', error);
+    }
+}
 
 // Search/filter
 let userSearch = $state('');
@@ -481,6 +571,14 @@ async function updateLinje(linje: Linje) {
             }}>
             Linjer ({linjer.length})
         </button>
+        <button 
+            class:active={activeTab === 'skoler'}
+            onclick={async () => { 
+                setActiveTab('skoler');
+                await loadSchools();
+            }}>
+            Skoler ({schools.length})
+        </button>
     </nav>
 
     {#if activeTab === 'users'}
@@ -507,6 +605,8 @@ async function updateLinje(linje: Linje) {
                         <input type="text" placeholder="ID" bind:value={newUser.id} />
                         <input type="text" placeholder="Navn" bind:value={newUser.navn} />
                         <input type="email" placeholder="E-post" bind:value={newUser.email} />
+                        <input type="text" placeholder="Ungdomsskole" bind:value={newUser.ungdomskole} />
+                        <input type="tel" placeholder="Telefon" bind:value={newUser.telefon} />
                         <select bind:value={newUser.paameldt_kurs_id}>
                             <option value={null}>Ingen kurs</option>
                             {#each kursListe as kurs}
@@ -534,6 +634,8 @@ async function updateLinje(linje: Linje) {
                             <th>ID</th>
                             <th>Navn</th>
                             <th>E-post</th>
+                            <th>Ungdomsskole</th>
+                            <th>Telefon</th>
                             <th>Påmeldt kurs</th>
                             <th>Tidspunkt</th>
                             <th>Studiesuppe</th>
@@ -548,6 +650,8 @@ async function updateLinje(linje: Linje) {
                                     <td>{user.id}</td>
                                     <td><input type="text" bind:value={editingUser.navn} /></td>
                                     <td><input type="email" bind:value={editingUser.email} /></td>
+                                    <td><input type="text" bind:value={editingUser.ungdomskole} placeholder="Ungdomsskole" /></td>
+                                    <td><input type="tel" bind:value={editingUser.telefon} placeholder="Telefon" /></td>
                                     <td>
                                         <select bind:value={editingUser.paameldt_kurs_id}>
                                             <option value={null}>Ingen kurs</option>
@@ -588,6 +692,8 @@ async function updateLinje(linje: Linje) {
                                     <td class="id-cell">{user.id}</td>
                                     <td>{user.navn || '-'}</td>
                                     <td>{user.email || '-'}</td>
+                                    <td>{user.ungdomskole || '-'}</td>
+                                    <td>{user.telefon || '-'}</td>
                                     <td>{getKursNavn(user.paameldt_kurs_id)}</td>
                                     <td>{user.paameldt_tidspunkt_tekst || '-'}</td>
                                     <td>{user.studiesuppe || '-'}</td>
@@ -839,6 +945,105 @@ async function updateLinje(linje: Linje) {
                         {/if}
                     </div>
                 {/each}
+            </div>
+        </section>
+    {/if}
+
+    {#if activeTab === 'skoler'}
+        <section class="content-section">
+            <div class="section-header">
+                <h2>Ungdomsskoler</h2>
+                <div class="actions">
+                    <input 
+                        type="text" 
+                        placeholder="Søk skoler..." 
+                        bind:value={schoolSearch}
+                        class="search-input"
+                    />
+                    <button onclick={() => isCreatingSchool = !isCreatingSchool} class="btn-primary">
+                        Ny skole
+                    </button>
+                </div>
+            </div>
+
+            {#if isCreatingSchool}
+                <div class="create-form">
+                    <h3>Opprett ny skole</h3>
+                    <div class="form-grid">
+                        <input 
+                            type="text" 
+                            placeholder="Skolenavn" 
+                            bind:value={newSchoolName}
+                            onkeydown={(e) => {
+                                if (e.key === 'Enter') {
+                                    createSchool();
+                                }
+                            }}
+                        />
+                    </div>
+                    <div class="form-actions">
+                        <button onclick={createSchool} class="btn-success">
+                            Opprett
+                        </button>
+                        <button onclick={() => { isCreatingSchool = false; newSchoolName = ''; }} class="btn-cancel">
+                            Avbryt
+                        </button>
+                    </div>
+                </div>
+            {/if}
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Navn</th>
+                            <th>Status</th>
+                            <th>Handlinger</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {#each filteredSchools as school}
+                            <tr>
+                                {#if editingSchool?.id === school.id}
+                                    <td>
+                                        <input type="text" bind:value={editingSchool.navn} />
+                                    </td>
+                                    <td>
+                                        <select bind:value={editingSchool.aktiv}>
+                                            <option value={true}>Aktiv</option>
+                                            <option value={false}>Deaktivert</option>
+                                        </select>
+                                    </td>
+                                    <td class="actions-cell">
+                                        <button onclick={() => updateSchool(editingSchool)} class="btn-small btn-success">
+                                            Lagre
+                                        </button>
+                                        <button onclick={() => editingSchool = null} class="btn-small btn-cancel">
+                                            Avbryt
+                                        </button>
+                                    </td>
+                                {:else}
+                                    <td>{school.navn}</td>
+                                    <td>
+                                        {#if school.aktiv}
+                                            <span class="admin-badge">Aktiv</span>
+                                        {:else}
+                                            <span class="non-admin-badge">Deaktivert</span>
+                                        {/if}
+                                    </td>
+                                    <td class="actions-cell">
+                                        <button onclick={() => { editingSchool = {...school}; }} class="btn-small btn-edit">
+                                            Rediger
+                                        </button>
+                                        <button onclick={() => deleteSchool(school.id)} class="btn-small btn-danger">
+                                            Deaktiver
+                                        </button>
+                                    </td>
+                                {/if}
+                            </tr>
+                        {/each}
+                    </tbody>
+                </table>
             </div>
         </section>
     {/if}

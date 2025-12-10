@@ -94,6 +94,13 @@
     </div>
 </div>
 
+<div class="background-shapes">
+    <div class="shape shape-1"></div>
+    <div class="shape shape-2"></div>
+    <div class="shape shape-3"></div>
+    <div class="shape shape-4"></div>
+</div>
+
 <style>
     .login {
         display: flex;
@@ -102,6 +109,7 @@
         min-height: calc(100vh - 10vh);
         padding: 2rem 1rem;
         background-color: var(--color-grey);
+        position: relative;
     }
 
     .container {
@@ -111,6 +119,8 @@
         background-color: var(--color-white);
         border-radius: 15px;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        position: relative;
+        z-index: 2;
     }
 
     .header {
@@ -231,6 +241,71 @@
         color: #b82d4d;
     }
 
+    .background-shapes {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        z-index: 1;
+    }
+
+    .shape {
+        position: absolute;
+        border-radius: 50%;
+        opacity: 0.1;
+        animation: float 20s ease-in-out infinite;
+    }
+
+    .shape-1 {
+        width: 300px;
+        height: 300px;
+        background: var(--color-blue);
+        top: -150px;
+        left: -150px;
+        animation-delay: 0s;
+    }
+
+    .shape-2 {
+        width: 200px;
+        height: 200px;
+        background: var(--color-pink);
+        top: 20%;
+        right: -100px;
+        animation-delay: -5s;
+    }
+
+    .shape-3 {
+        width: 250px;
+        height: 250px;
+        background: var(--color-green);
+        bottom: -125px;
+        left: 10%;
+        animation-delay: -10s;
+    }
+
+    .shape-4 {
+        width: 180px;
+        height: 180px;
+        background: var(--color-orange);
+        bottom: 10%;
+        right: 15%;
+        animation-delay: -15s;
+    }
+
+    @keyframes float {
+        0%, 100% {
+            transform: translate(0, 0) scale(1);
+        }
+        33% {
+            transform: translate(30px, -30px) scale(1.1);
+        }
+        66% {
+            transform: translate(-20px, 20px) scale(0.9);
+        }
+    }
+
     @media (max-width: 570px) {
         .login {
             min-height: calc(100vh - 10vh);
@@ -247,6 +322,30 @@
 
         .header p {
             font-size: 0.9rem;
+        }
+
+        .shape-1 {
+            width: 200px;
+            height: 200px;
+            top: -100px;
+            left: -100px;
+        }
+
+        .shape-2 {
+            width: 150px;
+            height: 150px;
+            right: -75px;
+        }
+
+        .shape-3 {
+            width: 180px;
+            height: 180px;
+            bottom: -90px;
+        }
+
+        .shape-4 {
+            width: 120px;
+            height: 120px;
         }
     }
 </style>

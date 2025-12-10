@@ -25,6 +25,8 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
         // Handle signup: create user account
         const name = url.searchParams.get('name');
         const email = url.searchParams.get('email');
+        const ungdomskole = url.searchParams.get('ungdomskole');
+        const telefon = url.searchParams.get('telefon');
 
         if (!name || !email) {
             throw error(400, 'Signup data missing');
@@ -35,12 +37,38 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
         if (existingRows.length > 0) {
             // User already exists, just log them in
             userId = existingRows[0].id;
+            // Update user info if provided
+            if (ungdomskole || telefon) {
+                const updateFields = [];
+                const updateValues = [];
+                if (ungdomskole) {
+                    updateFields.push('ungdomskole = ?');
+                    updateValues.push(decodeURIComponent(ungdomskole));
+                }
+                if (telefon) {
+                    updateFields.push('telefon = ?');
+                    updateValues.push(decodeURIComponent(telefon));
+                }
+                if (updateFields.length > 0) {
+                    updateValues.push(userId);
+                    await db.query(
+                        `UPDATE bruker SET ${updateFields.join(', ')} WHERE id = ?`,
+                        updateValues
+                    );
+                }
+            }
         } else {
             // Create new user
             userId = uuidv4();
             await db.query(
-                'INSERT INTO bruker (id, navn, email) VALUES (?, ?, ?)',
-                [userId, decodeURIComponent(name), decodeURIComponent(email)]
+                'INSERT INTO bruker (id, navn, email, ungdomskole, telefon) VALUES (?, ?, ?, ?, ?)',
+                [
+                    userId,
+                    decodeURIComponent(name),
+                    decodeURIComponent(email),
+                    ungdomskole ? decodeURIComponent(ungdomskole) : null,
+                    telefon ? decodeURIComponent(telefon) : null
+                ]
             );
         }
 

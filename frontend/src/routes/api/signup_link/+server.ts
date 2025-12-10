@@ -5,10 +5,10 @@ import { db } from '$lib/server/db';
 import { sendMagicLinkEmail } from '$lib/server/email';
 
 export const POST: RequestHandler = async ({ request, url }) => {
-    const { name, email } = await request.json();
+    const { name, email, ungdomskole, telefon } = await request.json();
 
-    if (!name || !email) {
-        return json({ ok: false, message: 'Name and email are required' }, { status: 400 });
+    if (!name || !email || !telefon) {
+        return json({ ok: false, message: 'Navn, e-post og telefonnummer er påkrevd' }, { status: 400 });
     }
 
     // Check if user already exists
@@ -29,7 +29,15 @@ export const POST: RequestHandler = async ({ request, url }) => {
 
     // Generate the magic link URL with signup data
     const baseUrl = url.origin;
-    const magicLink = `${baseUrl}/magic-login?token=${token}&signup=true&name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}`;
+    const params = new URLSearchParams({
+        token,
+        signup: 'true',
+        name,
+        email,
+        telefon
+    });
+    if (ungdomskole) params.append('ungdomskole', ungdomskole);
+    const magicLink = `${baseUrl}/magic-login?${params.toString()}`;
 
     // Send verification email
     let emailSent = false;

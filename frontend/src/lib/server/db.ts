@@ -108,6 +108,14 @@ export const User = sequelize.define(
 		studiesuppe: {
 			type: DataTypes.STRING(255),
 			allowNull: true
+		},
+		ungdomskole: {
+			type: DataTypes.STRING(255),
+			allowNull: true
+		},
+		telefon: {
+			type: DataTypes.STRING(20),
+			allowNull: true
 		}
 	},
 	{
