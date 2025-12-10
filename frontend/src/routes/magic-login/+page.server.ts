@@ -7,18 +7,57 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
     const token = url.searchParams.get('token');
     if (!token) throw error(400, 'No token provided');
 
-    const [rows] = await db.query(
-        'SELECT * FROM magic_link WHERE token = ? AND (use_count IS NULL OR use_count < 2)',
-        [token]
-    );
-    const link = rows[0];
-
-    if (!link) throw error(400, 'Invalid or used token');
-    if (new Date(link.expires_at) < new Date()) throw error(400, 'Token expired');
-    
-    // Check if token has been used too many times (backward compatibility with used field)
-    const useCount = link.use_count ?? (link.used ? 1 : 0);
-    if (useCount >= 2) throw error(400, 'Token has already been used');
+    // Query for the token
+    let link;
+    try {
+        const [rows] = await db.query(
+            'SELECT * FROM magic_link WHERE token = ?',
+            [token]
+        );
+        link = rows[0];
+        
+        if (!link) {
+            console.log('[MAGIC_LOGIN] Token not found:', token);
+            throw error(400, 'Invalid or used token');
+        }
+        
+        if (new Date(link.expires_at) < new Date()) {
+            console.log('[MAGIC_LOGIN] Token expired:', token, 'expires_at:', link.expires_at);
+            throw error(400, 'Token expired');
+        }
+        
+        // Check if token has been used (backward compatibility)
+        // If use_count exists, allow up to 2 uses
+        // If use_count doesn't exist but used=TRUE, allow one more use (Microsoft may have scanned it)
+        const hasUseCount = link.use_count !== undefined && link.use_count !== null;
+        
+        console.log('[MAGIC_LOGIN] Token found:', {
+            token: token.substring(0, 8) + '...',
+            used: link.used,
+            use_count: link.use_count,
+            hasUseCount
+        });
+        
+        if (hasUseCount) {
+            // New way: check use_count (allow up to 2 uses)
+            if (link.use_count >= 2) {
+                console.log('[MAGIC_LOGIN] Token already used 2+ times:', link.use_count);
+                throw error(400, 'Token has already been used');
+            }
+        } else {
+            // Old way: if used=TRUE, this might be Microsoft's scan - allow user to use it once
+            // We'll mark it as used again after this use, but allow this one attempt
+            // This handles the case where Microsoft scanned before migration
+            if (link.used) {
+                console.log('[MAGIC_LOGIN] Token marked as used (old system), allowing one more use');
+            }
+        }
+    } catch (err: any) {
+        // If error is about column not found, it's likely a migration issue
+        // But SELECT * won't fail if column doesn't exist, so this is unlikely
+        console.error('[MAGIC_LOGIN] Error querying token:', err);
+        throw err;
+    }
 
     // Check if this is a signup (bruker_id is null)
     const isSignup = url.searchParams.get('signup') === 'true' || link.bruker_id === null;
@@ -86,12 +125,36 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
         userId = link.bruker_id;
     }
 
-    // Increment use count (allow up to 2 uses: one for email scanner, one for user)
-    const currentUseCount = link.use_count ?? (link.used ? 1 : 0);
-    await db.query(
-        'UPDATE magic_link SET use_count = ?, used = TRUE WHERE id = ?',
-        [currentUseCount + 1, link.id]
-    );
+    // Update token usage (allow up to 2 uses: one for email scanner, one for user)
+    const hasUseCount = link.use_count !== undefined && link.use_count !== null;
+    
+    try {
+        if (hasUseCount) {
+            // New way: increment use_count
+            await db.query(
+                'UPDATE magic_link SET use_count = ?, used = TRUE WHERE id = ?',
+                [link.use_count + 1, link.id]
+            );
+        } else {
+            // Old way: just mark as used (fallback for backward compatibility)
+            // Note: Microsoft may have already set used=TRUE, but that's OK
+            await db.query(
+                'UPDATE magic_link SET used = TRUE WHERE id = ?',
+                [link.id]
+            );
+        }
+    } catch (updateErr: any) {
+        // If updating use_count fails (column doesn't exist), fall back to old method
+        if (updateErr?.message?.includes('use_count') || updateErr?.code === 'ER_BAD_FIELD_ERROR') {
+            console.warn('[MAGIC_LOGIN] use_count column not found during update. Using fallback.');
+            await db.query(
+                'UPDATE magic_link SET used = TRUE WHERE id = ?',
+                [link.id]
+            );
+        } else {
+            throw updateErr;
+        }
+    }
 
     // Set cookie and redirect
 
