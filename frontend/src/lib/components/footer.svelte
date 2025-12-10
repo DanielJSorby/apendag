@@ -9,7 +9,7 @@
             <p>Elever fra vg3 IM<br></p>
         </div>
         <div class="social-media">
-            <h3>Kontak Oss</h3>
+            <h3>Kontakt Oss</h3>
             <div class="icons">
                 <a href="https://facebook.com/elvebakkenvgs" target="_blank" aria-label="Facebook" class="facebook"><i class="fab fa-facebook-f"></i></a>
                 <a href="https://instagram.com/elvebakkenvgs" target="_blank" aria-label="Instagram" class="instagram"><i class="fab fa-instagram"></i></a>
@@ -27,6 +27,7 @@
     </div>
     <div class="copy-right">
         <p>&copy; {new Date().getFullYear()} Elvebakken VGS. Alle rettigheter forbeholdt.</p>
+        <p><a href="/personvernserklaering">Personvernserklæring</a></p>
     </div>
 </footer>
 
@@ -115,5 +116,14 @@
         border-top: 1px solid #e9ecef;
         font-size: 0.9rem;
         color: #6c757d;
+    }
+
+    .copy-right a {
+        color: #6c757d;
+        text-decoration: none;
+    }
+
+    .copy-right a:hover {
+        text-decoration: underline;
     }
 </style>

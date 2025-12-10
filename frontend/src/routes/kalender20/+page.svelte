@@ -123,7 +123,7 @@
 			<section class="linjer-section">
 				<h2 class="section-title">Utforsk studieretningene</h2>
 				<p class="section-subtitle">
-					Hele tiden fra det starter til det slutter kan du gå innom de ulike linjene og besøke dem!
+					Fra 15:00 til 20:00 kan du gå innom de ulike linjene og besøke dem!
 				</p>
 				<div class="linjeknapper">
 					<Linjeknapp linje="st" linjeData={linjeData} />
