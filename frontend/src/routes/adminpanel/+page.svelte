@@ -46,14 +46,46 @@ onMount(async () => {
         // Fallback til tom mapping hvis det feiler
         kursMap = {};
     }
+    
+    // Load FAQ questions
+    await loadFAQ();
 });
+
+async function loadFAQ() {
+    try {
+        const response = await fetch('/api/admin/faq');
+        if (response.ok) {
+            const data = await response.json();
+            faqQuestions = data.questions || [];
+        }
+    } catch (error) {
+        console.error('Error loading FAQ:', error);
+    }
+}
 
 function getKursNavn(id: number | null): string {
     if (!id) return '-';
     return kursMap[id] || `Ukjent kurs (ID: ${id})`;
 }
 
-let activeTab = $state<'users' | 'stats'>('users');
+type FAQ = {
+    id: number;
+    question: string;
+    answer: string;
+    display_order: number;
+};
+
+let activeTab = $state<'users' | 'stats' | 'faq'>('users');
+let faqQuestions = $state<FAQ[]>([]);
+let editingFAQ = $state<FAQ | null>(null);
+let isCreatingFAQ = $state(false);
+let faqSearch = $state('');
+let draggedItem = $state<FAQ | null>(null);
+
+let newFAQ = $state({
+    question: '',
+    answer: ''
+});
 let users = $state<User[]>((data.users as User[]) || []);
 let courseStats = $state<any[]>((data.courseStats as any[]) || []);
 let adminIds = $state<string[]>(data.adminIds || []);
@@ -216,6 +248,116 @@ async function removeAdmin(userId: string) {
         // Handle error silently
     }
 }
+
+// FAQ Functions
+async function createFAQ() {
+    try {
+        const response = await fetch('/api/admin/faq', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newFAQ)
+        });
+        
+        if (response.ok) {
+            newFAQ = { question: '', answer: '' };
+            isCreatingFAQ = false;
+            await loadFAQ();
+        }
+    } catch (error) {
+        console.error('Error creating FAQ:', error);
+    }
+}
+
+async function updateFAQ(faq: FAQ) {
+    try {
+        const response = await fetch('/api/admin/faq', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(faq)
+        });
+        
+        if (response.ok) {
+            editingFAQ = null;
+            await loadFAQ();
+        }
+    } catch (error) {
+        console.error('Error updating FAQ:', error);
+    }
+}
+
+async function deleteFAQ(id: number) {
+    if (!confirm('Er du sikker på at du vil slette dette spørsmålet?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/admin/faq', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id })
+        });
+        
+        if (response.ok) {
+            await loadFAQ();
+        }
+    } catch (error) {
+        console.error('Error deleting FAQ:', error);
+    }
+}
+
+async function reorderFAQ() {
+    try {
+        const orders = faqQuestions.map((faq, index) => ({
+            id: faq.id,
+            display_order: index + 1
+        }));
+        
+        const response = await fetch('/api/admin/faq', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ orders })
+        });
+        
+        if (response.ok) {
+            await loadFAQ();
+        }
+    } catch (error) {
+        console.error('Error reordering FAQ:', error);
+    }
+}
+
+function handleDragStart(faq: FAQ) {
+    draggedItem = faq;
+}
+
+function handleDragOver(event: DragEvent) {
+    event.preventDefault();
+}
+
+function handleDrop(targetFAQ: FAQ) {
+    if (!draggedItem || draggedItem.id === targetFAQ.id) {
+        draggedItem = null;
+        return;
+    }
+    
+    const draggedIndex = faqQuestions.findIndex(f => f.id === draggedItem!.id);
+    const targetIndex = faqQuestions.findIndex(f => f.id === targetFAQ.id);
+    
+    const newQuestions = [...faqQuestions];
+    const [removed] = newQuestions.splice(draggedIndex, 1);
+    newQuestions.splice(targetIndex, 0, removed);
+    
+    faqQuestions = newQuestions;
+    draggedItem = null;
+    reorderFAQ();
+}
+
+let filteredFAQ = $derived(
+    faqQuestions.filter(faq =>
+        faq.question?.toLowerCase().includes(faqSearch.toLowerCase()) ||
+        faq.answer?.toLowerCase().includes(faqSearch.toLowerCase())
+    )
+);
 </script>
 
 <svelte:head>
@@ -242,6 +384,14 @@ async function removeAdmin(userId: string) {
             class:active={activeTab === 'stats'}
             onclick={() => activeTab = 'stats'}>
             Statistikk
+        </button>
+        <button 
+            class:active={activeTab === 'faq'}
+            onclick={async () => { 
+                activeTab = 'faq';
+                await loadFAQ();
+            }}>
+            FAQ ({faqQuestions.length})
         </button>
     </nav>
 
@@ -423,6 +573,104 @@ async function removeAdmin(userId: string) {
                         </div>
                     {/each}
                 </div>
+            </div>
+        </section>
+    {/if}
+
+    {#if activeTab === 'faq'}
+        <section class="content-section">
+            <div class="section-header">
+                <h2>FAQ Spørsmål</h2>
+                <div class="actions">
+                    <input 
+                        type="text" 
+                        placeholder="Søk FAQ..." 
+                        bind:value={faqSearch}
+                        class="search-input"
+                    />
+                    <button onclick={() => isCreatingFAQ = !isCreatingFAQ} class="btn-primary">
+                        Nytt spørsmål
+                    </button>
+                </div>
+            </div>
+
+            {#if isCreatingFAQ}
+                <div class="create-form">
+                    <h3>Opprett nytt FAQ spørsmål</h3>
+                    <div class="form-grid">
+                        <textarea 
+                            placeholder="Spørsmål" 
+                            bind:value={newFAQ.question}
+                            rows="2"
+                            style="grid-column: 1 / -1;"
+                        ></textarea>
+                        <textarea 
+                            placeholder="Svar" 
+                            bind:value={newFAQ.answer}
+                            rows="4"
+                            style="grid-column: 1 / -1;"
+                        ></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button onclick={createFAQ} class="btn-success">
+                            Opprett
+                        </button>
+                        <button onclick={() => { isCreatingFAQ = false; newFAQ = { question: '', answer: '' }; }} class="btn-cancel">
+                            Avbryt
+                        </button>
+                    </div>
+                </div>
+            {/if}
+
+            <div class="faq-list">
+                {#each filteredFAQ as faq (faq.id)}
+                    <div 
+                        class="faq-item"
+                        draggable="true"
+                        ondragstart={() => handleDragStart(faq)}
+                        ondragover={handleDragOver}
+                        ondrop={() => handleDrop(faq)}
+                    >
+                        {#if editingFAQ?.id === faq.id}
+                            <div class="faq-edit-form">
+                                <textarea 
+                                    bind:value={editingFAQ.question}
+                                    placeholder="Spørsmål"
+                                    rows="2"
+                                ></textarea>
+                                <textarea 
+                                    bind:value={editingFAQ.answer}
+                                    placeholder="Svar"
+                                    rows="4"
+                                ></textarea>
+                                <div class="faq-actions">
+                                    <button onclick={() => updateFAQ(editingFAQ)} class="btn-small btn-success">
+                                        Lagre
+                                    </button>
+                                    <button onclick={() => editingFAQ = null} class="btn-small btn-cancel">
+                                        Avbryt
+                                    </button>
+                                </div>
+                            </div>
+                        {:else}
+                            <div class="faq-content">
+                                <div class="faq-drag-handle">☰</div>
+                                <div class="faq-text">
+                                    <h3>{faq.question}</h3>
+                                    <p>{faq.answer}</p>
+                                </div>
+                                <div class="faq-actions">
+                                    <button onclick={() => { editingFAQ = {...faq}; }} class="btn-small btn-edit">
+                                        Rediger
+                                    </button>
+                                    <button onclick={() => deleteFAQ(faq.id)} class="btn-small btn-danger">
+                                        Slett
+                                    </button>
+                                </div>
+                            </div>
+                        {/if}
+                    </div>
+                {/each}
             </div>
         </section>
     {/if}
@@ -1018,6 +1266,93 @@ async function removeAdmin(userId: string) {
         cursor: not-allowed;
     }
 
+    .faq-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .faq-item {
+        background: white;
+        border: 2px solid #f0f0f0;
+        border-radius: 15px;
+        padding: 20px;
+        transition: all 0.3s ease;
+        cursor: move;
+    }
+
+    .faq-item:hover {
+        border-color: var(--color-pink);
+        box-shadow: 0 4px 15px rgba(217, 59, 96, 0.1);
+    }
+
+    .faq-item[draggable="true"] {
+        cursor: grab;
+    }
+
+    .faq-item[draggable="true"]:active {
+        cursor: grabbing;
+    }
+
+    .faq-content {
+        display: flex;
+        gap: 15px;
+        align-items: flex-start;
+    }
+
+    .faq-drag-handle {
+        color: #ccc;
+        font-size: 1.5rem;
+        cursor: grab;
+        padding: 5px;
+        user-select: none;
+    }
+
+    .faq-text {
+        flex: 1;
+    }
+
+    .faq-text h3 {
+        margin: 0 0 10px 0;
+        color: #333;
+        font-size: 1.1rem;
+    }
+
+    .faq-text p {
+        margin: 0;
+        color: #666;
+        line-height: 1.6;
+    }
+
+    .faq-edit-form {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .faq-edit-form textarea {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        font-family: inherit;
+        resize: vertical;
+        box-sizing: border-box;
+    }
+
+    .faq-edit-form textarea:focus {
+        outline: none;
+        border-color: var(--color-pink);
+        box-shadow: 0 0 0 3px rgba(217, 59, 96, 0.1);
+    }
+
+    .faq-actions {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
     @media (max-width: 768px) {
         .admin-container {
             padding: 10px;
@@ -1050,6 +1385,15 @@ async function removeAdmin(userId: string) {
 
         .actions-cell {
             flex-direction: column;
+        }
+
+        .faq-content {
+            flex-direction: column;
+        }
+
+        .faq-actions {
+            width: 100%;
+            justify-content: flex-end;
         }
     }
 </style>

@@ -14,9 +14,9 @@
     let noQuestion = false
 
     const getData = async () => {
-        const response = await fetch("/api/faq.json");
+        const response = await fetch("/api/faq");
         const result = await response.json();
-        return result.questions; //denne funskjonen henter dataen fra json filen og returnerer daten den henter
+        return result.questions || []; //denne funskjonen henter dataen fra API og returnerer daten den henter
     };
 
     onMount(async () => {
