@@ -18,10 +18,17 @@ export const POST: RequestHandler = async ({ request, url }) => {
         return json({ ok: false, message: 'Ugyldig e-postadresse. Disposable e-postadresser er ikke tillatt.' }, { status: 400 });
     }
 
-    // Check if user already exists
+    // Check if user already exists by email
     const [existingRows] = await db.query('SELECT id FROM bruker WHERE email = ?', [email]);
     if (existingRows.length > 0) {
         return json({ ok: false, message: 'Email already in use. Please log in instead.' }, { status: 409 });
+    }
+
+    // Check if phone number already exists
+    const normalizedTelefon = telefon.trim();
+    const [existingPhoneRows] = await db.query('SELECT id FROM bruker WHERE telefon = ?', [normalizedTelefon]);
+    if (existingPhoneRows.length > 0) {
+        return json({ ok: false, message: 'Telefonnummer er allerede i bruk. Vennligst logg inn i stedet.' }, { status: 409 });
     }
 
     // Generate token for signup verification

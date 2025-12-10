@@ -89,8 +89,14 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
                     updateValues.push(decodeURIComponent(ungdomskole));
                 }
                 if (telefon) {
+                    const normalizedTelefon = decodeURIComponent(telefon).trim();
+                    // Check if phone number is already in use by another user
+                    const [existingPhoneRows] = await db.query('SELECT id FROM bruker WHERE telefon = ? AND id != ?', [normalizedTelefon, userId]);
+                    if (existingPhoneRows.length > 0) {
+                        throw error(409, 'Telefonnummer er allerede i bruk av en annen bruker.');
+                    }
                     updateFields.push('telefon = ?');
-                    updateValues.push(decodeURIComponent(telefon));
+                    updateValues.push(normalizedTelefon);
                 }
                 if (updateFields.length > 0) {
                     updateValues.push(userId);
@@ -102,6 +108,15 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
             }
         } else {
             // Create new user
+            // Double-check phone number isn't already in use (race condition protection)
+            if (telefon) {
+                const normalizedTelefon = decodeURIComponent(telefon).trim();
+                const [existingPhoneRows] = await db.query('SELECT id FROM bruker WHERE telefon = ?', [normalizedTelefon]);
+                if (existingPhoneRows.length > 0) {
+                    throw error(409, 'Telefonnummer er allerede i bruk. Vennligst logg inn i stedet.');
+                }
+            }
+            
             userId = uuidv4();
             await db.query(
                 'INSERT INTO bruker (id, navn, email, ungdomskole, telefon) VALUES (?, ?, ?, ?, ?)',
@@ -110,7 +125,7 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
                     decodeURIComponent(name),
                     decodeURIComponent(email),
                     ungdomskole ? decodeURIComponent(ungdomskole) : null,
-                    telefon ? decodeURIComponent(telefon) : null
+                    telefon ? decodeURIComponent(telefon).trim() : null
                 ]
             );
         }
