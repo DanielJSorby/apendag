@@ -14,6 +14,27 @@ export const GET: RequestHandler = async () => {
     }
 };
 
+// Helper function to update available places in kurs table
+async function updateKursPlasser(pool: any, kursId: number | null, tidspunkt: string | null, increment: number) {
+    if (!kursId || !tidspunkt) return;
+    
+    let plassField: string;
+    if (tidspunkt === '09:00-10:30') {
+        plassField = 'plasser_for';
+    } else if (tidspunkt === '11:00-12:30') {
+        plassField = 'plasser_etter';
+    } else if (tidspunkt === '13:00-14:30') {
+        plassField = 'plasser_siste';
+    } else {
+        return; // Unknown time slot
+    }
+    
+    await pool.query(
+        `UPDATE kurs SET ${plassField} = ${plassField} + ? WHERE id = ?`,
+        [increment, kursId]
+    );
+}
+
 // POST - Opprett ny bruker
 export const POST: RequestHandler = async ({ request }) => {
     try {
@@ -25,6 +46,11 @@ export const POST: RequestHandler = async ({ request }) => {
             'INSERT INTO bruker (id, navn, email, paameldt_kurs_id, paameldt_tidspunkt_tekst, studiesuppe, ungdomskole, telefon) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
             [id, navn, email, paameldt_kurs_id, paameldt_tidspunkt_tekst, studiesuppe, ungdomskole || null, telefon || null]
         );
+        
+        // Decrease available places if user is enrolled in a course
+        if (paameldt_kurs_id && paameldt_tidspunkt_tekst) {
+            await updateKursPlasser(pool, paameldt_kurs_id, paameldt_tidspunkt_tekst, -1);
+        }
         
         return json({ success: true, message: 'Bruker opprettet' });
     } catch (error) {
@@ -40,10 +66,31 @@ export const PUT: RequestHandler = async ({ request }) => {
         const data = await request.json();
         const { id, navn, email, paameldt_kurs_id, paameldt_tidspunkt_tekst, studiesuppe, ungdomskole, telefon } = data;
         
+        // Get old user data to update places correctly
+        const [oldUserData] = await pool.query('SELECT paameldt_kurs_id, paameldt_tidspunkt_tekst FROM bruker WHERE id = ?', [id]);
+        const oldUser = (oldUserData as any[])[0];
+        
+        // Update user
         await pool.query(
             'UPDATE bruker SET navn = ?, email = ?, paameldt_kurs_id = ?, paameldt_tidspunkt_tekst = ?, studiesuppe = ?, ungdomskole = ?, telefon = ? WHERE id = ?',
             [navn, email, paameldt_kurs_id, paameldt_tidspunkt_tekst, studiesuppe, ungdomskole || null, telefon || null, id]
         );
+        
+        // Update places: free up old slot and occupy new slot
+        if (oldUser) {
+            const oldKursId = oldUser.paameldt_kurs_id;
+            const oldTidspunkt = oldUser.paameldt_tidspunkt_tekst;
+            
+            // Free up old place if it existed
+            if (oldKursId && oldTidspunkt) {
+                await updateKursPlasser(pool, oldKursId, oldTidspunkt, 1);
+            }
+            
+            // Occupy new place if selected
+            if (paameldt_kurs_id && paameldt_tidspunkt_tekst) {
+                await updateKursPlasser(pool, paameldt_kurs_id, paameldt_tidspunkt_tekst, -1);
+            }
+        }
         
         return json({ success: true, message: 'Bruker oppdatert' });
     } catch (error) {
@@ -58,11 +105,20 @@ export const DELETE: RequestHandler = async ({ request }) => {
         const pool = await getDb();
         const { id } = await request.json();
         
+        // Get user data to free up their course place
+        const [userData] = await pool.query('SELECT paameldt_kurs_id, paameldt_tidspunkt_tekst FROM bruker WHERE id = ?', [id]);
+        const user = (userData as any[])[0];
+        
         // Slett først meldinger fra brukeren (hvis de eksisterer)
         await pool.query('DELETE FROM chat WHERE brukerID = ?', [id]);
         
         // Deretter slett brukeren
         await pool.query('DELETE FROM bruker WHERE id = ?', [id]);
+        
+        // Free up the course place if user was enrolled
+        if (user && user.paameldt_kurs_id && user.paameldt_tidspunkt_tekst) {
+            await updateKursPlasser(pool, user.paameldt_kurs_id, user.paameldt_tidspunkt_tekst, 1);
+        }
         
         return json({ success: true, message: 'Bruker slettet' });
     } catch (error) {
