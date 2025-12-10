@@ -189,6 +189,8 @@ function isAdmin(userId: string): boolean {
 let editingUser = $state<User | null>(null);
 let editingUserIsAdmin = $state(false);
 let isCreatingUser = $state(false);
+let showDeleteConfirm = $state(false);
+let userToDelete = $state<{ id: string; navn: string } | null>(null);
 
 // New user form
 let newUser = $state({
@@ -451,20 +453,34 @@ async function updateUser(user: User) {
     }
 }
 
-async function deleteUser(id: string) {
+function showDeleteConfirmModal(userId: string, userName: string) {
+    userToDelete = { id: userId, navn: userName };
+    showDeleteConfirm = true;
+}
+
+async function confirmDeleteUser() {
+    if (!userToDelete) return;
+    
     try {
         const response = await fetch('/api/admin', {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id })
+            body: JSON.stringify({ id: userToDelete.id })
         });
         
         if (response.ok) {
+            showDeleteConfirm = false;
+            userToDelete = null;
             location.reload();
         }
     } catch (error) {
         // Handle error silently
     }
+}
+
+function cancelDelete() {
+    showDeleteConfirm = false;
+    userToDelete = null;
 }
 
 // Generate unique ID
@@ -894,7 +910,7 @@ async function updateLinje(linje: Linje) {
                                         }} class="btn-small btn-edit">
                                             Rediger
                                         </button>
-                                        <button onclick={() => deleteUser(user.id)} class="btn-small btn-danger">
+                                        <button onclick={() => showDeleteConfirmModal(user.id, user.navn)} class="btn-small btn-danger">
                                             Slett
                                         </button>
                                     </td>
@@ -1352,6 +1368,29 @@ async function updateLinje(linje: Linje) {
         </section>
     {/if}
 </div>
+
+<!-- Delete Confirmation Modal -->
+{#if showDeleteConfirm && userToDelete}
+    <div class="modal-overlay" onclick={cancelDelete} onkeydown={(e) => e.key === 'Escape' && cancelDelete()} role="button" tabindex="-1">
+        <div class="modal-content" onclick={(e) => e.stopPropagation()} onkeydown={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="modal-title" tabindex="0">
+            <div class="modal-header">
+                <h3 id="modal-title">Bekreft sletting</h3>
+            </div>
+            <div class="modal-body">
+                <p>Er du sikker på at du vil slette brukeren <strong>{userToDelete.navn}</strong>?</p>
+                <p class="modal-warning">Denne handlingen kan ikke angres.</p>
+            </div>
+            <div class="modal-actions">
+                <button onclick={cancelDelete} class="btn-modal-cancel">
+                    Avbryt
+                </button>
+                <button onclick={confirmDeleteUser} class="btn-modal-delete">
+                    Slett bruker
+                </button>
+            </div>
+        </div>
+    </div>
+{/if}
 
 <style>
     header {
@@ -2333,5 +2372,169 @@ async function updateLinje(linje: Linje) {
         display: flex;
         gap: 10px;
         align-items: center;
+    }
+
+    /* Delete Confirmation Modal */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        backdrop-filter: blur(4px);
+        animation: fadeIn 0.2s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    .modal-content {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        max-width: 500px;
+        width: 90%;
+        overflow: hidden;
+        animation: slideUp 0.3s ease-out;
+    }
+
+    @keyframes slideUp {
+        from {
+            transform: translateY(50px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .modal-header {
+        background: linear-gradient(135deg, var(--color-pink), var(--color-pink-light));
+        padding: 25px 30px;
+        color: white;
+    }
+
+    .modal-header h3 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 500;
+    }
+
+    .modal-body {
+        padding: 30px;
+    }
+
+    .modal-body p {
+        margin: 0 0 15px 0;
+        color: #333;
+        font-size: 1.05rem;
+        line-height: 1.6;
+    }
+
+    .modal-body p:last-child {
+        margin-bottom: 0;
+    }
+
+    .modal-body strong {
+        color: var(--color-pink);
+        font-weight: 600;
+    }
+
+    .modal-warning {
+        color: #dc2626;
+        font-size: 0.95rem;
+        font-weight: 500;
+        margin-top: 20px !important;
+        padding: 12px;
+        background: #fef2f2;
+        border-left: 4px solid #dc2626;
+        border-radius: 6px;
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 12px;
+        padding: 20px 30px 30px 30px;
+        justify-content: flex-end;
+    }
+
+    .btn-modal-cancel {
+        padding: 12px 28px;
+        background: #f3f4f6;
+        color: #4b5563;
+        border: 2px solid #e5e7eb;
+        border-radius: 25px;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .btn-modal-cancel:hover {
+        background: #e5e7eb;
+        border-color: #d1d5db;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-modal-delete {
+        padding: 12px 28px;
+        background: var(--color-pink);
+        color: white;
+        border: 2px solid var(--color-pink);
+        border-radius: 25px;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(217, 59, 96, 0.3);
+    }
+
+    .btn-modal-delete:hover {
+        background: #c12d56;
+        border-color: #c12d56;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(217, 59, 96, 0.4);
+    }
+
+    @media (max-width: 768px) {
+        .modal-content {
+            width: 95%;
+            max-width: none;
+        }
+
+        .modal-header {
+            padding: 20px 20px;
+        }
+
+        .modal-header h3 {
+            font-size: 1.25rem;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-actions {
+            padding: 15px 20px 20px 20px;
+            flex-direction: column-reverse;
+        }
+
+        .btn-modal-cancel,
+        .btn-modal-delete {
+            width: 100%;
+        }
     }
 </style>
