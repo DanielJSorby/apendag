@@ -26,7 +26,8 @@
             const data = await response.json();
 
             if (data.ok) {
-                successMessage = 'En verifiseringslenke er sendt til e-posten din. Trykk på den for å logge inn.';
+                const emailToShow = email; // Store email before clearing
+                successMessage = `En verifiseringslenke er sendt til ${emailToShow}. Trykk på den for å logge inn.`;
                 errorMessage = '';
                 email = '';
             } else {
