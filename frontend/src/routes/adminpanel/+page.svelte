@@ -57,6 +57,21 @@ onMount(async () => {
         loadLinjer(),
         loadSchools()
     ]);
+
+    // Close dropdowns when clicking outside
+    function handleClickOutside(event: MouseEvent) {
+        const target = event.target as HTMLElement;
+        if (!target.closest('.school-selector-inline')) {
+            showEditingSchoolDropdown = false;
+            showEditingUserSchoolDropdown = false;
+        }
+    }
+    
+    document.addEventListener('click', handleClickOutside);
+    
+    return () => {
+        document.removeEventListener('click', handleClickOutside);
+    };
 });
 
 async function loadFAQ() {
@@ -192,6 +207,10 @@ let schoolSearch = $state('');
 let editingSchool = $state<School | null>(null);
 let isCreatingSchool = $state(false);
 let newSchoolName = $state('');
+let editingSchoolSearch = $state('');
+let showEditingSchoolDropdown = $state(false);
+let editingUserSchoolSearch = $state('');
+let showEditingUserSchoolDropdown = $state(false);
 
 async function loadSchools() {
     try {
@@ -210,6 +229,30 @@ let filteredSchools = $derived(
         s.navn.toLowerCase().includes(schoolSearch.toLowerCase())
     )
 );
+
+function filteredSchoolsForEdit(searchTerm: string) {
+    if (!searchTerm) return schools.filter(s => s.aktiv);
+    const searchLower = searchTerm.toLowerCase();
+    return schools.filter(s => 
+        s.aktiv && s.navn.toLowerCase().includes(searchLower)
+    );
+}
+
+function selectSchoolForEdit(schoolName: string) {
+    if (editingSchool) {
+        editingSchool.navn = schoolName;
+        editingSchoolSearch = schoolName;
+    }
+    showEditingSchoolDropdown = false;
+}
+
+function selectSchoolForUser(schoolName: string) {
+    if (editingUser) {
+        editingUser.ungdomskole = schoolName;
+        editingUserSchoolSearch = schoolName;
+    }
+    showEditingUserSchoolDropdown = false;
+}
 
 async function createSchool() {
     if (!newSchoolName.trim()) return;
@@ -606,7 +649,7 @@ async function updateLinje(linje: Linje) {
                         <input type="text" placeholder="Navn" bind:value={newUser.navn} />
                         <input type="email" placeholder="E-post" bind:value={newUser.email} />
                         <input type="text" placeholder="Ungdomsskole" bind:value={newUser.ungdomskole} />
-                        <input type="tel" placeholder="Telefon" bind:value={newUser.telefon} />
+                        <input type="tel" placeholder="+47 123 45 678" bind:value={newUser.telefon} class="tel-input" />
                         <select bind:value={newUser.paameldt_kurs_id}>
                             <option value={null}>Ingen kurs</option>
                             {#each kursListe as kurs}
@@ -650,8 +693,53 @@ async function updateLinje(linje: Linje) {
                                     <td>{user.id}</td>
                                     <td><input type="text" bind:value={editingUser.navn} /></td>
                                     <td><input type="email" bind:value={editingUser.email} /></td>
-                                    <td><input type="text" bind:value={editingUser.ungdomskole} placeholder="Ungdomsskole" /></td>
-                                    <td><input type="tel" bind:value={editingUser.telefon} placeholder="Telefon" /></td>
+                                    <td>
+                                        <div class="school-selector-inline">
+                                            <input 
+                                                type="text" 
+                                                bind:value={editingUserSchoolSearch}
+                                                oninput={() => {
+                                                    if (editingUser) {
+                                                        editingUser.ungdomskole = editingUserSchoolSearch;
+                                                    }
+                                                    showEditingUserSchoolDropdown = true;
+                                                }}
+                                                onfocus={() => showEditingUserSchoolDropdown = true}
+                                                placeholder="Søk eller skriv skolenavn..."
+                                                autocomplete="off"
+                                            />
+                                            {#if showEditingUserSchoolDropdown}
+                                                <div class="school-dropdown-inline">
+                                                    {#each filteredSchoolsForEdit(editingUserSchoolSearch) as s}
+                                                        <div 
+                                                            class="school-option-inline"
+                                                            onclick={() => selectSchoolForUser(s.navn)}
+                                                            role="button"
+                                                            tabindex="0"
+                                                        >
+                                                            {s.navn}
+                                                        </div>
+                                                    {/each}
+                                                    <div 
+                                                        class="school-option-inline school-option-other-inline"
+                                                        onclick={() => selectSchoolForUser('')}
+                                                        role="button"
+                                                        tabindex="0"
+                                                    >
+                                                        Annet...
+                                                    </div>
+                                                </div>
+                                            {/if}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <input 
+                                            type="tel" 
+                                            bind:value={editingUser.telefon} 
+                                            placeholder="+47 123 45 678"
+                                            class="tel-input"
+                                        />
+                                    </td>
                                     <td>
                                         <select bind:value={editingUser.paameldt_kurs_id}>
                                             <option value={null}>Ingen kurs</option>
@@ -681,10 +769,19 @@ async function updateLinje(linje: Linje) {
                                         </select>
                                     </td>
                                     <td class="actions-cell">
-                                        <button onclick={() => updateUser(editingUser!)} class="btn-small btn-success">
+                                        <button onclick={() => {
+                                            if (editingUser) {
+                                                editingUser.ungdomskole = editingUserSchoolSearch;
+                                            }
+                                            updateUser(editingUser!);
+                                        }} class="btn-small btn-success">
                                             Lagre
                                         </button>
-                                        <button onclick={() => editingUser = null} class="btn-small btn-cancel">
+                                        <button onclick={() => { 
+                                            editingUser = null; 
+                                            editingUserSchoolSearch = '';
+                                            showEditingUserSchoolDropdown = false;
+                                        }} class="btn-small btn-cancel">
                                             Avbryt
                                         </button>
                                     </td>
@@ -705,7 +802,11 @@ async function updateLinje(linje: Linje) {
                                         {/if}
                                     </td>
                                     <td class="actions-cell">
-                                        <button onclick={() => { editingUser = {...user}; editingUserIsAdmin = isAdmin(user.id); }} class="btn-small btn-edit">
+                                        <button onclick={() => { 
+                                            editingUser = {...user}; 
+                                            editingUserIsAdmin = isAdmin(user.id);
+                                            editingUserSchoolSearch = user.ungdomskole || '';
+                                        }} class="btn-small btn-edit">
                                             Rediger
                                         </button>
                                         <button onclick={() => deleteUser(user.id)} class="btn-small btn-danger">
@@ -1006,7 +1107,35 @@ async function updateLinje(linje: Linje) {
                             <tr>
                                 {#if editingSchool?.id === school.id}
                                     <td>
-                                        <input type="text" bind:value={editingSchool.navn} />
+                                        <div class="school-selector-inline">
+                                            <input 
+                                                type="text" 
+                                                bind:value={editingSchoolSearch}
+                                                oninput={() => {
+                                                    if (editingSchool) {
+                                                        editingSchool.navn = editingSchoolSearch;
+                                                    }
+                                                    showEditingSchoolDropdown = true;
+                                                }}
+                                                onfocus={() => showEditingSchoolDropdown = true}
+                                                placeholder="Søk eller skriv skolenavn..."
+                                                autocomplete="off"
+                                            />
+                                            {#if showEditingSchoolDropdown}
+                                                <div class="school-dropdown-inline">
+                                                    {#each filteredSchoolsForEdit(editingSchoolSearch) as s}
+                                                        <div 
+                                                            class="school-option-inline"
+                                                            onclick={() => selectSchoolForEdit(s.navn)}
+                                                            role="button"
+                                                            tabindex="0"
+                                                        >
+                                                            {s.navn}
+                                                        </div>
+                                                    {/each}
+                                                </div>
+                                            {/if}
+                                        </div>
                                     </td>
                                     <td>
                                         <select bind:value={editingSchool.aktiv}>
@@ -1015,10 +1144,19 @@ async function updateLinje(linje: Linje) {
                                         </select>
                                     </td>
                                     <td class="actions-cell">
-                                        <button onclick={() => updateSchool(editingSchool)} class="btn-small btn-success">
+                                        <button onclick={() => {
+                                            if (editingSchool) {
+                                                editingSchool.navn = editingSchoolSearch;
+                                            }
+                                            updateSchool(editingSchool!);
+                                        }} class="btn-small btn-success">
                                             Lagre
                                         </button>
-                                        <button onclick={() => editingSchool = null} class="btn-small btn-cancel">
+                                        <button onclick={() => { 
+                                            editingSchool = null; 
+                                            editingSchoolSearch = '';
+                                            showEditingSchoolDropdown = false;
+                                        }} class="btn-small btn-cancel">
                                             Avbryt
                                         </button>
                                     </td>
@@ -1032,7 +1170,10 @@ async function updateLinje(linje: Linje) {
                                         {/if}
                                     </td>
                                     <td class="actions-cell">
-                                        <button onclick={() => { editingSchool = {...school}; }} class="btn-small btn-edit">
+                                        <button onclick={() => { 
+                                            editingSchool = {...school}; 
+                                            editingSchoolSearch = school.navn;
+                                        }} class="btn-small btn-edit">
                                             Rediger
                                         </button>
                                         <button onclick={() => deleteSchool(school.id)} class="btn-small btn-danger">
@@ -1234,6 +1375,103 @@ async function updateLinje(linje: Linje) {
         border: 2px solid #e0e0e0;
         border-radius: 6px;
         font-size: 0.95rem;
+    }
+
+    .school-selector-inline {
+        position: relative;
+        width: 100%;
+    }
+
+    .school-selector-inline input {
+        width: 100%;
+        padding: 8px 12px;
+        border: 2px solid #e0e0e0;
+        border-radius: 6px;
+        font-size: 0.95rem;
+        transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .school-selector-inline input:focus {
+        outline: none;
+        border-color: var(--color-pink);
+        box-shadow: 0 0 0 3px rgba(217, 59, 96, 0.1);
+    }
+
+    .school-dropdown-inline {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background-color: white;
+        border: 2px solid var(--color-pink);
+        border-radius: 6px;
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 1000;
+        margin-top: 4px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .school-option-inline {
+        padding: 10px 12px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 0.95rem;
+    }
+
+    .school-option-inline:last-child {
+        border-bottom: none;
+    }
+
+    .school-option-inline:hover,
+    .school-option-inline:focus {
+        background-color: var(--color-pink-light);
+        outline: none;
+    }
+
+    .school-option-other-inline {
+        font-weight: 500;
+        color: var(--color-pink);
+        border-top: 2px solid #f0f0f0;
+    }
+
+    .tel-input {
+        width: 100%;
+        padding: 8px 12px;
+        border: 2px solid #e0e0e0;
+        border-radius: 6px;
+        font-size: 0.95rem;
+        font-family: 'Oslo Sans', sans-serif;
+        transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .tel-input:focus {
+        outline: none;
+        border-color: var(--color-pink);
+        box-shadow: 0 0 0 3px rgba(217, 59, 96, 0.1);
+    }
+
+    table input[type="text"],
+    table input[type="email"],
+    table input[type="tel"],
+    table select {
+        width: 100%;
+        padding: 8px 12px;
+        border: 2px solid #e0e0e0;
+        border-radius: 6px;
+        font-size: 0.95rem;
+        font-family: 'Oslo Sans', sans-serif;
+        transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    table input[type="text"]:focus,
+    table input[type="email"]:focus,
+    table input[type="tel"]:focus,
+    table select:focus {
+        outline: none;
+        border-color: var(--color-pink);
+        box-shadow: 0 0 0 3px rgba(217, 59, 96, 0.1);
     }
 
     .form-actions {
