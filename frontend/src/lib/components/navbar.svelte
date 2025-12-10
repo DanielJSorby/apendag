@@ -181,13 +181,13 @@
 
     .nav-links a:hover {
         color: #fe9094;
-        transform: translateY(-2px);
+        transform: translateY(-2px) scale(1.08);
+        transition: all 0.3s ease;
     }
 
     .admin-link {
         color: white;
         padding: 8px 16px;
-        transition: all 0.3s ease;
     }
 
     .content-left {
