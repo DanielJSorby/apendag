@@ -1,5 +1,7 @@
 <script lang="ts">
 import { onMount } from 'svelte';
+import { page } from '$app/stores';
+import { goto } from '$app/navigation';
 
 let { data } = $props();
 
@@ -47,10 +49,11 @@ onMount(async () => {
         kursMap = {};
     }
     
-    // Load FAQ questions
-    await loadFAQ();
-    // Load linjer
-    await loadLinjer();
+    // Load all data on mount to show correct counts
+    await Promise.all([
+        loadFAQ(),
+        loadLinjer()
+    ]);
 });
 
 async function loadFAQ() {
@@ -88,7 +91,39 @@ type Linje = {
     eksternLenke: string | null;
 };
 
-let activeTab = $state<'users' | 'stats' | 'faq' | 'linjer'>('users');
+// Initialize activeTab from URL parameter or default to 'users'
+function getInitialTab(): 'users' | 'stats' | 'faq' | 'linjer' {
+    const tabParam = $page.url.searchParams.get('tab');
+    if (tabParam === 'users' || tabParam === 'stats' || tabParam === 'faq' || tabParam === 'linjer') {
+        return tabParam;
+    }
+    return 'users';
+}
+
+let activeTab = $state<'users' | 'stats' | 'faq' | 'linjer'>(getInitialTab());
+
+// Update activeTab when URL parameter changes
+$effect(() => {
+    const tabParam = $page.url.searchParams.get('tab');
+    if (tabParam === 'users' || tabParam === 'stats' || tabParam === 'faq' || tabParam === 'linjer') {
+        if (activeTab !== tabParam) {
+            activeTab = tabParam;
+        }
+    } else {
+        // No tab parameter, set default and update URL
+        if (activeTab !== 'users') {
+            activeTab = 'users';
+        }
+        if (!$page.url.searchParams.has('tab')) {
+            goto(`/adminpanel?tab=users`, { replaceState: true, noScroll: true });
+        }
+    }
+});
+
+function setActiveTab(tab: 'users' | 'stats' | 'faq' | 'linjer') {
+    activeTab = tab;
+    goto(`/adminpanel?tab=${tab}`, { replaceState: true, noScroll: true });
+}
 let linjer = $state<Linje[]>([]);
 let editingLinje = $state<Linje | null>(null);
 let faqQuestions = $state<FAQ[]>([]);
@@ -422,18 +457,18 @@ async function updateLinje(linje: Linje) {
     <nav class="tabs">
         <button 
             class:active={activeTab === 'users'}
-            onclick={() => activeTab = 'users'}>
+            onclick={() => setActiveTab('users')}>
             Brukere ({users.length})
         </button>
         <button 
             class:active={activeTab === 'stats'}
-            onclick={() => activeTab = 'stats'}>
+            onclick={() => setActiveTab('stats')}>
             Statistikk
         </button>
         <button 
             class:active={activeTab === 'faq'}
             onclick={async () => { 
-                activeTab = 'faq';
+                setActiveTab('faq');
                 await loadFAQ();
             }}>
             FAQ ({faqQuestions.length})
@@ -441,7 +476,7 @@ async function updateLinje(linje: Linje) {
         <button 
             class:active={activeTab === 'linjer'}
             onclick={async () => { 
-                activeTab = 'linjer';
+                setActiveTab('linjer');
                 await loadLinjer();
             }}>
             Linjer ({linjer.length})
