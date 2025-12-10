@@ -2,8 +2,15 @@
 import { onMount } from 'svelte';
 import { page } from '$app/stores';
 import { goto } from '$app/navigation';
+import { getCookie } from '$lib/functions/getCookie';
 
 let { data } = $props();
+
+function setCookie(name: string, value: string, days: number = 365) {
+    const expires = new Date();
+    expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
+    document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/`;
+}
 
 type User = {
     id: string;
@@ -212,6 +219,47 @@ let showEditingSchoolDropdown = $state(false);
 let editingUserSchoolSearch = $state('');
 let showEditingUserSchoolDropdown = $state(false);
 let schoolErrorMessage = $state('');
+
+// Column visibility for stats - default values
+let visibleColumns = $state({
+    navn: true,
+    email: true,
+    telefon: true,
+    ungdomskole: true,
+    paameldt_tidspunkt_tekst: true,
+    studiesuppe: false,
+    paameldt_kurs_id: false
+});
+
+// Load from cookies on mount (client-side only)
+onMount(() => {
+    if (typeof document !== 'undefined') {
+        const saved = getCookie('adminVisibleColumns');
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                visibleColumns = {
+                    navn: parsed.navn !== undefined ? parsed.navn : true,
+                    email: parsed.email !== undefined ? parsed.email : true,
+                    telefon: parsed.telefon !== undefined ? parsed.telefon : true,
+                    ungdomskole: parsed.ungdomskole !== undefined ? parsed.ungdomskole : true,
+                    paameldt_tidspunkt_tekst: parsed.paameldt_tidspunkt_tekst !== undefined ? parsed.paameldt_tidspunkt_tekst : true,
+                    studiesuppe: parsed.studiesuppe !== undefined ? parsed.studiesuppe : false,
+                    paameldt_kurs_id: parsed.paameldt_kurs_id !== undefined ? parsed.paameldt_kurs_id : false
+                };
+            } catch (e) {
+                console.error('Error parsing visibleColumns from cookie:', e);
+            }
+        }
+    }
+});
+
+// Save to cookie whenever visibleColumns changes (client-side only)
+$effect(() => {
+    if (typeof document !== 'undefined') {
+        setCookie('adminVisibleColumns', JSON.stringify(visibleColumns));
+    }
+});
 
 async function loadSchools() {
     try {
@@ -739,6 +787,12 @@ async function updateLinje(linje: Linje) {
                                                         <div 
                                                             class="school-option-inline"
                                                             onclick={() => selectSchoolForUser(s.navn)}
+                                                            onkeydown={(e) => {
+                                                                if (e.key === 'Enter' || e.key === ' ') {
+                                                                    e.preventDefault();
+                                                                    selectSchoolForUser(s.navn);
+                                                                }
+                                                            }}
                                                             role="button"
                                                             tabindex="0"
                                                         >
@@ -748,6 +802,12 @@ async function updateLinje(linje: Linje) {
                                                     <div 
                                                         class="school-option-inline school-option-other-inline"
                                                         onclick={() => selectSchoolForUser('')}
+                                                        onkeydown={(e) => {
+                                                            if (e.key === 'Enter' || e.key === ' ') {
+                                                                e.preventDefault();
+                                                                selectSchoolForUser('');
+                                                            }
+                                                        }}
                                                         role="button"
                                                         tabindex="0"
                                                     >
@@ -864,7 +924,42 @@ async function updateLinje(linje: Linje) {
             </div>
 
             <div class="stats-section">
-                <h3>Kurspåmeldinger</h3>
+                <div class="column-selector-header">
+                    <h3>Kurspåmeldinger</h3>
+                    <div class="column-selector">
+                        <span class="column-selector-label">Velg kolonner å vise:</span>
+                        <div class="column-checkboxes">
+                            <label>
+                                <input type="checkbox" id="col-navn" bind:checked={visibleColumns.navn} />
+                                Navn
+                            </label>
+                            <label>
+                                <input type="checkbox" id="col-email" bind:checked={visibleColumns.email} />
+                                E-post
+                            </label>
+                            <label>
+                                <input type="checkbox" id="col-telefon" bind:checked={visibleColumns.telefon} />
+                                Telefonnummer
+                            </label>
+                            <label>
+                                <input type="checkbox" id="col-ungdomskole" bind:checked={visibleColumns.ungdomskole} />
+                                Ungdomsskole
+                            </label>
+                            <label>
+                                <input type="checkbox" id="col-tidspunkt" bind:checked={visibleColumns.paameldt_tidspunkt_tekst} />
+                                Tidspunkt
+                            </label>
+                            <label>
+                                <input type="checkbox" id="col-studiesuppe" bind:checked={visibleColumns.studiesuppe} />
+                                Studiesuppe
+                            </label>
+                            <label>
+                                <input type="checkbox" id="col-kurs" bind:checked={visibleColumns.paameldt_kurs_id} />
+                                Kurs
+                            </label>
+                        </div>
+                    </div>
+                </div>
                 <div class="course-stats">
                     {#each courseStats as stat}
                         <div class="course-stat-container">
@@ -883,9 +978,27 @@ async function updateLinje(linje: Linje) {
                                 <div class="course-users">
                                     {#each getUsersForCourse(stat.paameldt_kurs_id) as user}
                                         <div class="course-user-item">
-                                            <span class="user-name">{user.navn}</span>
-                                            <span class="user-email">{user.email}</span>
-                                            <span class="user-time">{user.paameldt_tidspunkt_tekst || 'Ikke valgt'}</span>
+                                            {#if visibleColumns.navn}
+                                                <span class="user-name"><strong>Navn:</strong> {user.navn || '-'}</span>
+                                            {/if}
+                                            {#if visibleColumns.email}
+                                                <span class="user-email"><strong>E-post:</strong> {user.email || '-'}</span>
+                                            {/if}
+                                            {#if visibleColumns.telefon}
+                                                <span class="user-telefon"><strong>Telefon:</strong> {user.telefon || '-'}</span>
+                                            {/if}
+                                            {#if visibleColumns.ungdomskole}
+                                                <span class="user-school"><strong>Skole:</strong> {user.ungdomskole || '-'}</span>
+                                            {/if}
+                                            {#if visibleColumns.paameldt_tidspunkt_tekst}
+                                                <span class="user-time"><strong>Tidspunkt:</strong> {user.paameldt_tidspunkt_tekst || 'Ikke valgt'}</span>
+                                            {/if}
+                                            {#if visibleColumns.studiesuppe}
+                                                <span class="user-studiesuppe"><strong>Studiesuppe:</strong> {user.studiesuppe || '-'}</span>
+                                            {/if}
+                                            {#if visibleColumns.paameldt_kurs_id}
+                                                <span class="user-kurs"><strong>Kurs:</strong> {getKursNavn(user.paameldt_kurs_id)}</span>
+                                            {/if}
                                         </div>
                                     {/each}
                                 </div>
@@ -1012,28 +1125,28 @@ async function updateLinje(linje: Linje) {
                                         <input type="text" value={editingLinje.id} disabled />
                                     </div>
                                     <div style="grid-column: 1 / -1;">
-                                        <label>Tittel</label>
-                                        <input type="text" bind:value={editingLinje.tittel} />
+                                        <label for="linje-tittel">Tittel</label>
+                                        <input type="text" id="linje-tittel" bind:value={editingLinje.tittel} />
                                     </div>
                                     <div style="grid-column: 1 / -1;">
-                                        <label>Beskrivelse</label>
-                                        <textarea bind:value={editingLinje.beskrivelse} rows="2"></textarea>
+                                        <label for="linje-beskrivelse">Beskrivelse</label>
+                                        <textarea id="linje-beskrivelse" bind:value={editingLinje.beskrivelse} rows="2"></textarea>
                                     </div>
                                     <div style="grid-column: 1 / -1;">
-                                        <label>Lang beskrivelse</label>
-                                        <textarea bind:value={editingLinje.langBeskrivelse} rows="8"></textarea>
+                                        <label for="linje-lang-beskrivelse">Lang beskrivelse</label>
+                                        <textarea id="linje-lang-beskrivelse" bind:value={editingLinje.langBeskrivelse} rows="8"></textarea>
                                     </div>
                                     <div style="grid-column: 1 / -1;">
-                                        <label>Bilde path</label>
-                                        <input type="text" bind:value={editingLinje.bilde} />
+                                        <label for="linje-bilde">Bilde path</label>
+                                        <input type="text" id="linje-bilde" bind:value={editingLinje.bilde} />
                                     </div>
                                     <div>
-                                        <label>Farge</label>
-                                        <input type="text" bind:value={editingLinje.farge} />
+                                        <label for="linje-farge">Farge</label>
+                                        <input type="text" id="linje-farge" bind:value={editingLinje.farge} />
                                     </div>
                                     <div>
-                                        <label>Lysfarge</label>
-                                        <input type="text" bind:value={editingLinje.lysfarge} />
+                                        <label for="linje-lysfarge">Lysfarge</label>
+                                        <input type="text" id="linje-lysfarge" bind:value={editingLinje.lysfarge} />
                                     </div>
                                     <div style="grid-column: 1 / -1;">
                                         <label>Ekstern lenke</label>
@@ -1168,6 +1281,12 @@ async function updateLinje(linje: Linje) {
                                                         <div 
                                                             class="school-option-inline"
                                                             onclick={() => selectSchoolForEdit(s.navn)}
+                                                            onkeydown={(e) => {
+                                                                if (e.key === 'Enter' || e.key === ' ') {
+                                                                    e.preventDefault();
+                                                                    selectSchoolForEdit(s.navn);
+                                                                }
+                                                            }}
                                                             role="button"
                                                             tabindex="0"
                                                         >
@@ -1747,10 +1866,57 @@ async function updateLinje(linje: Linje) {
         background: #f8f9fa;
     }
 
-    .course-user-item {
-        display: grid;
-        grid-template-columns: 1fr 1.5fr 1fr;
+    .column-selector-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .column-selector-header h3 {
+        margin: 0;
+    }
+
+    .column-selector {
+        display: flex;
+        align-items: center;
         gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    .column-selector-label {
+        font-weight: 500;
+        color: #333;
+        white-space: nowrap;
+    }
+
+    .column-checkboxes {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        align-items: center;
+    }
+
+    .column-checkboxes label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        font-size: 0.95rem;
+    }
+
+    .column-checkboxes input[type="checkbox"] {
+        cursor: pointer;
+        width: 18px;
+        height: 18px;
+    }
+
+    .course-user-item {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
         padding: 12px;
         background: white;
         border-radius: 6px;
@@ -1768,12 +1934,26 @@ async function updateLinje(linje: Linje) {
         margin-bottom: 0;
     }
 
+    .course-user-item span {
+        display: block;
+    }
+
     .user-name {
         font-weight: 600;
         color: #333;
     }
 
     .user-email {
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    .user-telefon {
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    .user-school {
         color: #666;
         font-size: 0.9rem;
     }
