@@ -27,6 +27,7 @@
     </div>
     <div class="copy-right">
         <p>&copy; {new Date().getFullYear()} Elvebakken VGS. Alle rettigheter forbeholdt.</p>
+        <p><a href="/personvernserklaering">Personvernserklæring</a></p>
     </div>
 </footer>
 
@@ -115,5 +116,14 @@
         border-top: 1px solid #e9ecef;
         font-size: 0.9rem;
         color: #6c757d;
+    }
+
+    .copy-right a {
+        color: #6c757d;
+        text-decoration: none;
+    }
+
+    .copy-right a:hover {
+        text-decoration: underline;
     }
 </style>
