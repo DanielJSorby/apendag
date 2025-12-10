@@ -15,7 +15,7 @@ export const GET: RequestHandler = async ({ url }) => {
 	];
 
 	// Dynamiske ruter - studieretninger
-	const linjer = ['st', 'kda', 'mk', 'im', 'el'];
+	const linjer = ['st', 'kda', 'mk', 'im', 'el', 'stx'];
 	const dynamicRoutes = linjer.map((linje) => ({
 		path: `/linjer/${linje}`,
 		priority: '0.9',
