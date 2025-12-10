@@ -76,8 +76,8 @@
     </a>
     <div class="content-right">
         <div class="nav-links">
-            <a href="/kalender20">Tirsdag 20.</a>
-            <a href="/kalender22">Torsdag 22.</a>
+            <a href="/kalender20">20. januar</a>
+            <a href="/kalender22">22. januar</a>
             <a href="/FAQ">Spørsmål</a>
             {#if isAdmin}
                 <a href="/adminpanel" class="admin-link">Admin</a>
@@ -108,8 +108,8 @@
 
 {#if menuOpen}
     <div class="mobile-menu">
-        <a href="/kalender20" onclick={toggleMenu}>Tirsdag 20.</a>
-        <a href="/kalender22" onclick={toggleMenu}>Torsdag 22.</a>
+        <a href="/kalender20" onclick={toggleMenu}>20. januar</a>
+        <a href="/kalender22" onclick={toggleMenu}>22. januar</a>
         <a href="/FAQ" onclick={toggleMenu}>Spørsmål</a>
         {#if isAdmin}
             <a href="/adminpanel" onclick={toggleMenu} class="admin-link">Admin</a>
