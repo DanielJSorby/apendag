@@ -126,8 +126,8 @@
 			<div class="contact-box">
 				<p><strong>Elvebakken VGS</strong></p>
 				<p>Vestre Elvebakke 3, 0182 Oslo</p>
-				<p>Telefon: <a href="tel:22996600">22 99 66 00</a></p>
-				<p>E-post: <a href="mailto:post@elvebakken.vgs.no">post@elvebakken.vgs.no</a></p>
+				<p>Telefon: <a href="tel:23467300">234 67 300</a></p>
+				<p>E-post: <a href="mailto:postmottak.elvebakken.vgs@osloskolen.no">postmottak.elvebakken.vgs@osloskolen.no</a></p>
 			</div>
 
 			<h2>12. Endringer i personvernserklæringen</h2>
