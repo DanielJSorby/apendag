@@ -70,7 +70,7 @@ export async function POST(event) {
         const [waitlistRows] = await connection.query(
             `SELECT v.id, v.bruker_id, v.studiesuppe, b.navn, b.email 
              FROM venteliste v 
-             INNER JOIN bruker b ON v.bruker_id = b.id 
+             INNER JOIN bruker b ON v.bruker_id COLLATE utf8mb4_unicode_ci = b.id COLLATE utf8mb4_unicode_ci 
              WHERE v.kurs_id = ? AND v.tidspunkt_tekst = ? 
              ORDER BY v.created_at ASC 
              LIMIT 1`,
@@ -144,7 +144,7 @@ export async function POST(event) {
                 const [nextWaitlistRows] = await connection.query(
                     `SELECT v.id, v.bruker_id, v.studiesuppe, b.navn, b.email 
                      FROM venteliste v 
-                     INNER JOIN bruker b ON v.bruker_id = b.id 
+                     INNER JOIN bruker b ON v.bruker_id COLLATE utf8mb4_unicode_ci = b.id COLLATE utf8mb4_unicode_ci 
                      WHERE v.kurs_id = ? AND v.tidspunkt_tekst = ? 
                      ORDER BY v.created_at ASC 
                      LIMIT 1`,

@@ -58,7 +58,7 @@ export async function POST(event) {
             if (venteliste) {
                 // Sjekk om brukeren allerede er på venteliste for dette kurset/tidspunktet
                 const [existingWaitlist] = await connection.query(
-                    'SELECT id FROM venteliste WHERE bruker_id = ? AND kurs_id = ? AND tidspunkt_tekst = ?',
+                    'SELECT id FROM venteliste WHERE bruker_id COLLATE utf8mb4_unicode_ci = ? AND kurs_id = ? AND tidspunkt_tekst = ?',
                     [user.id, kursId, tidspunktTekst]
                 );
                 
