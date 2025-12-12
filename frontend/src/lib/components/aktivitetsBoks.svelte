@@ -25,6 +25,8 @@
 	let errorMessage = '';
 	let hoverAvmeld = false; // Styrer hover-effekten for avmeldingsknappen
 	let visStudiesuppePopup = false;
+	let erPåVenteliste = false;
+	let ventelisteMessage = '';
 
 	onMount(() => {
 		// Setter start-tidspunktet basert på hva som er lagret i databasen
@@ -50,18 +52,25 @@
 	async function meldPaa() {
 		if (erPåmeldt || isLoading) return;
 
+		// Sjekk om kurset er fullt
+		if (plasser[valgtTidspunkt] <= 0) {
+			errorMessage = 'Det er ingen ledige plasser på dette tidspunktet. Du kan velge å sette deg på venteliste.';
+			return;
+		}
+
 		const erSisteTidspunkt = valgtTidspunkt === 'siste';
 
 		if (erSisteTidspunkt) {
 			visStudiesuppePopup = true; // Vis popup i stedet for confirm
 		} else {
-			await fullforPaamelding(false); // Meld på direkte uten studiesuppe
+			await fullforPaamelding(false, false); // Meld på direkte uten studiesuppe
 		}
 	}
 
-	async function fullforPaamelding(vilHaStudiesuppe: boolean) {
+	async function fullforPaamelding(vilHaStudiesuppe: boolean, venteliste: boolean = false) {
 		isLoading = true;
 		errorMessage = '';
+		ventelisteMessage = '';
 
 		try {
 			const response = await fetch('/api/meld-paa-kurs', {
@@ -72,17 +81,34 @@
 				body: JSON.stringify({
 					kursId: kurs,
 					tidspunktTekst: tidspunktTekst,
-					studiesuppe: vilHaStudiesuppe
+					studiesuppe: vilHaStudiesuppe,
+					venteliste: venteliste
 				})
 			});
 
 			if (!response.ok) {
 				const errorData = await response.json();
-				throw new Error(errorData.message || 'Noe gikk galt under påmelding');
+				const errorMsg = errorData.message || 'Noe gikk galt under påmelding';
+				
+				// Hvis kurset er fullt og ikke venteliste, vis venteliste-alternativ
+				if (response.status === 409 && errorMsg.includes('ingen ledige plasser') && !venteliste) {
+					errorMessage = errorMsg;
+					return; // Returner uten å kaste feil, så brukeren kan velge venteliste
+				}
+				
+				throw new Error(errorMsg);
 			}
 
-			erPåmeldt = true;
-			visOverlayEL = true;
+			const responseData = await response.json();
+			
+			if (venteliste) {
+				erPåVenteliste = true;
+				ventelisteMessage = responseData.message || 'Du er nå satt på venteliste.';
+				alert(ventelisteMessage);
+			} else {
+				erPåmeldt = true;
+				visOverlayEL = true;
+			}
 		} catch (error: any) {
 			errorMessage = error.message;
 			alert(`Påmelding feilet: ${errorMessage}`);
@@ -91,10 +117,25 @@
 		}
 	}
 
+	async function meldPaaVenteliste() {
+		if (isLoading) return;
+		
+		const erSisteTidspunkt = valgtTidspunkt === 'siste';
+		
+		if (erSisteTidspunkt) {
+			// Lagre at vi skal på venteliste, så popup kan bruke det
+			visStudiesuppePopup = true; // Vis popup for studiesuppe
+		} else {
+			await fullforPaamelding(false, true); // Meld på venteliste direkte uten studiesuppe
+		}
+	}
+
 	function handleStudiesuppeDecision(event: CustomEvent<boolean>) {
 		visStudiesuppePopup = false;
 		const vilHaStudiesuppe = event.detail;
-		fullforPaamelding(vilHaStudiesuppe);
+		// Hvis vi kom hit fra venteliste-knappen eller kurset er fullt, meld på venteliste
+		const skalVenteliste = plasser[valgtTidspunkt] <= 0;
+		fullforPaamelding(vilHaStudiesuppe, skalVenteliste);
 	}
 
 	async function meldAv() {
@@ -187,19 +228,61 @@
 					Meldt på!
 				{/if}
 			</button>
-		{:else}
+		{:else if erPåVenteliste}
 			<button 
-				on:click={meldPaa} 
-				id="meldPåKnapp" 
+				id="ventelisteKnapp" 
 				type="button"
-				disabled={isLoading || globaltPaameldtKursId !== null}
+				disabled={true}
 			>
-				{#if isLoading}
-					Melder på...
-				{:else}
-					Meld deg på ({tidspunktTekst})
-				{/if}
+				På venteliste
 			</button>
+		{:else}
+			<div class="meldPåKnapp-container">
+				{#if plasser[valgtTidspunkt] <= 0}
+					{#if errorMessage && errorMessage.includes('ingen ledige plasser')}
+						<p class="fullt-melding">Kurset er fullt for dette tidspunktet.</p>
+						<button 
+							on:click={meldPaaVenteliste} 
+							id="ventelisteKnapp" 
+							type="button"
+							disabled={isLoading || globaltPaameldtKursId !== null}
+						>
+							{#if isLoading}
+								Melder på venteliste...
+							{:else}
+								Meld deg på venteliste ({tidspunktTekst})
+							{/if}
+						</button>
+					{:else}
+						<p class="fullt-melding">Kurset er fullt for dette tidspunktet.</p>
+						<button 
+							on:click={meldPaaVenteliste} 
+							id="ventelisteKnapp" 
+							type="button"
+							disabled={isLoading || globaltPaameldtKursId !== null}
+						>
+							{#if isLoading}
+								Melder på venteliste...
+							{:else}
+								Meld deg på venteliste ({tidspunktTekst})
+							{/if}
+						</button>
+					{/if}
+				{:else}
+					<button 
+						on:click={meldPaa} 
+						id="meldPåKnapp" 
+						type="button"
+						disabled={isLoading || globaltPaameldtKursId !== null}
+					>
+						{#if isLoading}
+							Melder på...
+						{:else}
+							Meld deg på ({tidspunktTekst})
+						{/if}
+					</button>
+				{/if}
+			</div>
 		{/if}
 	</div>  
 </div>
@@ -324,5 +407,36 @@
 	#meldPåKnapp:hover {
 		background-color: #4CAF50;
 		border-radius: 1rem;
+	}
+	.meldPåKnapp-container {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.5rem;
+	}
+	.fullt-melding {
+		color: #f44336;
+		font-size: 0.9rem;
+		margin: 0;
+		text-align: center;
+	}
+	#ventelisteKnapp {
+		background-color: #ff9800;
+		color: white;
+		width: 15rem;
+		height: 3rem;
+		border-radius: 1rem;
+		font-size: 1rem;
+		transition: background-color 0.2s ease;
+		border: none;
+		cursor: pointer;
+	}
+	#ventelisteKnapp:hover:not(:disabled) {
+		background-color: #f57c00;
+	}
+	#ventelisteKnapp:disabled {
+		background-color: #ff9800;
+		opacity: 0.7;
+		cursor: not-allowed;
 	}
 </style>

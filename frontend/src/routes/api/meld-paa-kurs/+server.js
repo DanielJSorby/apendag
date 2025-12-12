@@ -1,5 +1,6 @@
 import { json } from '@sveltejs/kit';
 import { getDb } from '$lib/server/db';
+import { randomUUID } from 'crypto';
 
 /**
  * @type {import('./$types').RequestHandler}
@@ -11,7 +12,7 @@ export async function POST(event) {
         return json({ message: 'Du må være logget inn for å melde deg på.' }, { status: 401 });
     }
 
-    const { kursId, tidspunktTekst, studiesuppe } = await event.request.json();
+    const { kursId, tidspunktTekst, studiesuppe, venteliste } = await event.request.json();
 
     if (!kursId || !tidspunktTekst) {
         return json({ message: 'Mangler kurs-ID eller tidspunkt i forespørselen.' }, { status: 400 });
@@ -53,9 +54,46 @@ export async function POST(event) {
 
         // Sjekk om det er ledige plasser
         if (kurs[tidspunktKolonne] <= 0) {
-            await connection.rollback();
-            connection.release();
-            return json({ message: 'Det er ingen ledige plasser på dette tidspunktet.' }, { status: 409 });
+            // Hvis venteliste=true, legg brukeren på venteliste i stedet
+            if (venteliste) {
+                // Sjekk om brukeren allerede er på venteliste for dette kurset/tidspunktet
+                const [existingWaitlist] = await connection.query(
+                    'SELECT id FROM venteliste WHERE bruker_id = ? AND kurs_id = ? AND tidspunkt_tekst = ?',
+                    [user.id, kursId, tidspunktTekst]
+                );
+                
+                // @ts-ignore
+                if (existingWaitlist.length > 0) {
+                    await connection.rollback();
+                    connection.release();
+                    return json({ message: 'Du er allerede på venteliste for dette kurset.' }, { status: 409 });
+                }
+                
+                // Sjekk om brukeren allerede er påmeldt et kurs
+                const [rows] = await connection.query('SELECT paameldt_kurs_id FROM bruker WHERE id = ?', [user.id]);
+                // @ts-ignore
+                if (rows[0] && rows[0].paameldt_kurs_id) {
+                    await connection.rollback();
+                    connection.release();
+                    return json({ message: 'Du er allerede påmeldt et kurs.' }, { status: 409 });
+                }
+                
+                // Legg til på venteliste
+                const studiesuppeVerdi = studiesuppe ? 'ja' : null;
+                const waitlistId = randomUUID();
+                await connection.query(
+                    'INSERT INTO venteliste (id, bruker_id, kurs_id, tidspunkt_tekst, studiesuppe) VALUES (?, ?, ?, ?, ?)',
+                    [waitlistId, user.id, kursId, tidspunktTekst, studiesuppeVerdi]
+                );
+                
+                await connection.commit();
+                connection.release();
+                return json({ message: 'Du er nå satt på venteliste. Du vil få beskjed via e-post hvis det blir ledig plass.' }, { status: 200 });
+            } else {
+                await connection.rollback();
+                connection.release();
+                return json({ message: 'Det er ingen ledige plasser på dette tidspunktet. Du kan velge å sette deg på venteliste.' }, { status: 409 });
+            }
         }
 
         // Sjekk om brukeren allerede er påmeldt et kurs
