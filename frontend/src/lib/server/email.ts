@@ -6,6 +6,10 @@
  * 2. Get API key from https://resend.com (free tier: 100 emails/day)
  * 3. Add to .env: RESEND_API_KEY=re_xxxxx
  * 4. Add to .env: FROM_EMAIL=noreply@yourdomain.com (or use Resend's test domain)
+ * 
+ * For nodemailer (waitlist emails):
+ * 1. Install nodemailer: npm install nodemailer
+ * 2. Add to .env: SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS
  */
 
 let resend: any = null;
@@ -117,6 +121,130 @@ export async function sendMagicLinkEmail(to: string, magicLink: string, userName
         return;
     } catch (error) {
         console.error('Failed to send email:', error);
+        throw error;
+    }
+}
+
+/**
+ * Send waitlist notification email using nodemailer
+ * Notifies user when they get a spot from the waitlist
+ */
+export async function sendWaitlistNotificationEmail(
+    to: string, 
+    userName: string, 
+    kursNavn: string, 
+    tidspunktTekst: string
+): Promise<void> {
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    
+    try {
+        // Dynamic import to avoid errors if package not installed
+        const nodemailerModule = await import('nodemailer');
+        const nodemailer = nodemailerModule.default || nodemailerModule;
+        
+        const smtpHost = process.env.SMTP_HOST;
+        const smtpPort = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT) : 587;
+        const smtpUser = process.env.SMTP_USER;
+        const smtpPass = process.env.SMTP_PASS;
+        
+        if (!smtpHost || !smtpUser || !smtpPass) {
+            const errorMessage = 'SMTP configuration not set in environment variables. Cannot send waitlist email.';
+            console.error('[EMAIL ERROR]', errorMessage);
+            
+            if (isDevelopment) {
+                console.log(`[DEV MODE] Would send waitlist notification to ${to} for ${kursNavn} at ${tidspunktTekst}`);
+                console.log('To enable email sending, set SMTP_HOST, SMTP_USER, and SMTP_PASS in your .env file');
+                return; // Allow dev mode to continue
+            }
+            
+            throw new Error(errorMessage);
+        }
+        
+        const transporter = nodemailer.createTransport({
+            host: smtpHost,
+            port: smtpPort,
+            secure: smtpPort === 465, // true for 465, false for other ports
+            auth: {
+                user: smtpUser,
+                pass: smtpPass
+            }
+        });
+        
+        const fromEmail = process.env.FROM_EMAIL || smtpUser;
+        const baseUrl = process.env.PUBLIC_BASE_URL || 'http://localhost:5173';
+        
+        const mailOptions = {
+            from: fromEmail,
+            to: to,
+            subject: 'Du har fått plass på kurset! - Elvebakken',
+            html: `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="utf-8">
+                    <style>
+                        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                        .button { 
+                            display: inline-block; 
+                            padding: 12px 24px; 
+                            background-color: #4CAF50; 
+                            color: white; 
+                            text-decoration: none; 
+                            border-radius: 8px; 
+                            margin: 20px 0;
+                        }
+                        .info-box {
+                            background-color: #f0f7ff;
+                            border-left: 4px solid #1d40b0;
+                            padding: 15px;
+                            margin: 20px 0;
+                        }
+                        .footer { margin-top: 30px; font-size: 12px; color: #666; }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <h2>Gratulerer! Du har fått plass på kurset</h2>
+                        <p>Hei${userName ? ` ${userName}` : ''},</p>
+                        <p>Vi har gode nyheter! Det har blitt ledig en plass på kurset du stod på venteliste for.</p>
+                        <div class="info-box">
+                            <p><strong>Kurs:</strong> ${kursNavn}</p>
+                            <p><strong>Tidspunkt:</strong> ${tidspunktTekst}</p>
+                        </div>
+                        <p>Du er nå automatisk påmeldt kurset. Du kan se din påmelding når du logger inn på nettsiden.</p>
+                        <a href="${baseUrl}/kalender22" class="button">Se min påmelding</a>
+                        <p>Hvis du ikke lenger ønsker å delta, kan du melde deg av via nettsiden.</p>
+                        <div class="footer">
+                            <p>Hvis du har spørsmål, ta kontakt med oss.</p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `,
+            text: `
+                Gratulerer! Du har fått plass på kurset
+                
+                Hei${userName ? ` ${userName}` : ''},
+                
+                Vi har gode nyheter! Det har blitt ledig en plass på kurset du stod på venteliste for.
+                
+                Kurs: ${kursNavn}
+                Tidspunkt: ${tidspunktTekst}
+                
+                Du er nå automatisk påmeldt kurset. Du kan se din påmelding når du logger inn på nettsiden: ${baseUrl}/kalender22
+                
+                Hvis du ikke lenger ønsker å delta, kan du melde deg av via nettsiden.
+                
+                Hvis du har spørsmål, ta kontakt med oss.
+            `
+        };
+        
+        const info = await transporter.sendMail(mailOptions);
+        console.log('Waitlist notification email sent successfully to', to, 'Message ID:', info.messageId);
+        return;
+    } catch (error) {
+        console.error('Failed to send waitlist notification email:', error);
         throw error;
     }
 }

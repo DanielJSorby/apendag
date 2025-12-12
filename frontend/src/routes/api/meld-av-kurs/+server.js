@@ -1,5 +1,6 @@
 import { json } from '@sveltejs/kit';
 import { getDb } from '$lib/server/db';
+import { sendWaitlistNotificationEmail } from '$lib/server/email';
 
 /**
  * @type {import('./$types').RequestHandler}
@@ -65,7 +66,149 @@ export async function POST(event) {
         const updateUserSql = 'UPDATE bruker SET paameldt_kurs_id = NULL, paameldt_tidspunkt_tekst = NULL, studiesuppe = NULL WHERE id = ?';
         await connection.query(updateUserSql, [user.id]);
 
+        // 3. Sjekk om det er noen på venteliste for dette kurset/tidspunktet
+        const [waitlistRows] = await connection.query(
+            `SELECT v.id, v.bruker_id, v.studiesuppe, b.navn, b.email 
+             FROM venteliste v 
+             INNER JOIN bruker b ON v.bruker_id = b.id 
+             WHERE v.kurs_id = ? AND v.tidspunkt_tekst = ? 
+             ORDER BY v.created_at ASC 
+             LIMIT 1`,
+            [kursId, tidspunktTekst]
+        );
+
+        // @ts-ignore
+        if (waitlistRows.length > 0) {
+            const waitlistEntry = waitlistRows[0];
+            const waitlistUserId = waitlistEntry.bruker_id;
+            const waitlistStudiesuppe = waitlistEntry.studiesuppe;
+            const waitlistUserName = waitlistEntry.navn;
+            const waitlistUserEmail = waitlistEntry.email;
+
+            // Sjekk om ventelistebrukeren fortsatt ikke er påmeldt et annet kurs
+            const [waitlistUserRows] = await connection.query(
+                'SELECT paameldt_kurs_id FROM bruker WHERE id = ?',
+                [waitlistUserId]
+            );
+            
+            // @ts-ignore
+            const isWaitlistUserAvailable = !waitlistUserRows[0] || !waitlistUserRows[0].paameldt_kurs_id;
+
+            if (isWaitlistUserAvailable) {
+                // Meld ventelistebrukeren på kurset
+                // 1. Reduser antall plasser igjen
+                const decreaseKursSql = `UPDATE kurs SET ${tidspunktKolonne} = ${tidspunktKolonne} - 1 WHERE id = ?`;
+                await connection.query(decreaseKursSql, [kursId]);
+
+                // 2. Oppdater ventelistebrukerens påmelding
+                const enrollWaitlistUserSql = 'UPDATE bruker SET paameldt_kurs_id = ?, paameldt_tidspunkt_tekst = ?, studiesuppe = ? WHERE id = ?';
+                await connection.query(enrollWaitlistUserSql, [kursId, tidspunktTekst, waitlistStudiesuppe, waitlistUserId]);
+
+                // 3. Fjern fra venteliste
+                await connection.query('DELETE FROM venteliste WHERE id = ?', [waitlistEntry.id]);
+
+                await connection.commit();
+                connection.release();
+
+                // Send e-post til ventelistebrukeren (utenfor transaksjonen for å unngå å holde transaksjonen åpen)
+                try {
+                    // Hent kursnavn fra aktiviteter.json eller bruk standard
+                    let kursNavn = 'Kurset';
+                    try {
+                        // Prøv å hente kursnavn fra databasen hvis det finnes
+                        if (kurs.navn) {
+                            kursNavn = kurs.navn;
+                        }
+                    } catch (e) {
+                        // Fallback til standard navn
+                    }
+                    
+                    await sendWaitlistNotificationEmail(
+                        waitlistUserEmail,
+                        waitlistUserName || '',
+                        kursNavn,
+                        tidspunktTekst
+                    );
+                } catch (emailError) {
+                    // Log email error but don't fail the request
+                    console.error('Failed to send waitlist notification email:', emailError);
+                }
+
+                return json({ message: 'Du er nå meldt av kurset. En person fra ventelisten har fått plassen din.' }, { status: 200 });
+            } else {
+                // Ventelistebrukeren er allerede påmeldt et annet kurs, hopp over dem
+                // Fjern dem fra ventelisten og prøv neste
+                await connection.query('DELETE FROM venteliste WHERE id = ?', [waitlistEntry.id]);
+                
+                // Prøv å finne neste person på ventelisten
+                const [nextWaitlistRows] = await connection.query(
+                    `SELECT v.id, v.bruker_id, v.studiesuppe, b.navn, b.email 
+                     FROM venteliste v 
+                     INNER JOIN bruker b ON v.bruker_id = b.id 
+                     WHERE v.kurs_id = ? AND v.tidspunkt_tekst = ? 
+                     ORDER BY v.created_at ASC 
+                     LIMIT 1`,
+                    [kursId, tidspunktTekst]
+                );
+
+                // @ts-ignore
+                if (nextWaitlistRows.length > 0) {
+                    const nextWaitlistEntry = nextWaitlistRows[0];
+                    const nextWaitlistUserId = nextWaitlistEntry.bruker_id;
+                    const nextWaitlistStudiesuppe = nextWaitlistEntry.studiesuppe;
+                    const nextWaitlistUserName = nextWaitlistEntry.navn;
+                    const nextWaitlistUserEmail = nextWaitlistEntry.email;
+
+                    const [nextUserRows] = await connection.query(
+                        'SELECT paameldt_kurs_id FROM bruker WHERE id = ?',
+                        [nextWaitlistUserId]
+                    );
+                    
+                    // @ts-ignore
+                    const isNextUserAvailable = !nextUserRows[0] || !nextUserRows[0].paameldt_kurs_id;
+
+                    if (isNextUserAvailable) {
+                        // Meld neste person på
+                        const decreaseKursSql = `UPDATE kurs SET ${tidspunktKolonne} = ${tidspunktKolonne} - 1 WHERE id = ?`;
+                        await connection.query(decreaseKursSql, [kursId]);
+
+                        const enrollWaitlistUserSql = 'UPDATE bruker SET paameldt_kurs_id = ?, paameldt_tidspunkt_tekst = ?, studiesuppe = ? WHERE id = ?';
+                        await connection.query(enrollWaitlistUserSql, [kursId, tidspunktTekst, nextWaitlistStudiesuppe, nextWaitlistUserId]);
+
+                        await connection.query('DELETE FROM venteliste WHERE id = ?', [nextWaitlistEntry.id]);
+
+                        await connection.commit();
+                        connection.release();
+
+                        try {
+                            // Hent kursnavn fra aktiviteter.json eller bruk standard
+                            let kursNavn = 'Kurset';
+                            try {
+                                if (kurs.navn) {
+                                    kursNavn = kurs.navn;
+                                }
+                            } catch (e) {
+                                // Fallback til standard navn
+                            }
+                            
+                            await sendWaitlistNotificationEmail(
+                                nextWaitlistUserEmail,
+                                nextWaitlistUserName || '',
+                                kursNavn,
+                                tidspunktTekst
+                            );
+                        } catch (emailError) {
+                            console.error('Failed to send waitlist notification email:', emailError);
+                        }
+
+                        return json({ message: 'Du er nå meldt av kurset. En person fra ventelisten har fått plassen din.' }, { status: 200 });
+                    }
+                }
+            }
+        }
+
         await connection.commit();
+        connection.release();
 
         return json({ message: 'Du er nå meldt av kurset.' }, { status: 200 });
 
