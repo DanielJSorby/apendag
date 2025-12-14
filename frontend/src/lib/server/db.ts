@@ -9,6 +9,7 @@
  */
 import { config } from "dotenv";
 import * as mysql from "mysql2/promise";
+import mysql2 from "mysql2";
 import { Sequelize, DataTypes } from 'sequelize';
 
 config();
@@ -75,7 +76,7 @@ export const sequelize = new Sequelize(
 		host: process.env.DB_HOST,
 		port: parseInt(process.env.DB_PORT || '3306'),
 		dialect: 'mysql',
-		dialectModule: mysql.createConnection, // Use mysql2 promise-based connection for Sequelize
+		dialectModule: mysql2,
 		logging: false
 	}
 );

@@ -160,17 +160,60 @@ export async function sendWaitlistNotificationEmail(
             throw new Error(errorMessage);
         }
         
+        // Konfigurer transporter med støtte for STARTTLS (viktig for Domeneshop)
+        // Prøv både LOGIN og PLAIN autentisering
         const transporter = nodemailer.createTransport({
             host: smtpHost,
             port: smtpPort,
-            secure: smtpPort === 465, // true for 465, false for other ports
+            secure: smtpPort === 465, // true for 465 (SSL), false for 587 (STARTTLS)
             auth: {
                 user: smtpUser,
                 pass: smtpPass
-            }
+            },
+            // For STARTTLS (port 587), må vi eksplisitt aktivere det
+            requireTLS: smtpPort === 587,
+            tls: {
+                // Ikke avvis ugyldige sertifikater i development (kan være nødvendig for noen servere)
+                rejectUnauthorized: !isDevelopment
+            },
+            // Legg til debug i development
+            debug: isDevelopment,
+            logger: isDevelopment
         });
         
-        const fromEmail = process.env.FROM_EMAIL || smtpUser;
+        // For Domeneshop: FROM_EMAIL må være på samme domene som SMTP_USER
+        let fromEmail = process.env.FROM_EMAIL;
+        
+        // Hvis SMTP_USER er en e-postadresse, sjekk og korriger FROM_EMAIL
+        if (smtpUser.includes('@')) {
+            const smtpDomain = smtpUser.split('@')[1];
+            
+            // Hvis FROM_EMAIL ikke er satt, bruk SMTP_USER
+            if (!fromEmail) {
+                fromEmail = smtpUser;
+                console.log(`[EMAIL] FROM_EMAIL ikke satt, bruker SMTP_USER: ${fromEmail}`);
+            } 
+            // Hvis FROM_EMAIL er satt men på feil domene, bruk SMTP_USER i stedet
+            else if (fromEmail.includes('@')) {
+                const fromDomain = fromEmail.split('@')[1];
+                if (smtpDomain !== fromDomain) {
+                    console.warn(
+                        `[EMAIL] FROM_EMAIL (${fromEmail}) er ikke på samme domene som SMTP_USER (${smtpUser}). ` +
+                        `Bruker SMTP_USER som FROM_EMAIL i stedet.`
+                    );
+                    fromEmail = smtpUser;
+                }
+            }
+        } else {
+            // Hvis SMTP_USER er et brukernavn (wildcard-konto), må FROM_EMAIL være satt eksplisitt
+            if (!fromEmail) {
+                throw new Error(
+                    'FROM_EMAIL må være satt i .env når SMTP_USER er et brukernavn. ' +
+                    'For wildcard-kontoer, sett FROM_EMAIL til en e-postadresse på domenet (f.eks. noreply@elvebakkenapendag.no)'
+                );
+            }
+        }
+        
         const baseUrl = process.env.PUBLIC_BASE_URL || 'http://localhost:5173';
         
         const mailOptions = {
@@ -243,8 +286,27 @@ export async function sendWaitlistNotificationEmail(
         const info = await transporter.sendMail(mailOptions);
         console.log('Waitlist notification email sent successfully to', to, 'Message ID:', info.messageId);
         return;
-    } catch (error) {
+    } catch (error: any) {
         console.error('Failed to send waitlist notification email:', error);
+        
+        // Gi mer detaljert feilmelding basert på feilkoden
+        if (error.code === 'EAUTH') {
+            const authError = new Error(
+                'SMTP autentisering feilet. Sjekk at SMTP_USER og SMTP_PASS er korrekte. ' +
+                'For Gmail, bruk App Password i stedet for vanlig passord. ' +
+                `Feil: ${error.response || error.message}`
+            );
+            authError.name = 'SMTPAuthError';
+            throw authError;
+        } else if (error.code === 'ECONNECTION' || error.code === 'ETIMEDOUT') {
+            const connError = new Error(
+                `Kunne ikke koble til SMTP-serveren (${smtpHost}:${smtpPort}). ` +
+                `Sjekk at SMTP_HOST og SMTP_PORT er korrekte. Feil: ${error.message}`
+            );
+            connError.name = 'SMTPConnectionError';
+            throw connError;
+        }
+        
         throw error;
     }
 }
