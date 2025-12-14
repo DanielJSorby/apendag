@@ -50,12 +50,16 @@ export const load: PageServerLoad = async ({ cookies, url }) => {
             GROUP BY paameldt_kurs_id
         `);
         
+        // Hent alle kurs fra databasen
+        const [kursListe] = await pool.query('SELECT * FROM kurs ORDER BY id');
+        
         return {
             users: users || [],
             courseStats: courseStats || [],
             adminIds: Array.from(adminIds),
             currentUserId: userId,
-            isDevelopmentMode: isDevelopmentAdmin
+            isDevelopmentMode: isDevelopmentAdmin,
+            kursListe: kursListe || []
         };
     } catch (error) {
         // Hvis det er en redirect, kast den videre

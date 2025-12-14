@@ -36,26 +36,29 @@ type Kurs = {
     farge: string;
 };
 
-// Kurs-mapping basert på aktiviteter.json
+// Kurs-mapping basert på databasen
 let kursMap = $state<Record<number, string>>({});
 let kursListe = $state<Kurs[]>([]);
 
 onMount(async () => {
-    try {
-        const response = await fetch('/aktiviteter.json');
-        const data = await response.json();
-        const apenSkoledag = data.dager.find((d: any) => d.arrangement === "Åpen skoledag for 10. trinn");
-        
-        if (apenSkoledag && apenSkoledag.kurs) {
-            kursListe = apenSkoledag.kurs;
-            kursMap = {};
-            apenSkoledag.kurs.forEach((kurs: Kurs) => {
-                kursMap[kurs.id] = kurs.navn;
-            });
-        }
-    } catch (error) {
-        // Fallback til tom mapping hvis det feiler
+    // Hent kurs fra server data
+    if (data.kursListe && Array.isArray(data.kursListe)) {
+        kursListe = data.kursListe.map((kurs: any) => ({
+            id: kurs.id,
+            linje: kurs.linje || '',
+            navn: kurs.navn || '',
+            plasser: kurs.plasser || 0,
+            tid: {
+                forLunsj: kurs.tid_for_lunsj || '',
+                etterLunsj: kurs.tid_etter_lunsj || '',
+                siste: kurs.tid_siste || ''
+            },
+            farge: kurs.farge || ''
+        }));
         kursMap = {};
+        kursListe.forEach((kurs: Kurs) => {
+            kursMap[kurs.id] = kurs.navn;
+        });
     }
     
     // Load all data on mount to show correct counts
@@ -742,7 +745,7 @@ async function updateLinje(linje: Linje) {
                         <select bind:value={newUser.paameldt_kurs_id}>
                             <option value={null}>Ingen kurs</option>
                             {#each kursListe as kurs}
-                                <option value={kurs.id}>{kurs.navn}</option>
+                                <option value={kurs.id}>{kurs.navn} ({kurs.linje.toUpperCase()})</option>
                             {/each}
                         </select>
                         <input type="text" placeholder="Påmeldt tidspunkt" bind:value={newUser.paameldt_tidspunkt_tekst} />
@@ -845,7 +848,7 @@ async function updateLinje(linje: Linje) {
                                         <select bind:value={editingUser.paameldt_kurs_id}>
                                             <option value={null}>Ingen kurs</option>
                                             {#each kursListe as kurs}
-                                                <option value={kurs.id}>{kurs.linje.toUpperCase()}</option>
+                                                <option value={kurs.id}>{kurs.navn} ({kurs.linje.toUpperCase()})</option>
                                             {/each}
                                         </select>
                                     </td>
