@@ -2,9 +2,40 @@ import { getDb } from '$lib/server/db';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 
+// Helper function to check admin authorization
+async function checkAdmin(cookies: any, url: URL): Promise<string | null> {
+    const isLocalhost = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
+    const currentUserId = cookies.get('UserId') || (isLocalhost ? 'dev-admin-localhost' : null);
+    
+    if (!currentUserId) {
+        return null;
+    }
+    
+    if (isLocalhost) {
+        return currentUserId;
+    }
+    
+    const pool = await getDb();
+    const [adminCheck] = await pool.query(
+        'SELECT * FROM admin WHERE bruker_id = ?',
+        [currentUserId]
+    );
+    
+    if (!Array.isArray(adminCheck) || adminCheck.length === 0) {
+        return null;
+    }
+    
+    return currentUserId;
+}
+
 // GET - Hent alle brukere
-export const GET: RequestHandler = async () => {
+export const GET: RequestHandler = async ({ cookies, url }) => {
     try {
+        const userId = await checkAdmin(cookies, url);
+        if (!userId) {
+            return json({ error: 'Ikke autorisert' }, { status: 403 });
+        }
+        
         const pool = await getDb();
         const [users] = await pool.query('SELECT * FROM bruker ORDER BY id DESC');
         return json(users);
@@ -36,8 +67,13 @@ async function updateKursPlasser(pool: any, kursId: number | null, tidspunkt: st
 }
 
 // POST - Opprett ny bruker
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async ({ request, cookies, url }) => {
     try {
+        const userId = await checkAdmin(cookies, url);
+        if (!userId) {
+            return json({ error: 'Ikke autorisert' }, { status: 403 });
+        }
+        
         const pool = await getDb();
         const data = await request.json();
         const { id, navn, email, paameldt_kurs_id, paameldt_tidspunkt_tekst, studiesuppe, ungdomskole, telefon } = data;
@@ -60,8 +96,13 @@ export const POST: RequestHandler = async ({ request }) => {
 };
 
 // PUT - Oppdater bruker
-export const PUT: RequestHandler = async ({ request }) => {
+export const PUT: RequestHandler = async ({ request, cookies, url }) => {
     try {
+        const userId = await checkAdmin(cookies, url);
+        if (!userId) {
+            return json({ error: 'Ikke autorisert' }, { status: 403 });
+        }
+        
         const pool = await getDb();
         const data = await request.json();
         const { id, navn, email, paameldt_kurs_id, paameldt_tidspunkt_tekst, studiesuppe, ungdomskole, telefon } = data;
@@ -100,8 +141,13 @@ export const PUT: RequestHandler = async ({ request }) => {
 };
 
 // DELETE - Slett bruker
-export const DELETE: RequestHandler = async ({ request }) => {
+export const DELETE: RequestHandler = async ({ request, cookies, url }) => {
     try {
+        const userId = await checkAdmin(cookies, url);
+        if (!userId) {
+            return json({ error: 'Ikke autorisert' }, { status: 403 });
+        }
+        
         const pool = await getDb();
         const { id } = await request.json();
         
