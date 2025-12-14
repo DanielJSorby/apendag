@@ -9,11 +9,11 @@
 
     // Fallback data if not provided
     const defaultData = {
-        st: { tittel: 'Studiespesialisering', beskrivelse: 'Forberedelse til høyere utdanning', farge: 'var(--color-blue)', lysfarge: 'var(--color-blue-light)' },
-        kda: { tittel: 'Kunst, design og arkitektur', beskrivelse: 'Kreativ utfoldelse og design', farge: 'var(--color-green)', lysfarge: 'var(--color-green-light)' },
-        mk: { tittel: 'Medier og Kommunikasjon', beskrivelse: 'Film, foto og kommunikasjon', farge: 'var(--color-pink)', lysfarge: 'var(--color-pink-light)' },
-        im: { tittel: 'Informasjonsteknologi og medieproduksjon', beskrivelse: 'Programmering og medieproduksjon', farge: 'var(--color-blue)', lysfarge: 'var(--color-blue-light)' },
-        el: { tittel: 'Elektro og datateknologi', beskrivelse: 'Elektronikk og datasystemer', farge: 'var(--color-orange)', lysfarge: 'var(--color-orange-light)' }
+        st: { tittel: 'ST', farge: 'var(--color-blue)', lysfarge: 'var(--color-blue-light)' },
+        kda: { tittel: 'KDA', farge: 'var(--color-green)', lysfarge: 'var(--color-green-light)' },
+        mk: { tittel: 'MK', farge: 'var(--color-pink)', lysfarge: 'var(--color-pink-light)' },
+        im: { tittel: 'IM', beskrivelse: 'IMST', farge: 'var(--color-blue)', lysfarge: 'var(--color-blue-light)' },
+        el: { tittel: 'ED', beskrivelse: 'ELST', farge: 'var(--color-orange)', lysfarge: 'var(--color-orange-light)' }
     };
 
     const data = linjeData || defaultData;
@@ -23,7 +23,9 @@
 <a href={`/linjer/${linje}`}>
 <button class="linjeknapp" style="border-color: {currentLinje.farge}; color: {currentLinje.farge}; background-color: {currentLinje.lysfarge};" onclick={onclick}>
         <h1>{@html currentLinje.tittel}</h1>
-        <p>{currentLinje.beskrivelse}</p>
+        {#if currentLinje.beskrivelse}
+            <p>{currentLinje.beskrivelse}</p>
+        {/if}
     </button>
 </a>
 
@@ -33,34 +35,30 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-        width: 180px;
+        justify-content: center; /* Center content vertically */
+        width: 220px;
         min-height: 160px;
-        border: 3px solid;
-        border-radius: 15px;
+        border: 2px solid; /* Thinner border */
+        border-radius: 20px; /* More rounded corners */
         cursor: pointer;
-        transition: background-color 0.3s, transform 0.3s, border-color 0.3s;
+        transition: all 0.3s ease; /* Smoother transition */
         text-align: center;
-        padding: 15px 12px;
+        padding: 20px;
         overflow: hidden;
         box-sizing: border-box;
-    }
-
-    button.linjeknapp:hover {
-        transform: scale(1.05);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        position: relative; /* For absolute positioning of p */
     }
 
     button.linjeknapp h1 {
-        font-size: 0.95rem;
+        font-size: 3rem; /* Larger font size */
+        font-weight: 600; /* Slightly less bold */
         margin: 0;
-        font-weight: bold;
-        line-height: 1.2;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-        hyphens: auto;
-        flex-shrink: 0;
+        line-height: 1;
+    }
+
+    button.linjeknapp:hover {
+        transform: translateY(-5px); /* Lift effect */
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
     }
 
     a {
@@ -69,12 +67,14 @@
     }
 
     button.linjeknapp p {
-        font-size: 0.8rem;
+        font-size: 0.9rem;
         margin: 0;
-        opacity: 0.8;
-        line-height: 1.3;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
+        opacity: 0.9;
+        position: absolute;
+        bottom: 15px;
+        left: 0;
+        right: 0;
+        padding: 0 10px;
     }
 
      /* Mobil størrelse */
@@ -82,18 +82,17 @@
         button.linjeknapp {
             width: 42vw;
             min-height: 140px;
-            padding: 12px 8px;
-            gap: 6px;
+            padding: 15px 8px;
+            border-radius: 15px;
         }
 
         button.linjeknapp h1 {
-            font-size: 0.85rem;
-            line-height: 1.1;
+            font-size: 2.5rem;
         }
 
         button.linjeknapp p {
-            font-size: 0.65rem;
-            line-height: 1.2;
+            font-size: 0.75rem;
+            bottom: 10px;
         }
     }
 
