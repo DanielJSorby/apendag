@@ -32,7 +32,7 @@
         <div class="buttons">
             <button onclick={() => window.location.href = '/kalender20'}>
                 <h2>Tirsdag <br> 20. januar</h2>
-                <p>Åpen dag for alle interesserte på ettermiddagen</p>
+                <p>Åpen dag for alle interesserte fra <br/>15:00-20:00</p>
                 <p>Trykk her for mer informasjon!</p>
             </button>
             <button onclick={() => window.location.href = '/kalender22'}>

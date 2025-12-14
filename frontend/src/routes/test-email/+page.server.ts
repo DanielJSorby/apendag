@@ -7,7 +7,7 @@ export const load: PageServerLoad = async ({ url, request }) => {
 	const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
 	
 	if (!isLocalhost) {
-		throw error(403, 'Denne siden er kun tilgjengelig på localhost');
+		throw error(404, 'Page not found');
 	}
 
 	// Sjekk SMTP-konfigurasjon (uten å vise faktiske verdier)

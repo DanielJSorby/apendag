@@ -104,6 +104,10 @@
 			<section class="show-section">
 				<h2 class="section-title">Informasjonsshow</h2>
 				<p class="section-subtitle">Fire showtider i auditoriet:</p>
+				<p class="show-description">
+					På showene får du møte Elvebakken-elever og få en smakebit av hva Elvebakken tilbyr. 
+					Du får informasjon om hvordan det er å gå på skolen, muligheter og alt annet du lurer på.
+				</p>
 				<div class="show-grid">
 					{#each arrangement.tidspunkter || [] as tidspunkt, index}
 						<button
@@ -147,13 +151,15 @@
 	.skole-kart-container {
 		display: flex;
 		justify-content: center;
-		width: 100%;
+		width: fit-content;
 		background: var(--color-grey);
 		padding: 2rem 0;
+		margin: 0 auto;
 	}
 
 	.skole-kart {
 		width: 90%;
+		max-height: 80vh;
 		object-fit: contain;
 		border-radius: 12px;
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -173,7 +179,7 @@
 	}
 
 	.container {
-		max-width: 1200px;
+		max-width: 12000px;
 		margin: 0 auto;
 		padding: 3rem 2rem;
 	}
@@ -198,8 +204,18 @@
 		font-family: 'Oslo Sans', sans-serif;
 		font-size: 1.125rem;
 		color: #666;
-		margin: 0 0 2rem 0;
+		margin: 0 0 1rem 0;
 		text-align: center;
+	}
+
+	.show-description {
+		font-family: 'Oslo Sans', sans-serif;
+		font-size: 1rem;
+		color: #555;
+		margin: 0 auto 2rem auto;
+		text-align: center;
+		max-width: 700px;
+		line-height: 1.6;
 	}
 
 	/* Show Section */
@@ -211,7 +227,7 @@
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
 		gap: clamp(1rem, 2vw, 1.5rem);
-		max-width: 900px;
+		max-width: 1000px;
 		margin: 0 auto;
 	}
 
