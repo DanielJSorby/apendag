@@ -116,6 +116,7 @@
 
 <div class="login">
     <div class="container">
+        <div class="spacer"></div>
         <div class="header">
             <h1>Registrer deg</h1>
             <p>Opprett en konto for å melde deg på kurs. Du vil bli tilsendt en verifiseringslenke på e-post. Informasjonen din brukes kun av rådgivere for å holde orden på påmelding av kurs og slettes etter åpen dag.</p>
@@ -258,6 +259,10 @@
         margin: 0 0 0.5rem 0;
         color: var(--color-pink);
         font-weight: bold;
+    }
+
+    .spacer {
+        height: 3rem;
     }
 
     .header p {
