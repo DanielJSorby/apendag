@@ -17,8 +17,8 @@
 		<details>
 			<summary>Hva er studiesuppe?</summary>
 			<p class="explanation">
-				Studiesuppe er et sosialt tiltak for elever på Elvebakken. Hver dag serveres det gratis,
-				varm suppe i kantina for de som er påmeldt. Det er en flott mulighet til å møte andre
+				Studiesuppe er et sosialt tiltak for elever på Elvebakken. Hver torsdag serveres det gratis,
+				varm suppe i kantina for de som registrerer seg på studiesuppe. Det er en flott mulighet til å møte andre
 				elever i en uformell setting.
 			</p>
 		</details>
