@@ -104,15 +104,5 @@
             padding: 14px 10px;
             gap: 8px;
         }
-
-        button.linjeknapp h1 {
-            font-size: 0.9rem;
-            line-height: 1.15;
-        }
-
-        button.linjeknapp p {
-            font-size: 0.75rem;
-            line-height: 1.25;
-        }
     }
 </style>

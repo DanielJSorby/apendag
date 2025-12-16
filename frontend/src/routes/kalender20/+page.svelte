@@ -267,14 +267,15 @@
 	}
 
 	.linjeknapper {
-		display: flex;
-		flex-direction: row;
-		justify-content: space-evenly;
-		align-items: center;
-		width: 100%;
-		margin-top: 20px;
-		gap: 20px;
-		flex-wrap: wrap;
+        margin-left: 0;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-evenly;
+        align-items: center;
+        width: 100vw;
+        margin-top: 20px;
+        gap: 20px;
+        flex-wrap: wrap;
 	}
 
 	/* Tablet styles */
@@ -298,11 +299,6 @@
 
 		.show-slot-text {
 			font-size: 1rem;
-		}
-
-		.linjeknapper {
-			flex-direction: column;
-			align-items: center;
 		}
 	}
 </style>
