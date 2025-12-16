@@ -96,7 +96,7 @@
             2px 2px 8px rgba(0, 0, 0, 0.5); */
         padding: 20px 40px;
         background-color: rgba(255, 255, 255, 0.5);
-        backdrop-filter: blur(10px);
+        backdrop-filter: blur(100px);
         border-radius: 12px;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
         max-width: 90vw;
