@@ -28,7 +28,7 @@
 	<div class="content" style="text-align: {textAlign};">
 		<slot>
 			{#if title}
-				<h1 class="hero-title">{title}</h1>
+				<h1 class="hero-title">{@html title}</h1>
 			{/if}
 			{#if subtitle}
 				<p class="hero-subtitle">{@html subtitle}</p>
