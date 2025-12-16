@@ -33,11 +33,19 @@ export async function getDb(): Promise<mysql.Pool> {
     initializationPromise = (async () => {
         console.log('Creating new database pool...');
         try {
-            const pool = await mysql.createPool({
-                host: process.env.DB_HOST,
-                user: process.env.DB_USER,
-                password: process.env.DB_PASSWORD,
-                database: process.env.DB_NAME,
+            // Validate required environment variables
+            const requiredEnvVars = ['DB_HOST', 'DB_USER', 'DB_PASSWORD', 'DB_NAME'];
+            const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
+            
+            if (missingVars.length > 0) {
+                throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`);
+            }
+            
+            const pool = mysql.createPool({
+                host: process.env.DB_HOST!,
+                user: process.env.DB_USER!,
+                password: process.env.DB_PASSWORD!,
+                database: process.env.DB_NAME!,
                 waitForConnections: true,
                 connectionLimit: 10,
             });
@@ -68,12 +76,13 @@ export const db = {
 };
 
 // --- Sequelize setup ---
+// Note: Sequelize will validate connection when authenticate() is called
 export const sequelize = new Sequelize(
 	process.env.DB_NAME || '',
 	process.env.DB_USER || '',
 	process.env.DB_PASSWORD || '',
 	{
-		host: process.env.DB_HOST,
+		host: process.env.DB_HOST || 'localhost',
 		port: parseInt(process.env.DB_PORT || '3306'),
 		dialect: 'mysql',
 		dialectModule: mysql2,

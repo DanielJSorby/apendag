@@ -82,11 +82,12 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
             userId = existingRows[0].id;
             // Update user info if provided
             if (ungdomskole || telefon) {
-                const updateFields = [];
-                const updateValues = [];
+                const updates: string[] = [];
+                const values: any[] = [];
+                
                 if (ungdomskole) {
-                    updateFields.push('ungdomskole = ?');
-                    updateValues.push(decodeURIComponent(ungdomskole));
+                    updates.push('ungdomskole = ?');
+                    values.push(decodeURIComponent(ungdomskole));
                 }
                 if (telefon) {
                     const normalizedTelefon = decodeURIComponent(telefon).trim();
@@ -95,14 +96,16 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
                     if (existingPhoneRows.length > 0) {
                         throw error(409, 'Telefonnummer er allerede i bruk av en annen bruker.');
                     }
-                    updateFields.push('telefon = ?');
-                    updateValues.push(normalizedTelefon);
+                    updates.push('telefon = ?');
+                    values.push(normalizedTelefon);
                 }
-                if (updateFields.length > 0) {
-                    updateValues.push(userId);
+                
+                if (updates.length > 0) {
+                    values.push(userId);
+                    // Use whitelisted field names only - safe from SQL injection
                     await db.query(
-                        `UPDATE bruker SET ${updateFields.join(', ')} WHERE id = ?`,
-                        updateValues
+                        `UPDATE bruker SET ${updates.join(', ')} WHERE id = ?`,
+                        values
                     );
                 }
             }

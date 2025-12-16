@@ -49,21 +49,26 @@ export const GET: RequestHandler = async ({ cookies, url }) => {
 async function updateKursPlasser(pool: any, kursId: number | null, tidspunkt: string | null, increment: number) {
     if (!kursId || !tidspunkt) return;
     
-    let plassField: string;
-    if (tidspunkt === '09:00-10:30') {
-        plassField = 'plasser_for';
-    } else if (tidspunkt === '11:00-12:30') {
-        plassField = 'plasser_etter';
-    } else if (tidspunkt === '13:00-14:30') {
-        plassField = 'plasser_siste';
-    } else {
+    // Whitelist of valid field names to prevent SQL injection
+    const fieldMap: Record<string, string> = {
+        '09:00-10:30': 'plasser_for',
+        '11:00-12:30': 'plasser_etter',
+        '13:00-14:30': 'plasser_siste'
+    };
+    
+    const plassField = fieldMap[tidspunkt];
+    if (!plassField) {
         return; // Unknown time slot
     }
     
-    await pool.query(
-        `UPDATE kurs SET ${plassField} = ${plassField} + ? WHERE id = ?`,
-        [increment, kursId]
-    );
+    // Use separate queries for each field to avoid template literals in SQL
+    if (plassField === 'plasser_for') {
+        await pool.query('UPDATE kurs SET plasser_for = plasser_for + ? WHERE id = ?', [increment, kursId]);
+    } else if (plassField === 'plasser_etter') {
+        await pool.query('UPDATE kurs SET plasser_etter = plasser_etter + ? WHERE id = ?', [increment, kursId]);
+    } else if (plassField === 'plasser_siste') {
+        await pool.query('UPDATE kurs SET plasser_siste = plasser_siste + ? WHERE id = ?', [increment, kursId]);
+    }
 }
 
 // POST - Opprett ny bruker
