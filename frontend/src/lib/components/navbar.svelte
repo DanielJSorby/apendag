@@ -72,7 +72,7 @@
 <div class="container">
     <a href="/" class="content-left">
         <div class="logo"></div>
-        <h1>Åpen Dag</h1>
+        <h1>Åpen dag</h1>
     </a>
     <div class="content-right">
         <div class="nav-links">
