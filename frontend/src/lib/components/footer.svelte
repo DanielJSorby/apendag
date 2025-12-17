@@ -6,8 +6,8 @@
     <div class="footer-container">
         <div class="attributors">
             <h3>Siden er laget av:</h3>
-            <p>Elever fra vg3 IMST:<br></p>
-            <p>Daniel Johan Søy</p>
+            <p>Elever fra vg3 IMST:</p>
+            <p>Daniel Johan Sørby</p>
             <p>Henrik Luan</p>
             <p>Johan Album Arntzen</p>
             <p>Simen Evenrud Blien</p>
