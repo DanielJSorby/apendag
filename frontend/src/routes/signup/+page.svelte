@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
+    import { onMount, onDestroy } from 'svelte';
     import { getCookie } from '$lib/functions/getCookie';
     let name = $state('');
     let email = $state('');
@@ -12,6 +12,12 @@
     let customSchool = $state('');
     let showSchoolDropdown = $state(false);
     let showCustomInput = $state(false);
+    // Store last submitted data for resending
+    let lastSubmittedData = $state<{name: string, email: string, telefon: string, ungdomskole: string, selectedSchool: string | null, customSchool: string, showCustomInput: boolean} | null>(null);
+    let isResending = $state(false);
+    let lastSentTime = $state<number | null>(null); // Timestamp when link was sent
+    let timeRemaining = $state(0); // Seconds remaining until resend is allowed
+    let countdownInterval: ReturnType<typeof setInterval> | null = null;
 
     onMount(async () => {
         const userId = getCookie('UserId');
@@ -20,6 +26,35 @@
         }
         loadSchools();
     });
+
+    onDestroy(() => {
+        if (countdownInterval) {
+            clearInterval(countdownInterval);
+        }
+    });
+
+    function startCountdown() {
+        lastSentTime = Date.now();
+        timeRemaining = 60; // 1 minute in seconds
+        
+        if (countdownInterval) {
+            clearInterval(countdownInterval);
+        }
+        
+        countdownInterval = setInterval(() => {
+            if (lastSentTime) {
+                const elapsed = Math.floor((Date.now() - lastSentTime) / 1000);
+                timeRemaining = Math.max(0, 60 - elapsed);
+                
+                if (timeRemaining <= 0) {
+                    if (countdownInterval) {
+                        clearInterval(countdownInterval);
+                        countdownInterval = null;
+                    }
+                }
+            }
+        }, 1000);
+    }
 
     async function loadSchools() {
         try {
@@ -59,19 +94,30 @@
         return selectedSchool || '';
     }
 
-    async function handleSubmit() {
+    async function handleSubmit(submittedData?: typeof lastSubmittedData) {
         try {
             errorMessage = '';
             successMessage = '';
             
-            const ungdomskole = getSelectedSchoolName();
+            // Use submitted data if provided (for resending), otherwise use current form values
+            const formData = submittedData || {
+                name,
+                email,
+                telefon,
+                ungdomskole: getSelectedSchoolName(),
+                selectedSchool,
+                customSchool,
+                showCustomInput
+            };
+            
+            const ungdomskole = formData.ungdomskole;
             
             if (!ungdomskole || ungdomskole.trim() === '') {
                 errorMessage = 'Vennligst velg eller skriv inn ungdomskole';
                 return;
             }
             
-            if (!telefon || telefon.trim() === '') {
+            if (!formData.telefon || formData.telefon.trim() === '') {
                 errorMessage = 'Telefonnummer er påkrevd';
                 return;
             }
@@ -82,35 +128,65 @@
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ 
-                    name, 
-                    email, 
+                    name: formData.name, 
+                    email: formData.email, 
                     ungdomskole: ungdomskole.trim(),
-                    telefon: telefon.trim()
+                    telefon: formData.telefon.trim()
                 }),
             });
             
             const data = await response.json();
             
             if (data.ok) {
-                const emailToShow = email; // Store email before clearing
-                successMessage = `Verifiseringslenke er sendt til ${emailToShow}! Sjekk e-post/søppelpost for å fullføre registreringen.`;
+                // Store submitted data for potential resending
+                lastSubmittedData = {
+                    name: formData.name,
+                    email: formData.email,
+                    telefon: formData.telefon,
+                    ungdomskole: formData.ungdomskole,
+                    selectedSchool: formData.selectedSchool,
+                    customSchool: formData.customSchool,
+                    showCustomInput: formData.showCustomInput
+                };
+                
+                successMessage = `Verifiseringslenke er sendt til ${formData.email}! Sjekk e-post/søppelpost for å fullføre registreringen.`;
                 errorMessage = '';
-                name = '';
-                email = '';
-                telefon = '';
-                selectedSchool = null;
-                customSchool = '';
-                schoolSearch = '';
-                showCustomInput = false;
+                
+                // Only clear form if this is a new submission, not a resend
+                if (!submittedData) {
+                    name = '';
+                    email = '';
+                    telefon = '';
+                    selectedSchool = null;
+                    customSchool = '';
+                    schoolSearch = '';
+                    showCustomInput = false;
+                }
+                isResending = false;
+                startCountdown(); // Start the 1-minute countdown
             } else {
                 errorMessage = data.message || 'Kunne ikke sende verifiseringslenke';
                 successMessage = '';
+                isResending = false;
             }
         } catch (error) {
             console.error(error);
             errorMessage = 'Et problem oppstod ved oppretting av kontoen din';
             successMessage = '';
+            isResending = false;
         }
+    }
+
+    async function resendLink() {
+        if (!lastSubmittedData || timeRemaining > 0) return;
+        isResending = true;
+        await handleSubmit(lastSubmittedData);
+    }
+
+    function getResendButtonText(): string {
+        if (isResending) return 'Sender...';
+        if (timeRemaining > 0) return `Send ny link (${timeRemaining}s)`;
+        return 'Send ny link';
     }
 </script>
 
@@ -128,7 +204,10 @@
         {/if}
         {#if successMessage}
             <div class="success-message">
-                {successMessage}
+                <div>{successMessage}</div>
+                <button type="button" class="resend-button" onclick={resendLink} disabled={isResending || timeRemaining > 0}>
+                    {getResendButtonText()}
+                </button>
             </div>
         {/if}
         <form onsubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
@@ -394,6 +473,33 @@
         text-align: center;
         font-weight: 500;
         font-size: 0.95rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .resend-button {
+        background-color: transparent;
+        border: 2px solid #166534;
+        color: #166534;
+        padding: 8px 16px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 500;
+        font-family: 'Oslo Sans', sans-serif;
+        transition: background-color 0.3s, color 0.3s;
+        margin-top: 0.5rem;
+    }
+
+    .resend-button:hover:not(:disabled) {
+        background-color: #166534;
+        color: white;
+    }
+
+    .resend-button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
     }
 
     .bottom-message {

@@ -7,6 +7,8 @@
     let userName = $state<string | null>(null);
     let userMenuOpen = $state(false);
     let isAdmin = $state(false);
+    let showDeleteModal = $state(false);
+    let isDeleting = $state(false);
 
     function toggleMenu() {
         menuOpen = !menuOpen;
@@ -47,6 +49,43 @@
             userName = null;
             userMenuOpen = false;
             goto('/');
+        }
+    }
+
+    function openDeleteModal() {
+        showDeleteModal = true;
+        userMenuOpen = false;
+    }
+
+    function closeDeleteModal() {
+        showDeleteModal = false;
+    }
+
+    async function handleDeleteAccount() {
+        if (isDeleting) return;
+        
+        isDeleting = true;
+        try {
+            const response = await fetch('/api/user/delete', { method: 'DELETE' });
+            const data = await response.json();
+            
+            if (data.ok) {
+                // Update local state
+                isLoggedIn = false;
+                userName = null;
+                userMenuOpen = false;
+                showDeleteModal = false;
+                
+                // Redirect to home page
+                goto('/');
+            } else {
+                alert(data.error || 'Kunne ikke slette kontoen din');
+                isDeleting = false;
+            }
+        } catch (error) {
+            console.error('Error deleting account:', error);
+            alert('Kunne ikke slette kontoen din');
+            isDeleting = false;
         }
     }
 
@@ -91,6 +130,7 @@
                     {#if userMenuOpen}
                         <div class="user-dropdown">
                             <button class="logout-button" onclick={handleLogout}>Logg ut</button>
+                            <button class="delete-account-button" onclick={openDeleteModal}>Slett konto</button>
                         </div>
                     {/if}
                 </div>
@@ -119,9 +159,28 @@
                 <span>Logget inn som: {userName || 'Bruker'}</span>
             </div>
             <button class="mobile-logout-button" onclick={async () => { await handleLogout(); toggleMenu(); }}>Logg ut</button>
+            <button class="mobile-delete-button" onclick={() => { openDeleteModal(); toggleMenu(); }}>Slett konto</button>
         {:else}
             <a href="/login" onclick={toggleMenu}>Logg inn</a>
         {/if}
+    </div>
+{/if}
+
+{#if showDeleteModal}
+    <div class="modal-overlay" onclick={closeDeleteModal} role="button" tabindex="0" onkeydown={(e) => { if (e.key === 'Escape' || e.key === 'Enter') closeDeleteModal(); }}>
+        <div class="modal-content" onclick={(e) => e.stopPropagation()} onkeydown={(e) => e.stopPropagation()} role="dialog" aria-labelledby="delete-modal-title" aria-modal="true" tabindex="-1">
+            <h2 id="delete-modal-title">Slett konto</h2>
+            <p>Er du sikker på at du vil slette kontoen din? Denne handlingen kan ikke angres.</p>
+            <p class="warning-text">Alle dine data, inkludert meldinger og påmeldinger, vil bli permanent slettet.</p>
+            <div class="modal-buttons">
+                <button class="modal-cancel-button" onclick={closeDeleteModal} disabled={isDeleting}>
+                    Avbryt
+                </button>
+                <button class="modal-delete-button" onclick={handleDeleteAccount} disabled={isDeleting}>
+                    {isDeleting ? 'Sletter...' : 'Slett konto'}
+                </button>
+            </div>
+        </div>
     </div>
 {/if}
 
@@ -293,9 +352,11 @@
         background-color: #ffffff;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         border-radius: 8px;
-        min-width: 120px;
+        min-width: 150px;
         z-index: 1000;
-        padding: 8px 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
     }
 
     .logout-button {
@@ -309,11 +370,33 @@
         cursor: pointer;
         font-size: inherit;
         font-family: inherit;
+        border-radius: 8px 8px 0 0;
     }
 
     .logout-button:hover {
         background-color: #f5f5f5;
         color: #dc2626;
+        border-radius: 8px 8px 0 0;
+    }
+
+    .delete-account-button {
+        width: 100%;
+        padding: 10px 20px;
+        background: none;
+        border: none;
+        text-align: left;
+        color: #dc2626;
+        font-weight: bold;
+        cursor: pointer;
+        font-size: inherit;
+        font-family: inherit;
+        border-top: 1px solid #eeeeee;
+        border-radius: 0 0 8px 8px;
+    }
+
+    .delete-account-button:hover {
+        background-color: #fef2f2;
+        border-radius: 0 0 8px 8px;
     }
 
     .mobile-user-info {
@@ -340,6 +423,111 @@
 
     .mobile-logout-button:hover {
         color: #dc2626;
+    }
+
+    .mobile-delete-button {
+        width: 100%;
+        padding: 15px 0;
+        background: none;
+        border: none;
+        text-align: left;
+        color: #dc2626;
+        font-weight: bold;
+        cursor: pointer;
+        font-size: inherit;
+        font-family: inherit;
+        border-top: 1px solid #eeeeee;
+        margin-top: 10px;
+    }
+
+    .mobile-delete-button:hover {
+        background-color: #fef2f2;
+    }
+
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10000001;
+    }
+
+    .modal-content {
+        background-color: #ffffff;
+        padding: 2rem;
+        border-radius: 15px;
+        max-width: 500px;
+        width: 90%;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .modal-content h2 {
+        margin: 0 0 1rem 0;
+        color: #333333;
+        font-size: 1.5rem;
+    }
+
+    .modal-content p {
+        margin: 0.5rem 0;
+        color: #333333;
+        line-height: 1.5;
+    }
+
+    .warning-text {
+        color: #dc2626;
+        font-weight: 500;
+        margin: 1rem 0 !important;
+    }
+
+    .modal-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1.5rem;
+        justify-content: flex-end;
+    }
+
+    .modal-cancel-button,
+    .modal-delete-button {
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: bold;
+        cursor: pointer;
+        font-family: 'Oslo Sans', sans-serif;
+        border: 2px solid;
+        transition: all 0.3s;
+    }
+
+    .modal-cancel-button {
+        background-color: #ffffff;
+        border-color: #e0e0e0;
+        color: #333333;
+    }
+
+    .modal-cancel-button:hover:not(:disabled) {
+        background-color: #f5f5f5;
+    }
+
+    .modal-delete-button {
+        background-color: #dc2626;
+        border-color: #dc2626;
+        color: #ffffff;
+    }
+
+    .modal-delete-button:hover:not(:disabled) {
+        background-color: #b91c1c;
+        border-color: #b91c1c;
+    }
+
+    .modal-cancel-button:disabled,
+    .modal-delete-button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
     }
 
     /* Mobile responsive */

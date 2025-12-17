@@ -6,7 +6,7 @@
                 Elevbakken skal være noe mer enn en vanlig skole. Vi har derfor mange arenaer elever kan delta på. Tillit, fleksibilitet, ansvarlighet og samarbeid er stikkord som vises gjennom vår studietidsmodell, studiefrokost- og suppe, skriverkurs, lørdagsskole med mer.
             </p>
             <p class="paragraph">
-                Elvebakkenrevyen, Badelaget, Bakkasjakka, Elvebakken Laget, de andre elevlagene og oppstartsprogrammet på Lunde er blitt til opplevelser som bygger en spesiell Bakkakultur.
+                Elvebakkenrevyen, Badelaget, Bakkasjakka, de andre elevlagene og oppstartsprogrammet på Lunde er blitt til opplevelser som bygger en spesiell Bakkakultur.
             </p>
             <a href="/noe-mer" class="les-mer-knapp styled-btn">Les mer</a>
         </div>
