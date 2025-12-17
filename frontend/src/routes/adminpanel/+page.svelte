@@ -28,6 +28,9 @@ type Kurs = {
     linje: string;
     navn: string;
     plasser: number;
+    plasser_for?: number;
+    plasser_etter?: number;
+    plasser_siste?: number;
     tid: {
         forLunsj: string;
         etterLunsj: string;
@@ -48,6 +51,9 @@ onMount(async () => {
             linje: kurs.linje || '',
             navn: kurs.navn || '',
             plasser: kurs.plasser || 0,
+            plasser_for: kurs.plasser_for || 0,
+            plasser_etter: kurs.plasser_etter || 0,
+            plasser_siste: kurs.plasser_siste || 0,
             tid: {
                 forLunsj: kurs.tid_for_lunsj || '',
                 etterLunsj: kurs.tid_etter_lunsj || '',
@@ -133,20 +139,20 @@ type VentelisteEntry = {
 };
 
 // Initialize activeTab from URL parameter or default to 'users'
-function getInitialTab(): 'users' | 'stats' | 'faq' | 'linjer' | 'skoler' | 'venteliste' {
+function getInitialTab(): 'users' | 'stats' | 'faq' | 'linjer' | 'skoler' | 'venteliste' | 'database' {
     const tabParam = $page.url.searchParams.get('tab');
-    if (tabParam === 'users' || tabParam === 'stats' || tabParam === 'faq' || tabParam === 'linjer' || tabParam === 'skoler' || tabParam === 'venteliste') {
+    if (tabParam === 'users' || tabParam === 'stats' || tabParam === 'faq' || tabParam === 'linjer' || tabParam === 'skoler' || tabParam === 'venteliste' || tabParam === 'database') {
         return tabParam;
     }
     return 'users';
 }
 
-let activeTab = $state<'users' | 'stats' | 'faq' | 'linjer' | 'skoler' | 'venteliste'>(getInitialTab());
+let activeTab = $state<'users' | 'stats' | 'faq' | 'linjer' | 'skoler' | 'venteliste' | 'database'>(getInitialTab());
 
 // Update activeTab when URL parameter changes
 $effect(() => {
     const tabParam = $page.url.searchParams.get('tab');
-    if (tabParam === 'users' || tabParam === 'stats' || tabParam === 'faq' || tabParam === 'linjer' || tabParam === 'skoler' || tabParam === 'venteliste') {
+    if (tabParam === 'users' || tabParam === 'stats' || tabParam === 'faq' || tabParam === 'linjer' || tabParam === 'skoler' || tabParam === 'venteliste' || tabParam === 'database') {
         if (activeTab !== tabParam) {
             activeTab = tabParam;
         }
@@ -161,7 +167,7 @@ $effect(() => {
     }
 });
 
-function setActiveTab(tab: 'users' | 'stats' | 'faq' | 'linjer' | 'skoler' | 'venteliste') {
+function setActiveTab(tab: 'users' | 'stats' | 'faq' | 'linjer' | 'skoler' | 'venteliste' | 'database') {
     activeTab = tab;
     goto(`/adminpanel?tab=${tab}`, { replaceState: true, noScroll: true });
 }
@@ -246,6 +252,21 @@ let showEditingSchoolDropdown = $state(false);
 let editingUserSchoolSearch = $state('');
 let showEditingUserSchoolDropdown = $state(false);
 let schoolErrorMessage = $state('');
+
+// Database management (kurs editing)
+type KursEdit = {
+    id: number;
+    linje: string;
+    navn: string;
+    tid_for_lunsj: string;
+    tid_etter_lunsj: string;
+    tid_siste: string;
+    plasser_for: number;
+    plasser_etter: number;
+    plasser_siste: number;
+};
+
+let editingKurs = $state<KursEdit | null>(null);
 
 // Column visibility for stats - default values
 let visibleColumns = $state({
@@ -667,13 +688,37 @@ async function updateLinje(linje: Linje) {
     }
 }
 
+// Database Management Functions
+async function updateKurs(kurs: KursEdit) {
+    try {
+        const response = await fetch('/api/admin/kurs', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(kurs)
+        });
+        
+        if (response.ok) {
+            editingKurs = null;
+            location.reload();
+        }
+    } catch (error) {
+        console.error('Error updating kurs:', error);
+    }
+}
+
 // Venteliste Functions
 async function loadVenteliste() {
     try {
         const response = await fetch('/api/admin/venteliste');
+        console.log('Venteliste response status:', response.status);
         if (response.ok) {
             const data = await response.json();
+            console.log('Venteliste data:', data);
             venteliste = data.venteliste || [];
+            console.log('Venteliste array:', venteliste);
+        } else {
+            const errorData = await response.json();
+            console.error('Venteliste error:', errorData);
         }
     } catch (error) {
         console.error('Error loading venteliste:', error);
@@ -797,6 +842,13 @@ let filteredVenteliste = $derived(
             }}>
             Venteliste ({venteliste.length})
         </button>
+        {#if currentUserRole === 'developer'}
+            <button 
+                class:active={activeTab === 'database'}
+                onclick={() => setActiveTab('database')}>
+                Database
+            </button>
+        {/if}
     </nav>
 
     {#if activeTab === 'users'}
@@ -857,7 +909,7 @@ let filteredVenteliste = $derived(
                             <th>Påmeldt kurs</th>
                             <th>Tidspunkt</th>
                             <th>Studiesuppe</th>
-                            <th>Admin</th>
+                            <th>Rolle</th>
                             <th>Handlinger</th>
                         </tr>
                     </thead>
@@ -1514,6 +1566,87 @@ let filteredVenteliste = $derived(
                         </div>
                     {/if}
                 </div>
+            </div>
+        </section>
+    {/if}
+
+    {#if activeTab === 'database' && currentUserRole === 'developer'}
+        <section class="content-section">
+            <div class="section-header">
+                <h2>Database Administrasjon</h2>
+                <p style="color: #666; font-size: 0.9rem; margin-top: 5px;">Kun tilgjengelig for developers</p>
+            </div>
+
+            <div class="stats-section">
+                <h3>Kurs oversikt</h3>
+                <table class="user-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Linje</th>
+                            <th>Kursnavn</th>
+                            <th>Før lunsj</th>
+                            <th>Etter lunsj</th>
+                            <th>Siste</th>
+                            <th>Plasser før</th>
+                            <th>Plasser etter</th>
+                            <th>Plasser siste</th>
+                            <th>Handlinger</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {#each kursListe as kurs}
+                            <tr>
+                                {#if editingKurs && editingKurs.id === kurs.id}
+                                    <td>{kurs.id}</td>
+                                    <td><input type="text" bind:value={editingKurs.linje} style="width: 80px;" /></td>
+                                    <td><input type="text" bind:value={editingKurs.navn} style="width: 150px;" /></td>
+                                    <td><input type="text" bind:value={editingKurs.tid_for_lunsj} style="width: 100px;" /></td>
+                                    <td><input type="text" bind:value={editingKurs.tid_etter_lunsj} style="width: 100px;" /></td>
+                                    <td><input type="text" bind:value={editingKurs.tid_siste} style="width: 100px;" /></td>
+                                    <td><input type="number" bind:value={editingKurs.plasser_for} style="width: 70px;" min="0" /></td>
+                                    <td><input type="number" bind:value={editingKurs.plasser_etter} style="width: 70px;" min="0" /></td>
+                                    <td><input type="number" bind:value={editingKurs.plasser_siste} style="width: 70px;" min="0" /></td>
+                                    <td class="actions-cell">
+                                        <button onclick={() => updateKurs(editingKurs!)} class="btn-small btn-success">
+                                            Lagre
+                                        </button>
+                                        <button onclick={() => editingKurs = null} class="btn-small btn-cancel">
+                                            Avbryt
+                                        </button>
+                                    </td>
+                                {:else}
+                                    <td>{kurs.id}</td>
+                                    <td>{kurs.linje}</td>
+                                    <td>{kurs.navn}</td>
+                                    <td>{kurs.tid.forLunsj || '-'}</td>
+                                    <td>{kurs.tid.etterLunsj || '-'}</td>
+                                    <td>{kurs.tid.siste || '-'}</td>
+                                    <td>{kurs.plasser_for || 0}</td>
+                                    <td>{kurs.plasser_etter || 0}</td>
+                                    <td>{kurs.plasser_siste || 0}</td>
+                                    <td class="actions-cell">
+                                        <button onclick={() => {
+                                            editingKurs = {
+                                                id: kurs.id,
+                                                linje: kurs.linje,
+                                                navn: kurs.navn,
+                                                tid_for_lunsj: kurs.tid.forLunsj,
+                                                tid_etter_lunsj: kurs.tid.etterLunsj,
+                                                tid_siste: kurs.tid.siste,
+                                                plasser_for: kurs.plasser_for || 0,
+                                                plasser_etter: kurs.plasser_etter || 0,
+                                                plasser_siste: kurs.plasser_siste || 0
+                                            };
+                                        }} class="btn-small btn-edit">
+                                            Rediger
+                                        </button>
+                                    </td>
+                                {/if}
+                            </tr>
+                        {/each}
+                    </tbody>
+                </table>
             </div>
         </section>
     {/if}
