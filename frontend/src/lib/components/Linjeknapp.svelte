@@ -3,9 +3,10 @@
         linje: 'st' | 'kda' | 'mk' | 'im' | 'el' | 'stx';
         onclick?: () => void;
         linjeData?: any;
+        showDescription?: boolean;
     }
 
-    let { linje = 'st', onclick, linjeData }: LinjeProps = $props();
+    let { linje = 'st', onclick, linjeData, showDescription = true }: LinjeProps = $props();
 
     // Fallback data if not provided
     const defaultData = {
@@ -23,7 +24,7 @@
 <a href={`/linjer/${linje}`}>
 <button class="linjeknapp" style="border-color: {currentLinje.farge}; color: {currentLinje.farge}; background-color: {currentLinje.lysfarge};" onclick={onclick}>
         <h1>{@html currentLinje.tittel}</h1>
-        {#if currentLinje.beskrivelse}
+        {#if currentLinje.beskrivelse && showDescription}
             <p>{currentLinje.beskrivelse}</p>
         {/if}
     </button>
