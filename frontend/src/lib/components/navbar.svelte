@@ -370,11 +370,13 @@
         cursor: pointer;
         font-size: inherit;
         font-family: inherit;
+        border-radius: 8px 8px 0 0;
     }
 
     .logout-button:hover {
         background-color: #f5f5f5;
         color: #dc2626;
+        border-radius: 8px 8px 0 0;
     }
 
     .delete-account-button {
@@ -389,10 +391,12 @@
         font-size: inherit;
         font-family: inherit;
         border-top: 1px solid #eeeeee;
+        border-radius: 0 0 8px 8px;
     }
 
     .delete-account-button:hover {
         background-color: #fef2f2;
+        border-radius: 0 0 8px 8px;
     }
 
     .mobile-user-info {
