@@ -16,12 +16,17 @@ async function checkAdmin(cookies: any, url: URL): Promise<string | null> {
     }
     
     const pool = await getDb();
-    const [adminCheck] = await pool.query(
-        'SELECT * FROM admin WHERE bruker_id = ?',
+    const [rolleCheck] = await pool.query(
+        'SELECT rolle FROM roller WHERE bruker_id = ?',
         [currentUserId]
     );
     
-    if (!Array.isArray(adminCheck) || adminCheck.length === 0) {
+    if (!Array.isArray(rolleCheck) || rolleCheck.length === 0) {
+        return null;
+    }
+    
+    const rolle = (rolleCheck[0] as any).rolle;
+    if (rolle !== 'admin' && rolle !== 'developer') {
         return null;
     }
     

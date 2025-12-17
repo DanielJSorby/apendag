@@ -29,14 +29,19 @@ export const POST: RequestHandler = async ({ request, cookies, url }) => {
             return json({ error: 'Ikke autorisert' }, { status: 403 });
         }
         
-        // Sjekk at forespørselen kommer fra en admin (hopp over for localhost)
+        // Sjekk at forespørselen kommer fra en med admin/developer-rolle (hopp over for localhost)
         if (!isLocalhost) {
-            const [adminCheck] = await pool.query(
-                'SELECT * FROM admin WHERE bruker_id = ?',
+            const [rolleCheck] = await pool.query(
+                'SELECT rolle FROM roller WHERE bruker_id = ?',
                 [currentUserId]
             );
             
-            if (!Array.isArray(adminCheck) || adminCheck.length === 0) {
+            if (!Array.isArray(rolleCheck) || rolleCheck.length === 0) {
+                return json({ error: 'Ikke autorisert' }, { status: 403 });
+            }
+            
+            const rolle = (rolleCheck[0] as any).rolle;
+            if (rolle !== 'admin' && rolle !== 'developer') {
                 return json({ error: 'Ikke autorisert' }, { status: 403 });
             }
         }
@@ -92,14 +97,19 @@ export const DELETE: RequestHandler = async ({ request, cookies, url }) => {
             return json({ error: 'Ikke autorisert' }, { status: 403 });
         }
         
-        // Sjekk at forespørselen kommer fra en admin (hopp over for localhost)
+        // Sjekk at forespørselen kommer fra en med admin/developer-rolle (hopp over for localhost)
         if (!isLocalhost) {
-            const [adminCheck] = await pool.query(
-                'SELECT * FROM admin WHERE bruker_id = ?',
+            const [rolleCheck] = await pool.query(
+                'SELECT rolle FROM roller WHERE bruker_id = ?',
                 [currentUserId]
             );
             
-            if (!Array.isArray(adminCheck) || adminCheck.length === 0) {
+            if (!Array.isArray(rolleCheck) || rolleCheck.length === 0) {
+                return json({ error: 'Ikke autorisert' }, { status: 403 });
+            }
+            
+            const rolle = (rolleCheck[0] as any).rolle;
+            if (rolle !== 'admin' && rolle !== 'developer') {
                 return json({ error: 'Ikke autorisert' }, { status: 403 });
             }
         }
@@ -134,14 +144,19 @@ export const PUT: RequestHandler = async ({ request, cookies, url }) => {
             return json({ error: 'Ikke autorisert' }, { status: 403 });
         }
         
-        // Sjekk at forespørselen kommer fra en admin (hopp over for localhost)
+        // Sjekk at forespørselen kommer fra en med admin/developer-rolle (hopp over for localhost)
         if (!isLocalhost) {
-            const [adminCheck] = await pool.query(
-                'SELECT * FROM admin WHERE bruker_id = ?',
+            const [rolleCheck] = await pool.query(
+                'SELECT rolle FROM roller WHERE bruker_id = ?',
                 [currentUserId]
             );
             
-            if (!Array.isArray(adminCheck) || adminCheck.length === 0) {
+            if (!Array.isArray(rolleCheck) || rolleCheck.length === 0) {
+                return json({ error: 'Ikke autorisert' }, { status: 403 });
+            }
+            
+            const rolle = (rolleCheck[0] as any).rolle;
+            if (rolle !== 'admin' && rolle !== 'developer') {
                 return json({ error: 'Ikke autorisert' }, { status: 403 });
             }
         }

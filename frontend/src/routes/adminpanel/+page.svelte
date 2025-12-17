@@ -465,6 +465,7 @@ async function updateUser(user: User) {
 
         if (user.id !== currentUserId && currentRole !== newRole) {
             await setUserRole(user.id, newRole);
+            return; // setUserRole vil reload
         }
         
         editingUser = null;
