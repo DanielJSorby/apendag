@@ -130,9 +130,9 @@
 					Fra 15:00 til 20:00 kan du gå innom de ulike linjene og besøke dem!
 				</p>
 				<div class="linjeknapper">
-					<Linjeknapp linje="st" linjeData={linjeData} />
-					<Linjeknapp linje="kda" linjeData={linjeData} />
-					<Linjeknapp linje="mk" linjeData={linjeData} />
+					<Linjeknapp linje="st" linjeData={linjeData} showDescription={false} />
+					<Linjeknapp linje="kda" linjeData={linjeData} showDescription={false} />
+					<Linjeknapp linje="mk" linjeData={linjeData} showDescription={false} />
 					<Linjeknapp linje="im" linjeData={linjeData} />
 					<Linjeknapp linje="el" linjeData={linjeData} />
 				</div>

@@ -46,11 +46,11 @@
 {#if Object.keys(linjeData).length > 0}
 <div class="linjer">
     <div class="linjeknapper">
-        <Linjeknapp linje="st" linjeData={linjeData} onclick={() => selectedLinje = 'st'} />
-        <Linjeknapp linje="kda" linjeData={linjeData} onclick={() => selectedLinje = 'kda'} />
-        <Linjeknapp linje="mk" linjeData={linjeData} onclick={() => selectedLinje = 'mk'} />
+        <Linjeknapp linje="st" linjeData={linjeData} onclick={() => selectedLinje = 'st'} showDescription={false} />
+        <Linjeknapp linje="kda" linjeData={linjeData} onclick={() => selectedLinje = 'kda'} showDescription={false} />
+        <Linjeknapp linje="mk" linjeData={linjeData} onclick={() => selectedLinje = 'mk'} showDescription={false} />
         <Linjeknapp linje="im" linjeData={linjeData} onclick={() => selectedLinje = 'im'} />
-        <Linjeknapp linje="el" linjeData={linjeData} onclick={() => selectedLinje = 'el'} />
+        <Linjeknapp linje="el" linjeData={linjeData} onclick={() => selectedLinje = 'el'}/>
     </div>
 </div>
 {/if}
