@@ -20,15 +20,23 @@ export const load: PageServerLoad = async ({ cookies, url }) => {
             throw redirect(303, '/login');
         }
         
-        // Sjekk om bruker er admin (hopp over for localhost dev admin)
+        // Sjekk om bruker har rolle (hopp over for localhost dev admin)
+        let userRole = 'developer'; // Default for localhost (høyeste rolle)
         if (!isDevelopmentAdmin) {
-            const [adminCheck] = await pool.query(
-                'SELECT * FROM admin WHERE bruker_id = ?',
+            const [rolleCheck] = await pool.query(
+                'SELECT bruker_id, rolle FROM roller WHERE bruker_id = ?',
                 [userId]
             );
             
-            if (!Array.isArray(adminCheck) || adminCheck.length === 0) {
-                // Bruker er ikke admin
+            if (!Array.isArray(rolleCheck) || rolleCheck.length === 0) {
+                // Bruker har ingen rolle
+                throw redirect(303, '/');
+            }
+            
+            userRole = (rolleCheck[0] as any).rolle || 'ingen';
+            
+            // Kun admin og developer har tilgang
+            if (userRole === 'ingen') {
                 throw redirect(303, '/');
             }
         }
@@ -36,9 +44,10 @@ export const load: PageServerLoad = async ({ cookies, url }) => {
         // Hent alle brukere
         const [users] = await pool.query('SELECT * FROM bruker ORDER BY navn');
         
-        // Hent admin-liste
-        const [admins] = await pool.query('SELECT bruker_id FROM admin');
-        const adminIds = new Set((admins as any[]).map(a => a.bruker_id));
+        // Hent alle brukere med roller
+        const [rolleRows] = await pool.query('SELECT bruker_id, rolle FROM roller');
+        const adminIds = new Set((rolleRows as any[]).filter(r => r.rolle === 'admin' || r.rolle === 'developer').map(r => r.bruker_id));
+        const adminRoles = new Map((rolleRows as any[]).map(r => [r.bruker_id, r.rolle || 'ingen']));
         
         // Tell antall påmeldinger per kurs
         const [courseStats] = await pool.query(`
@@ -57,7 +66,9 @@ export const load: PageServerLoad = async ({ cookies, url }) => {
             users: users || [],
             courseStats: courseStats || [],
             adminIds: Array.from(adminIds),
+            userRoles: Object.fromEntries(adminRoles),
             currentUserId: userId,
+            currentUserRole: userRole,
             isDevelopmentMode: isDevelopmentAdmin,
             kursListe: kursListe || []
         };

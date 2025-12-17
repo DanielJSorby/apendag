@@ -24,16 +24,23 @@ export const GET: RequestHandler = async ({ cookies, url }) => {
         }
 
         let isAdmin = isLocalhost;
+        let rolle = null;
         
         if (!isLocalhost) {
-            const [adminRows] = await pool.query('SELECT bruker_id FROM admin WHERE bruker_id = ?', [userId]);
-            const admins = adminRows as any[];
-            isAdmin = admins.length > 0;
+            const [rolleRows] = await pool.query('SELECT bruker_id, rolle FROM roller WHERE bruker_id = ?', [userId]);
+            const rolleData = rolleRows as any[];
+            if (rolleData.length > 0) {
+                rolle = rolleData[0].rolle || 'ingen';
+                isAdmin = (rolle === 'admin' || rolle === 'developer');
+            }
+        } else if (isLocalhost) {
+            rolle = 'developer'; // Localhost always developer (høyeste rolle)
         }
 
         return json({
             loggedIn: true,
             isAdmin,
+            rolle,
             user: {
                 id: user.id,
                 name: user.navn,

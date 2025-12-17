@@ -2,7 +2,7 @@ import { getDb } from '$lib/server/db';
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 
-// POST - Legg til admin
+// POST - Sett brukerrolle
 export const POST: RequestHandler = async ({ request, cookies, url }) => {
     try {
         const pool = await getDb();
@@ -13,19 +13,37 @@ export const POST: RequestHandler = async ({ request, cookies, url }) => {
             return json({ error: 'Ikke autorisert' }, { status: 403 });
         }
         
-        // Sjekk at forespørselen kommer fra en admin (hopp over for localhost)
+        // Hent current user sin rolle
+        let currentUserRole = 'developer'; // localhost default
         if (!isLocalhost) {
-            const [adminCheck] = await pool.query(
-                'SELECT * FROM admin WHERE bruker_id = ?',
+            const [rolleCheck] = await pool.query(
+                'SELECT rolle FROM roller WHERE bruker_id = ?',
                 [currentUserId]
             );
             
-            if (!Array.isArray(adminCheck) || adminCheck.length === 0) {
+            if (!Array.isArray(rolleCheck) || rolleCheck.length === 0) {
+                return json({ error: 'Ikke autorisert' }, { status: 403 });
+            }
+            
+            currentUserRole = (rolleCheck[0] as any).rolle;
+            
+            // Kun admin eller developer kan gi roller
+            if (currentUserRole !== 'admin' && currentUserRole !== 'developer') {
                 return json({ error: 'Ikke autorisert' }, { status: 403 });
             }
         }
         
-        const { bruker_id } = await request.json();
+        const { bruker_id, rolle } = await request.json();
+        
+        // Validere rolle-verdi
+        if (!['ingen', 'admin', 'developer'].includes(rolle)) {
+            return json({ error: 'Ugyldig rolle' }, { status: 400 });
+        }
+        
+        // Rolle-hierarki: Kun developer kan gi developer-rolle
+        if (rolle === 'developer' && currentUserRole !== 'developer') {
+            return json({ error: 'Kun developers kan gi developer-rolle' }, { status: 403 });
+        }
         
         // Sjekk at brukeren eksisterer
         const [userCheck] = await pool.query(
@@ -37,20 +55,28 @@ export const POST: RequestHandler = async ({ request, cookies, url }) => {
             return json({ error: 'Bruker finnes ikke' }, { status: 404 });
         }
         
-        // Legg til admin
-        await pool.query(
-            'INSERT IGNORE INTO admin (bruker_id) VALUES (?)',
-            [bruker_id]
-        );
+        if (rolle === 'ingen') {
+            // Fjern fra roller-tabell
+            await pool.query(
+                'DELETE FROM roller WHERE bruker_id = ?',
+                [bruker_id]
+            );
+        } else {
+            // Legg til eller oppdater rolle
+            await pool.query(
+                'INSERT INTO roller (bruker_id, rolle) VALUES (?, ?) ON DUPLICATE KEY UPDATE rolle = ?',
+                [bruker_id, rolle, rolle]
+            );
+        }
         
-        return json({ success: true, message: 'Admin-rettigheter gitt' });
+        return json({ success: true, message: 'Rolle oppdatert' });
     } catch (error) {
-        console.error('Error adding admin:', error);
-        return json({ error: 'Kunne ikke legge til admin' }, { status: 500 });
+        console.error('Error updating role:', error);
+        return json({ error: 'Kunne ikke oppdatere rolle' }, { status: 500 });
     }
 };
 
-// DELETE - Fjern admin
+// DELETE - Fjern rolle (legacy endpoint - bruk POST med rolle='ingen')
 export const DELETE: RequestHandler = async ({ request, cookies, url }) => {
     try {
         const pool = await getDb();
@@ -61,34 +87,39 @@ export const DELETE: RequestHandler = async ({ request, cookies, url }) => {
             return json({ error: 'Ikke autorisert' }, { status: 403 });
         }
         
-        // Sjekk at forespørselen kommer fra en admin (hopp over for localhost)
+        // Sjekk at forespørselen kommer fra en med rolle (hopp over for localhost)
         if (!isLocalhost) {
-            const [adminCheck] = await pool.query(
-                'SELECT * FROM admin WHERE bruker_id = ?',
+            const [rolleCheck] = await pool.query(
+                'SELECT rolle FROM roller WHERE bruker_id = ?',
                 [currentUserId]
             );
             
-            if (!Array.isArray(adminCheck) || adminCheck.length === 0) {
+            if (!Array.isArray(rolleCheck) || rolleCheck.length === 0) {
+                return json({ error: 'Ikke autorisert' }, { status: 403 });
+            }
+            
+            const currentUserRole = (rolleCheck[0] as any).rolle;
+            if (currentUserRole !== 'admin' && currentUserRole !== 'developer') {
                 return json({ error: 'Ikke autorisert' }, { status: 403 });
             }
         }
         
         const { bruker_id } = await request.json();
         
-        // Ikke la bruker fjerne seg selv som admin
+        // Ikke la bruker fjerne seg selv
         if (bruker_id === currentUserId) {
-            return json({ error: 'Du kan ikke fjerne dine egne admin-rettigheter' }, { status: 400 });
+            return json({ error: 'Du kan ikke fjerne din egen rolle' }, { status: 400 });
         }
         
-        // Fjern admin
+        // Fjern rolle
         await pool.query(
-            'DELETE FROM admin WHERE bruker_id = ?',
+            'DELETE FROM roller WHERE bruker_id = ?',
             [bruker_id]
         );
         
-        return json({ success: true, message: 'Admin-rettigheter fjernet' });
+        return json({ success: true, message: 'Rolle fjernet' });
     } catch (error) {
-        console.error('Error removing admin:', error);
-        return json({ error: 'Kunne ikke fjerne admin' }, { status: 500 });
+        console.error('Error removing role:', error);
+        return json({ error: 'Kunne ikke fjerne rolle' }, { status: 500 });
     }
 };

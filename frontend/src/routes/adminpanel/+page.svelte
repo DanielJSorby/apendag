@@ -65,7 +65,8 @@ onMount(async () => {
     await Promise.all([
         loadFAQ(),
         loadLinjer(),
-        loadSchools()
+        loadSchools(),
+        loadVenteliste()
     ]);
 
     // Close dropdowns when clicking outside
@@ -119,21 +120,33 @@ type Linje = {
     eksternLenke: string | null;
 };
 
+type VentelisteEntry = {
+    id: string;
+    bruker_id: string;
+    kurs_id: number;
+    tidspunkt_tekst: string;
+    studiesuppe: string | null;
+    created_at: string;
+    bruker_navn: string;
+    bruker_email: string;
+    position: number;
+};
+
 // Initialize activeTab from URL parameter or default to 'users'
-function getInitialTab(): 'users' | 'stats' | 'faq' | 'linjer' | 'skoler' {
+function getInitialTab(): 'users' | 'stats' | 'faq' | 'linjer' | 'skoler' | 'venteliste' {
     const tabParam = $page.url.searchParams.get('tab');
-    if (tabParam === 'users' || tabParam === 'stats' || tabParam === 'faq' || tabParam === 'linjer' || tabParam === 'skoler') {
+    if (tabParam === 'users' || tabParam === 'stats' || tabParam === 'faq' || tabParam === 'linjer' || tabParam === 'skoler' || tabParam === 'venteliste') {
         return tabParam;
     }
     return 'users';
 }
 
-let activeTab = $state<'users' | 'stats' | 'faq' | 'linjer' | 'skoler'>(getInitialTab());
+let activeTab = $state<'users' | 'stats' | 'faq' | 'linjer' | 'skoler' | 'venteliste'>(getInitialTab());
 
 // Update activeTab when URL parameter changes
 $effect(() => {
     const tabParam = $page.url.searchParams.get('tab');
-    if (tabParam === 'users' || tabParam === 'stats' || tabParam === 'faq' || tabParam === 'linjer' || tabParam === 'skoler') {
+    if (tabParam === 'users' || tabParam === 'stats' || tabParam === 'faq' || tabParam === 'linjer' || tabParam === 'skoler' || tabParam === 'venteliste') {
         if (activeTab !== tabParam) {
             activeTab = tabParam;
         }
@@ -148,7 +161,7 @@ $effect(() => {
     }
 });
 
-function setActiveTab(tab: 'users' | 'stats' | 'faq' | 'linjer' | 'skoler') {
+function setActiveTab(tab: 'users' | 'stats' | 'faq' | 'linjer' | 'skoler' | 'venteliste') {
     activeTab = tab;
     goto(`/adminpanel?tab=${tab}`, { replaceState: true, noScroll: true });
 }
@@ -159,6 +172,9 @@ let editingFAQ = $state<FAQ | null>(null);
 let isCreatingFAQ = $state(false);
 let faqSearch = $state('');
 let draggedItem = $state<FAQ | null>(null);
+let venteliste = $state<VentelisteEntry[]>([]);
+let ventelisteSearch = $state('');
+let expandedVentelisteKurs = $state<Set<string>>(new Set());
 
 let newFAQ = $state({
     question: '',
@@ -167,6 +183,8 @@ let newFAQ = $state({
 let users = $state<User[]>((data.users as User[]) || []);
 let courseStats = $state<any[]>((data.courseStats as any[]) || []);
 let adminIds = $state<string[]>(data.adminIds || []);
+let userRoles = $state<Record<string, string>>(data.userRoles || {});
+let currentUserRole = $state<string>(data.currentUserRole || 'ingen');
 let expandedCourses = $state<Set<number>>(new Set());
 
 function toggleCourse(courseId: number) {
@@ -188,9 +206,13 @@ function isAdmin(userId: string): boolean {
     return adminIds.includes(userId);
 }
 
+function getUserRole(userId: string): string {
+    return userRoles[userId] || 'ingen';
+}
+
 // Editing states
 let editingUser = $state<User | null>(null);
-let editingUserIsAdmin = $state(false);
+let editingUserRole = $state<string>('ingen'); // 'ingen', 'admin', eller 'developer'
 let isCreatingUser = $state(false);
 let showDeleteConfirm = $state(false);
 let userToDelete = $state<{ id: string; navn: string } | null>(null);
@@ -437,16 +459,12 @@ async function updateUser(user: User) {
             return;
         }
 
-        // Handle admin status change
-        const wasAdmin = isAdmin(user.id);
-        const shouldBeAdmin = editingUserIsAdmin;
+        // Handle rolle-endring
+        const currentRole = getUserRole(user.id);
+        const newRole = editingUserRole;
 
-        if (wasAdmin !== shouldBeAdmin && user.id !== currentUserId) {
-            if (shouldBeAdmin) {
-                await addAdmin(user.id);
-            } else {
-                await removeAdmin(user.id);
-            }
+        if (user.id !== currentUserId && currentRole !== newRole) {
+            await setUserRole(user.id, newRole);
         }
         
         editingUser = null;
@@ -491,29 +509,13 @@ function generateId() {
     return Date.now().toString() + Math.random().toString(36).substr(2, 9);
 }
 
-// Admin management
-async function addAdmin(userId: string) {
+// Rolle management
+async function setUserRole(userId: string, rolle: string) {
     try {
         const response = await fetch('/api/admin/manage', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ bruker_id: userId })
-        });
-        
-        if (response.ok) {
-            location.reload();
-        }
-    } catch (error) {
-        // Handle error silently
-    }
-}
-
-async function removeAdmin(userId: string) {
-    try {
-        const response = await fetch('/api/admin/manage', {
-            method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ bruker_id: userId })
+            body: JSON.stringify({ bruker_id: userId, rolle })
         });
         
         if (response.ok) {
@@ -663,6 +665,78 @@ async function updateLinje(linje: Linje) {
         console.error('Error updating linje:', error);
     }
 }
+
+// Venteliste Functions
+async function loadVenteliste() {
+    try {
+        const response = await fetch('/api/admin/venteliste');
+        if (response.ok) {
+            const data = await response.json();
+            venteliste = data.venteliste || [];
+        }
+    } catch (error) {
+        console.error('Error loading venteliste:', error);
+    }
+}
+
+function toggleVentelisteKurs(kursId: number, tidspunkt: string) {
+    const key = `${kursId}-${tidspunkt}`;
+    if (expandedVentelisteKurs.has(key)) {
+        expandedVentelisteKurs.delete(key);
+    } else {
+        expandedVentelisteKurs.add(key);
+    }
+    expandedVentelisteKurs = new Set(expandedVentelisteKurs);
+}
+
+function getVentelisteForKurs(kursId: number, tidspunkt: string) {
+    return venteliste.filter(v => v.kurs_id === kursId && v.tidspunkt_tekst === tidspunkt);
+}
+
+function groupVentelisteByKurs() {
+    const grouped: Map<string, VentelisteEntry[]> = new Map();
+    
+    venteliste.forEach(entry => {
+        const key = `${entry.kurs_id}-${entry.tidspunkt_tekst}`;
+        if (!grouped.has(key)) {
+            grouped.set(key, []);
+        }
+        grouped.get(key)!.push(entry);
+    });
+    
+    return Array.from(grouped.entries()).map(([key, entries]) => {
+        const [kursId, tidspunkt] = key.split('-');
+        return {
+            kursId: parseInt(kursId),
+            tidspunkt: entries[0].tidspunkt_tekst,
+            entries: entries.sort((a, b) => a.position - b.position)
+        };
+    });
+}
+
+async function removeFromVenteliste(ventelisteId: string) {
+    try {
+        const response = await fetch('/api/admin/venteliste', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: ventelisteId })
+        });
+        
+        if (response.ok) {
+            await loadVenteliste();
+        }
+    } catch (error) {
+        console.error('Error removing from venteliste:', error);
+    }
+}
+
+let filteredVenteliste = $derived(
+    venteliste.filter(v =>
+        v.bruker_navn?.toLowerCase().includes(ventelisteSearch.toLowerCase()) ||
+        v.bruker_email?.toLowerCase().includes(ventelisteSearch.toLowerCase()) ||
+        getKursNavn(v.kurs_id)?.toLowerCase().includes(ventelisteSearch.toLowerCase())
+    )
+);
 </script>
 
 <svelte:head>
@@ -673,7 +747,7 @@ async function updateLinje(linje: Linje) {
         <h1>Admin Panel</h1>
         <p>Administrer brukere for åpen dag</p>
         {#if isDevelopmentMode}
-            <div class="dev-badge">UTVIKLINGSMODUS - Localhost Admin</div>
+            <div class="dev-badge">UTVIKLINGSMODUS - Localhost Developer</div>
         {/if}
     </header>
 
@@ -713,6 +787,14 @@ async function updateLinje(linje: Linje) {
                 await loadSchools();
             }}>
             Skoler ({schools.length})
+        </button>
+        <button 
+            class:active={activeTab === 'venteliste'}
+            onclick={async () => { 
+                setActiveTab('venteliste');
+                await loadVenteliste();
+            }}>
+            Venteliste ({venteliste.length})
         </button>
     </nav>
 
@@ -867,9 +949,10 @@ async function updateLinje(linje: Linje) {
                                         </select>
                                     </td>
                                     <td>
-                                        <select bind:value={editingUserIsAdmin} disabled={user.id === currentUserId}>
-                                            <option value={true}>Ja</option>
-                                            <option value={false}>Nei</option>
+                                        <select bind:value={editingUserRole} disabled={user.id === currentUserId}>
+                                            <option value="ingen">Ingen</option>
+                                            <option value="admin">Admin</option>
+                                            <option value="developer" disabled={currentUserRole !== 'developer'}>Developer</option>
                                         </select>
                                     </td>
                                     <td class="actions-cell">
@@ -899,16 +982,12 @@ async function updateLinje(linje: Linje) {
                                     <td>{user.paameldt_tidspunkt_tekst || '-'}</td>
                                     <td>{user.studiesuppe || '-'}</td>
                                     <td>
-                                        {#if isAdmin(user.id)}
-                                            <span class="admin-badge">Ja</span>
-                                        {:else}
-                                            <span class="non-admin-badge">Nei</span>
-                                        {/if}
+                                        <span class="role-badge role-{getUserRole(user.id)}">{getUserRole(user.id)}</span>
                                     </td>
                                     <td class="actions-cell">
                                         <button onclick={() => { 
                                             editingUser = {...user}; 
-                                            editingUserIsAdmin = isAdmin(user.id);
+                                            editingUserRole = getUserRole(user.id);
                                             editingUserSchoolSearch = user.ungdomskole || '';
                                         }} class="btn-small btn-edit">
                                             Rediger
@@ -1367,6 +1446,73 @@ async function updateLinje(linje: Linje) {
                         {/each}
                     </tbody>
                 </table>
+            </div>
+        </section>
+    {/if}
+
+    {#if activeTab === 'venteliste'}
+        <section class="content-section">
+            <div class="section-header">
+                <h2>Venteliste</h2>
+                <div class="actions">
+                    <input 
+                        type="text" 
+                        placeholder="Søk i venteliste..." 
+                        bind:value={ventelisteSearch}
+                        class="search-input"
+                    />
+                </div>
+            </div>
+
+            <div class="stats-section">
+                <h3>Ventelister per kurs og tidspunkt</h3>
+                <div class="course-stats">
+                    {#each groupVentelisteByKurs() as gruppe}
+                        {@const key = `${gruppe.kursId}-${gruppe.tidspunkt}`}
+                        <div class="course-stat-container">
+                            <button 
+                                class="course-stat-item"
+                                onclick={() => toggleVentelisteKurs(gruppe.kursId, gruppe.tidspunkt)}
+                            >
+                                <span class="course-name">{getKursNavn(gruppe.kursId)} - {gruppe.tidspunkt}</span>
+                                <div class="course-header-right">
+                                    <span class="course-count">{gruppe.entries.length} på venteliste</span>
+                                    <span class="expand-icon">{expandedVentelisteKurs.has(key) ? '▲' : '▼'}</span>
+                                </div>
+                            </button>
+                            
+                            {#if expandedVentelisteKurs.has(key)}
+                                <div class="course-users">
+                                    {#each gruppe.entries as entry}
+                                        <div class="venteliste-item">
+                                            <div class="venteliste-position">#{entry.position}</div>
+                                            <div class="venteliste-info">
+                                                <span class="user-name">{entry.bruker_navn}</span>
+                                                <span class="user-email">{entry.bruker_email}</span>
+                                                {#if entry.studiesuppe}
+                                                    <span class="studiesuppe-badge">Studiesuppe: {entry.studiesuppe}</span>
+                                                {/if}
+                                                <span class="venteliste-date">Påmeldt: {new Date(entry.created_at).toLocaleString('nb-NO', { dateStyle: 'short', timeStyle: 'short' })}</span>
+                                            </div>
+                                            <button 
+                                                onclick={() => removeFromVenteliste(entry.id)} 
+                                                class="btn-small btn-danger"
+                                                title="Fjern fra venteliste"
+                                            >
+                                                Fjern
+                                            </button>
+                                        </div>
+                                    {/each}
+                                </div>
+                            {/if}
+                        </div>
+                    {/each}
+                    {#if groupVentelisteByKurs().length === 0}
+                        <div class="empty-state">
+                            <p>Ingen på venteliste for øyeblikket</p>
+                        </div>
+                    {/if}
+                </div>
             </div>
         </section>
     {/if}
@@ -2112,6 +2258,31 @@ async function updateLinje(linje: Linje) {
         color: #999;
     }
 
+    .role-badge {
+        font-size: 0.85rem;
+        padding: 4px 12px;
+        border-radius: 6px;
+        font-weight: 600;
+        text-transform: capitalize;
+        display: inline-block;
+    }
+
+    .role-ingen {
+        background: rgba(153, 153, 153, 0.1);
+        color: #999;
+    }
+
+    .role-admin {
+        background: rgba(220, 137, 70, 0.15);
+        color: var(--color-orange);
+    }
+
+    .role-developer {
+        background: rgba(65, 145, 215, 0.15);
+        color: var(--color-blue);
+        font-weight: 700;
+    }
+
     .admin-card-body {
         margin-bottom: 15px;
     }
@@ -2538,6 +2709,88 @@ async function updateLinje(linje: Linje) {
         .btn-modal-cancel,
         .btn-modal-delete {
             width: 100%;
+        }
+    }
+
+    /* Venteliste Styles */
+    .venteliste-item {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 15px;
+        background: white;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        border-left: 4px solid var(--color-orange);
+        transition: all 0.2s ease;
+    }
+
+    .venteliste-item:hover {
+        transform: translateX(5px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .venteliste-position {
+        background: var(--color-orange);
+        color: white;
+        font-weight: 600;
+        font-size: 1.1rem;
+        padding: 10px 15px;
+        border-radius: 50%;
+        min-width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 8px rgba(220, 137, 70, 0.3);
+    }
+
+    .venteliste-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .studiesuppe-badge {
+        display: inline-block;
+        background: var(--color-green-light);
+        color: var(--color-green);
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        width: fit-content;
+    }
+
+    .venteliste-date {
+        color: #999;
+        font-size: 0.85rem;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background: #f8f9fa;
+        border-radius: 12px;
+        border: 2px dashed #e0e0e0;
+    }
+
+    .empty-state p {
+        color: #666;
+        font-size: 1.1rem;
+        margin: 0;
+    }
+
+    @media (max-width: 768px) {
+        .venteliste-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .venteliste-position {
+            align-self: flex-start;
         }
     }
 </style>

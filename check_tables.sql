@@ -1,2 +1,0 @@
-SHOW CREATE TABLE bruker;
-SHOW CREATE TABLE kurs;
