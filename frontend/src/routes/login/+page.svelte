@@ -1,9 +1,14 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
+    import { onMount, onDestroy } from 'svelte';
     import { getCookie } from '$lib/functions/getCookie';
     let email = $state('');
     let errorMessage = $state('');
     let successMessage = $state('');
+    let lastEmailSent = $state(''); // Store email for resending
+    let isResending = $state(false);
+    let lastSentTime = $state<number | null>(null); // Timestamp when link was sent
+    let timeRemaining = $state(0); // Seconds remaining until resend is allowed
+    let countdownInterval: ReturnType<typeof setInterval> | null = null;
 
     onMount(() => {
         const userId = getCookie('UserId');
@@ -12,33 +17,81 @@
         }
     });
 
-    async function handleMagicLink() {
+    onDestroy(() => {
+        if (countdownInterval) {
+            clearInterval(countdownInterval);
+        }
+    });
+
+    function startCountdown() {
+        lastSentTime = Date.now();
+        timeRemaining = 60; // 1 minute in seconds
+        
+        if (countdownInterval) {
+            clearInterval(countdownInterval);
+        }
+        
+        countdownInterval = setInterval(() => {
+            if (lastSentTime) {
+                const elapsed = Math.floor((Date.now() - lastSentTime) / 1000);
+                timeRemaining = Math.max(0, 60 - elapsed);
+                
+                if (timeRemaining <= 0) {
+                    if (countdownInterval) {
+                        clearInterval(countdownInterval);
+                        countdownInterval = null;
+                    }
+                }
+            }
+        }, 1000);
+    }
+
+    async function handleMagicLink(emailToSend?: string) {
         try {
             errorMessage = '';
             successMessage = '';
+            const emailAddress = emailToSend || email;
 
             const response = await fetch('/api/magic_link', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email })
+                body: JSON.stringify({ email: emailAddress })
             });
 
             const data = await response.json();
 
             if (data.ok) {
-                const emailToShow = email; // Store email before clearing
-                successMessage = `En verifiseringslenke er sendt til ${emailToShow}. Trykk på den for å logge inn.`;
+                lastEmailSent = emailAddress; // Store email before clearing
+                successMessage = `En verifiseringslenke er sendt til ${emailAddress}. Trykk på den for å logge inn.`;
                 errorMessage = '';
-                email = '';
+                if (!emailToSend) {
+                    email = '';
+                }
+                isResending = false;
+                startCountdown(); // Start the 1-minute countdown
             } else {
                 errorMessage = data.message || 'Et problem oppstod ved sending av linken';
                 successMessage = '';
+                isResending = false;
             }
         } catch (err) {
             console.error(err);
             errorMessage = 'Et problem oppstod ved sending av linken';
             successMessage = '';
+            isResending = false;
         }
+    }
+
+    async function resendLink() {
+        if (!lastEmailSent || timeRemaining > 0) return;
+        isResending = true;
+        await handleMagicLink(lastEmailSent);
+    }
+
+    function getResendButtonText(): string {
+        if (isResending) return 'Sender...';
+        if (timeRemaining > 0) return `Send ny link (${timeRemaining}s)`;
+        return 'Send ny link';
     }
 </script>
 
@@ -55,7 +108,10 @@
         {/if}
         {#if successMessage}
             <div class="success-message">
-                {successMessage}
+                <div>{successMessage}</div>
+                <button type="button" class="resend-button" onclick={resendLink} disabled={isResending || timeRemaining > 0}>
+                    {getResendButtonText()}
+                </button>
             </div>
         {/if}
         <form onsubmit={(e) => { e.preventDefault(); handleMagicLink(); }}>
@@ -192,6 +248,33 @@
         text-align: center;
         font-weight: 500;
         font-size: 0.95rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .resend-button {
+        background-color: transparent;
+        border: 2px solid #166534;
+        color: #166534;
+        padding: 8px 16px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 500;
+        font-family: 'Oslo Sans', sans-serif;
+        transition: background-color 0.3s, color 0.3s;
+        margin-top: 0.5rem;
+    }
+
+    .resend-button:hover:not(:disabled) {
+        background-color: #166534;
+        color: white;
+    }
+
+    .resend-button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
     }
 
     .bottom-message {
