@@ -23,6 +23,7 @@
 <div class="container">
     <div class="fillerbilde"></div>
     <div class="content">
+        <div class="mobli-spacer"></div>
         <div class="tekst-boks">
             <h2>VELKOMMEN TIL</h2>
             <h1>ÅPEN DAG PÅ</h1>
@@ -178,6 +179,11 @@
 
     .fillerbilde {
         height: 25vh;
+        width: 100%;
+    }
+
+    .mobli-spacer {
+        height: 30vh;
         width: 100%;
     }
 
