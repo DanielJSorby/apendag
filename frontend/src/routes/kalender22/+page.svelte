@@ -4,7 +4,7 @@
 
     // Mottar nå begge verdiene fra serveren
     export let data;
-    const { kursListe, paameldtKursId, paameldtTidspunktTekst } = data;
+    const { kursListe, paameldtKursId, paameldtTidspunktTekst, ventelisteKursId, ventelisteTidspunktTekst, erLoggetInn } = data;
 
 </script>
 
@@ -35,6 +35,9 @@
                 erAlleredePaameldt={paameldtKursId === arrangement.id}
                 globaltPaameldtKursId={paameldtKursId}
                 paameldtTidspunkt={paameldtTidspunktTekst}
+                erPåVenteliste={ventelisteKursId === arrangement.id}
+                ventelisteTidspunkt={ventelisteTidspunktTekst}
+                erLoggetInn={erLoggetInn}
             />
         {/each}
     </div>

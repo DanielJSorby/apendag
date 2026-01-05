@@ -5,6 +5,8 @@ export async function load({ locals }) {
     const user = locals.user;
     let paameldtKursId = null;
     let paameldtTidspunktTekst = null;
+    let ventelisteKursId = null;
+    let ventelisteTidspunktTekst = null;
     let kursListe = [];
 
     try {
@@ -27,6 +29,20 @@ export async function load({ locals }) {
                 // @ts-ignore
                 paameldtTidspunktTekst = userRows[0].paameldt_tidspunkt_tekst;
             }
+
+            // Henter venteliste-status for brukeren
+            const [ventelisteRows] = await db.query(
+                'SELECT kurs_id, tidspunkt_tekst FROM venteliste WHERE bruker_id COLLATE utf8mb4_unicode_ci = ?',
+                [user.id]
+            );
+            
+            // @ts-ignore
+            if (ventelisteRows.length > 0) {
+                // @ts-ignore
+                ventelisteKursId = ventelisteRows[0].kurs_id;
+                // @ts-ignore
+                ventelisteTidspunktTekst = ventelisteRows[0].tidspunkt_tekst;
+            }
         }
     } catch (error) {
         console.error("Databasefeil ved lasting av kalenderside:", error);
@@ -34,7 +50,10 @@ export async function load({ locals }) {
         return {
             kursListe: [],
             paameldtKursId: null,
-            paameldtTidspunktTekst: null
+            paameldtTidspunktTekst: null,
+            ventelisteKursId: null,
+            ventelisteTidspunktTekst: null,
+            erLoggetInn: false
         };
     }
 
@@ -54,6 +73,9 @@ export async function load({ locals }) {
             }
         })),
         paameldtKursId: paameldtKursId,
-        paameldtTidspunktTekst: paameldtTidspunktTekst
+        paameldtTidspunktTekst: paameldtTidspunktTekst,
+        ventelisteKursId: ventelisteKursId,
+        ventelisteTidspunktTekst: ventelisteTidspunktTekst,
+        erLoggetInn: user !== null
     };
 }
