@@ -76,7 +76,7 @@
 <div class="body">
     <div class="FAQBody">
         <div class="headerBody">
-            <h1 class="medium">Du leter<br> kanskje etter<br></h1>
+            <h1 class="medium">Du lurer<br> kanskje på<br></h1>
         </div>
         <div class="questions">
             {#each data as question (question.id)} <!-- Denne løkken kjører antall objekter i listen ganger og setter hvert objekt til en variabel questions som tilsvarer det nåværende objektet av data  -->
