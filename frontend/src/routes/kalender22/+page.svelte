@@ -16,8 +16,8 @@
 
 <HeroSection 
     image="/images/Elvebakken eksteriør 3.jpg"
-    title="Velkommen til en smak av Elvebakken"
-    subtitle="Velkommen til påmelding en smak av Elvebakken <span>22. januar!</span><br/>Meld deg på et av kursene under. Bruk knappene for å velge tidspunkt, og trykk deretter på 'Meld deg på'."
+    title="Vi ønsker deg som 10. klassing velkommen inn til å oppleve hverdagen på Elvebakken torsdag 22. januar"
+    subtitle="Meld deg på under på et av tidspunktene under. Bruk knappene for å velge tid, og trykk deretter “Meld deg på”"
     height="50vh"
     overlayOpacity={0.67}
 />
