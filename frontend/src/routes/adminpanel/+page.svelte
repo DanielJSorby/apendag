@@ -783,6 +783,115 @@ let filteredVenteliste = $derived(
         getKursNavn(v.kurs_id)?.toLowerCase().includes(ventelisteSearch.toLowerCase())
     )
 );
+
+// CSV Export state
+let availableLines = $derived<Set<string>>(new Set(kursListe.map(k => k.linje).filter(Boolean)));
+let selectedLinesForExport = $state<Set<string>>(new Set());
+let selectedFieldsForExport = $state<Set<string>>(new Set([
+    'navn',
+    'email',
+    'telefon',
+    'ungdomskole',
+    'linje',
+    'kurs_navn',
+    'paameldt_tidspunkt_tekst'
+]));
+let isExporting = $state(false);
+
+// Available fields for export
+const exportFields = [
+    { key: 'id', label: 'ID' },
+    { key: 'navn', label: 'Navn' },
+    { key: 'email', label: 'E-post' },
+    { key: 'telefon', label: 'Telefon' },
+    { key: 'ungdomskole', label: 'Ungdomsskole' },
+    { key: 'linje', label: 'Linje' },
+    { key: 'kurs_navn', label: 'Kursnavn' },
+    { key: 'paameldt_tidspunkt_tekst', label: 'Tidspunkt' },
+    { key: 'studiesuppe', label: 'Studiesuppe' },
+    { key: 'paameldt_kurs_id', label: 'Kurs ID' }
+];
+
+// Initialize selected lines with all available lines
+$effect(() => {
+    if (availableLines.size > 0 && selectedLinesForExport.size === 0) {
+        selectedLinesForExport = new Set(availableLines);
+    }
+});
+
+function toggleLineForExport(line: string) {
+    const newSet = new Set(selectedLinesForExport);
+    if (newSet.has(line)) {
+        newSet.delete(line);
+    } else {
+        newSet.add(line);
+    }
+    selectedLinesForExport = newSet;
+}
+
+function toggleFieldForExport(field: string) {
+    const newSet = new Set(selectedFieldsForExport);
+    if (newSet.has(field)) {
+        newSet.delete(field);
+    } else {
+        newSet.add(field);
+    }
+    selectedFieldsForExport = newSet;
+}
+
+function selectAllLines() {
+    selectedLinesForExport = new Set(availableLines);
+}
+
+function deselectAllLines() {
+    selectedLinesForExport = new Set();
+}
+
+async function exportToCSV() {
+    if (selectedLinesForExport.size === 0) {
+        alert('Velg minst én linje å eksportere');
+        return;
+    }
+    
+    if (selectedFieldsForExport.size === 0) {
+        alert('Velg minst ett felt å eksportere');
+        return;
+    }
+    
+    isExporting = true;
+    
+    try {
+        const response = await fetch('/api/admin/export-csv', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                selectedLines: Array.from(selectedLinesForExport),
+                selectedFields: Array.from(selectedFieldsForExport)
+            })
+        });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            alert(`Kunne ikke eksportere CSV: ${errorText}`);
+            return;
+        }
+        
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `kurspaameldinger_${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+    } catch (error) {
+        console.error('Error exporting CSV:', error);
+        alert('En feil oppstod ved eksport av CSV');
+    } finally {
+        isExporting = false;
+    }
+}
 </script>
 
 <svelte:head>
@@ -1071,6 +1180,64 @@ let filteredVenteliste = $derived(
                 <div class="stat-card">
                     <h3>Brukere med kurs</h3>
                     <p class="stat-number">{users.filter(u => u.paameldt_kurs_id).length}</p>
+                </div>
+            </div>
+
+            <div class="stats-section" style="margin-bottom: 30px;">
+                <div class="section-header">
+                    <h3>Eksporter til CSV</h3>
+                </div>
+                
+                <div class="export-controls">
+                    <div class="export-group">
+                        <div class="export-group-header">
+                            <h4>Velg linjer</h4>
+                            <div class="select-all-buttons">
+                                <button onclick={selectAllLines} class="btn-small btn-edit">Velg alle</button>
+                                <button onclick={deselectAllLines} class="btn-small btn-cancel">Fjern alle</button>
+                            </div>
+                        </div>
+                        <div class="export-checkboxes">
+                            {#each Array.from(availableLines).sort() as line}
+                                <label>
+                                    <input 
+                                        type="checkbox" 
+                                        checked={selectedLinesForExport.has(line)}
+                                        onchange={() => toggleLineForExport(line)}
+                                    />
+                                    {line.toUpperCase()}
+                                </label>
+                            {/each}
+                        </div>
+                    </div>
+                    
+                    <div class="export-group">
+                        <div class="export-group-header">
+                            <h4>Velg felter</h4>
+                        </div>
+                        <div class="export-checkboxes">
+                            {#each exportFields as field}
+                                <label>
+                                    <input 
+                                        type="checkbox" 
+                                        checked={selectedFieldsForExport.has(field.key)}
+                                        onchange={() => toggleFieldForExport(field.key)}
+                                    />
+                                    {field.label}
+                                </label>
+                            {/each}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="export-actions">
+                    <button 
+                        onclick={exportToCSV} 
+                        class="btn-primary"
+                        disabled={isExporting || selectedLinesForExport.size === 0 || selectedFieldsForExport.size === 0}
+                    >
+                        {isExporting ? 'Eksporterer...' : 'Eksporter til CSV'}
+                    </button>
                 </div>
             </div>
 
@@ -2916,6 +3083,79 @@ let filteredVenteliste = $derived(
         margin: 0;
     }
 
+    /* CSV Export Styles */
+    .export-controls {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 30px;
+        margin-bottom: 25px;
+    }
+
+    .export-group {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        border: 2px solid #f0f0f0;
+    }
+
+    .export-group-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    .export-group-header h4 {
+        margin: 0;
+        color: #333;
+        font-size: 1.1rem;
+    }
+
+    .select-all-buttons {
+        display: flex;
+        gap: 8px;
+    }
+
+    .export-checkboxes {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 12px;
+    }
+
+    .export-checkboxes label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        font-size: 0.95rem;
+        padding: 8px;
+        border-radius: 6px;
+        transition: background-color 0.2s;
+    }
+
+    .export-checkboxes label:hover {
+        background-color: #f8f9fa;
+    }
+
+    .export-checkboxes input[type="checkbox"] {
+        cursor: pointer;
+        width: 18px;
+        height: 18px;
+    }
+
+    .export-actions {
+        display: flex;
+        justify-content: center;
+        padding-top: 20px;
+    }
+
+    .export-actions button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
     @media (max-width: 768px) {
         .venteliste-item {
             flex-direction: column;
@@ -2925,6 +3165,14 @@ let filteredVenteliste = $derived(
 
         .venteliste-position {
             align-self: flex-start;
+        }
+
+        .export-controls {
+            grid-template-columns: 1fr;
+        }
+
+        .export-checkboxes {
+            grid-template-columns: 1fr;
         }
     }
 </style>
