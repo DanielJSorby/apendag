@@ -31,6 +31,7 @@
 	let hoverAvmeldVenteliste = false; // Styrer hover-effekten for avmeldingsknappen for venteliste
 	let visStudiesuppePopup = false;
 	let ventelisteMessage = '';
+	let visFeilmelding = false; // Styrer visning av feilmelding overlay
 
 	onMount(() => {
 		// Setter start-tidspunktet basert på hva som er lagret i databasen
@@ -136,7 +137,7 @@
 			}
 		} catch (error: any) {
 			errorMessage = error.message;
-			alert(`Påmelding feilet: ${errorMessage}`);
+			visFeilmelding = true;
 		} finally {
 			isLoading = false;
 		}
@@ -221,10 +222,25 @@
 		visOverlayEL = false;
 		window.location.reload(); // Laster siden på nytt for å oppdatere status på alle knapper
 	};
+
+	const lukkFeilmelding = () => {
+		visFeilmelding = false;
+		errorMessage = '';
+	};
 </script>
 
 {#if visStudiesuppePopup}
 	<StudiesuppePopup on:decision={handleStudiesuppeDecision} />
+{/if}
+
+{#if visFeilmelding}
+	<div class="overlay" on:click={lukkFeilmelding}>
+		<div class="overlay-innhold feilmelding-overlay" on:click|stopPropagation>
+			<h1>Påmelding feilet</h1>
+			<p>{errorMessage}</p>
+			<button on:click={lukkFeilmelding}>OK</button>
+		</div>
+	</div>
 {/if}
 
 {#if visOverlayEL}
@@ -401,6 +417,20 @@
 		border-radius: 1rem;
 		text-align: center;
 		color: black;
+	}
+	.feilmelding-overlay {
+		border: 3px solid #f44336;
+	}
+	.feilmelding-overlay h1 {
+		color: #f44336;
+	}
+	.feilmelding-overlay button {
+		background-color: #f44336;
+		color: white;
+		padding: 0.75rem 2rem;
+	}
+	.feilmelding-overlay button:hover {
+		background-color: #d32f2f;
 	}
 	button {
 		padding: 0.5rem 1rem;
