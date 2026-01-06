@@ -431,24 +431,13 @@ async function updateSchool(school: School) {
 
 // Search/filter
 let userSearch = $state('');
-let adminSearch = $state('');
 
 // Filtered list
 let filteredUsers = $derived(
     users.filter(u => 
         u.navn?.toLowerCase().includes(userSearch.toLowerCase()) ||
         u.email?.toLowerCase().includes(userSearch.toLowerCase()) ||
-        u.id?.toLowerCase().includes(userSearch.toLowerCase()) ||
         u.ungdomskole?.toLowerCase().includes(userSearch.toLowerCase())
-    )
-);
-
-let filteredAdminUsers = $derived(
-    users.filter(u => 
-        u.navn?.toLowerCase().includes(adminSearch.toLowerCase()) ||
-        u.email?.toLowerCase().includes(adminSearch.toLowerCase()) ||
-        u.id?.toLowerCase().includes(adminSearch.toLowerCase()) ||
-        u.ungdomskole?.toLowerCase().includes(adminSearch.toLowerCase())
     )
 );
 
