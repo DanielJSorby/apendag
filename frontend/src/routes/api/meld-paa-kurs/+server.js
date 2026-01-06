@@ -96,6 +96,19 @@ export async function POST(event) {
             }
         }
 
+        // Sjekk om brukeren allerede er på venteliste for noe kurs
+        const [waitlistRows] = await connection.query(
+            'SELECT id FROM venteliste WHERE bruker_id COLLATE utf8mb4_unicode_ci = ?',
+            [user.id]
+        );
+        
+        // @ts-ignore
+        if (waitlistRows.length > 0) {
+            await connection.rollback();
+            connection.release();
+            return json({ message: 'Du kan ikke melde deg på et kurs mens du er på venteliste. Meld deg av ventelisten først.' }, { status: 409 });
+        }
+
         // Sjekk om brukeren allerede er påmeldt et kurs
         const [rows] = await connection.query('SELECT paameldt_kurs_id FROM bruker WHERE id = ?', [user.id]);
         
