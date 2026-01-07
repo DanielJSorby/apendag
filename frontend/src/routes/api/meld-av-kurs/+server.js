@@ -44,15 +44,11 @@ export async function POST(event) {
         // @ts-ignore
         const kurs = kursRows[0];
 
-        // Bestem hvilken kolonne som skal oppdateres
-        let tidspunktKolonne;
-        if (tidspunktTekst === kurs.tid_for_lunsj) {
-            tidspunktKolonne = 'plasser_for';
-        } else if (tidspunktTekst === kurs.tid_etter_lunsj) {
-            tidspunktKolonne = 'plasser_etter';
-        } else if (tidspunktTekst === kurs.tid_siste) {
-            tidspunktKolonne = 'plasser_siste';
-        } else {
+        // Siden vi kun har ett tidspunkt nå, er kolonnen alltid 'plasser_siste'
+        const tidspunktKolonne = 'plasser_siste';
+
+        // Valider at det lagrede tidspunktet er det vi forventer
+        if (tidspunktTekst !== kurs.tid_siste) {
             // Ugyldig tilstand, avbryt
             await connection.rollback();
             return json({ message: 'Påmeldt tidspunkt er ugyldig.' }, { status: 400 });
