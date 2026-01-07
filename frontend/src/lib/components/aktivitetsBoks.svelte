@@ -1,7 +1,6 @@
 <script lang="ts">
-	import { onMount, createEventDispatcher } from 'svelte';
-
-	const dispatch = createEventDispatcher();
+	import { onMount } from 'svelte';
+	import StudiesuppePopup from './StudiesuppePopup.svelte';
 
 	interface Props {
 		title?: string
@@ -30,6 +29,7 @@
 	let errorMessage = '';
 	let hoverAvmeld = false; // Styrer hover-effekten for avmeldingsknappen
 	let hoverAvmeldVenteliste = false; // Styrer hover-effekten for avmeldingsknappen for venteliste
+	let visStudiesuppePopup = false;
 	let ventelisteMessage = '';
 	let visFeilmelding = false; // Styrer visning av feilmelding overlay
 
@@ -78,10 +78,16 @@
 			return;
 		}
 
-		await fullforPaamelding(false); // Meld på direkte uten studiesuppe
+		const erSisteTidspunkt = valgtTidspunkt === 'siste';
+
+		if (erSisteTidspunkt) {
+			visStudiesuppePopup = true; // Vis popup i stedet for confirm
+		} else {
+			await fullforPaamelding(false, false); // Meld på direkte uten studiesuppe
+		}
 	}
 
-	async function fullforPaamelding(venteliste: boolean = false) {
+	async function fullforPaamelding(vilHaStudiesuppe: boolean, venteliste: boolean = false) {
 		isLoading = true;
 		errorMessage = '';
 		ventelisteMessage = '';
@@ -95,7 +101,7 @@
 				body: JSON.stringify({
 					kursId: kurs,
 					tidspunktTekst: tidspunktTekst,
-					studiesuppe: false,
+					studiesuppe: vilHaStudiesuppe,
 					venteliste: venteliste
 				})
 			});
@@ -146,7 +152,22 @@
 			return;
 		}
 		
-		await fullforPaamelding(true); // Meld på venteliste direkte
+		const erSisteTidspunkt = valgtTidspunkt === 'siste';
+		
+		if (erSisteTidspunkt) {
+			// Lagre at vi skal på venteliste, så popup kan bruke det
+			visStudiesuppePopup = true; // Vis popup for studiesuppe
+		} else {
+			await fullforPaamelding(false, true); // Meld på venteliste direkte uten studiesuppe
+		}
+	}
+
+	function handleStudiesuppeDecision(event: CustomEvent<boolean>) {
+		visStudiesuppePopup = false;
+		const vilHaStudiesuppe = event.detail;
+		// Hvis vi kom hit fra venteliste-knappen eller kurset er fullt, meld på venteliste
+		const skalVenteliste = plasser[valgtTidspunkt] <= 0;
+		fullforPaamelding(vilHaStudiesuppe, skalVenteliste);
 	}
 
 	async function meldAv() {
@@ -164,7 +185,7 @@
 			}
 
 			// Laster siden på nytt for å oppdatere all status
-			dispatch('update');
+			window.location.reload();
 
 		} catch (error: any) {
 			alert(error.message);
@@ -188,7 +209,7 @@
 			}
 
 			// Laster siden på nytt for å oppdatere all status
-			dispatch('update');
+			window.location.reload();
 
 		} catch (error: any) {
 			alert(error.message);
@@ -199,7 +220,7 @@
 
 	const lukkOverlay = () => {
 		visOverlayEL = false;
-		dispatch('update');
+		window.location.reload(); // Laster siden på nytt for å oppdatere status på alle knapper
 	};
 
 	const lukkFeilmelding = () => {
@@ -207,6 +228,10 @@
 		errorMessage = '';
 	};
 </script>
+
+{#if visStudiesuppePopup}
+	<StudiesuppePopup on:decision={handleStudiesuppeDecision} />
+{/if}
 
 {#if visFeilmelding}
 	<div class="overlay" on:click={lukkFeilmelding}>
