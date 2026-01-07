@@ -253,7 +253,6 @@ export async function sendWaitlistNotificationEmail(
                         <p>Vi har gode nyheter! Det har blitt ledig en plass på kurset du stod på venteliste for.</p>
                         <div class="info-box">
                             <p><strong>Kurs:</strong> ${kursNavn}</p>
-                            <p><strong>Tidspunkt:</strong> ${tidspunktTekst}</p>
                         </div>
                         <p>Du er nå automatisk påmeldt kurset. Du kan se din påmelding når du logger inn på nettsiden.</p>
                         <a href="${baseUrl}/kalender22" class="button">Se min påmelding</a>
