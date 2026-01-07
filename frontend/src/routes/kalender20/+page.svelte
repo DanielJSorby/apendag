@@ -105,7 +105,7 @@
 				<h2 class="section-title">Informasjonsshow</h2>
 				<p class="section-subtitle">Fire showtider i auditoriet:</p>
 				<p class="show-description">
-					På showene får du møte Elvebakken-elever og få en smakebit av hva Elvebakken tilbyr. 
+					På showene får du møte Elvebakken-elever og oppleve litt av hva Elvebakken tilbyr. 
 					Du får informasjon om hvordan det er å gå på skolen, muligheter og alt annet du lurer på.
 				</p>
 				<div class="show-grid">
