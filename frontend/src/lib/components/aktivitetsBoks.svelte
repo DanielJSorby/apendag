@@ -16,17 +16,22 @@
 	export let erAlleredePaameldt: boolean = false;
 	export let globaltPaameldtKursId: number | null;
 	export let paameldtTidspunkt: string | null; // Ny prop for påmeldt tidspunkt
+	export let erPåVenteliste: boolean = false; // Prop for om brukeren er på venteliste for dette kurset
+	export let ventelisteTidspunkt: string | null; // Tidspunkt for venteliste
+	export let erLoggetInn: boolean = false; // Prop for om brukeren er logget inn
 
 	let valgtTidspunkt: 'forLunsj' | 'etterLunsj' | 'siste' = 'forLunsj';
 	let visOverlayEL = false
 	let erPåmeldt = erAlleredePaameldt;
+	let erPåVentelisteLokal = erPåVenteliste; // Lokal kopi av venteliste-status
 	let tidspunktTekst: string;
 	let isLoading = false;
 	let errorMessage = '';
 	let hoverAvmeld = false; // Styrer hover-effekten for avmeldingsknappen
+	let hoverAvmeldVenteliste = false; // Styrer hover-effekten for avmeldingsknappen for venteliste
 	let visStudiesuppePopup = false;
-	let erPåVenteliste = false;
 	let ventelisteMessage = '';
+	let visFeilmelding = false; // Styrer visning av feilmelding overlay
 
 	onMount(() => {
 		// Setter start-tidspunktet basert på hva som er lagret i databasen
@@ -38,19 +43,34 @@
 			} else if (paameldtTidspunkt === tidspunkt.siste) {
 				valgtTidspunkt = 'siste';
 			}
+		} else if (erPåVentelisteLokal && ventelisteTidspunkt) {
+			// Hvis på venteliste, sett tidspunkt basert på venteliste-tidspunkt
+			if (ventelisteTidspunkt === tidspunkt.forLunsj) {
+				valgtTidspunkt = 'forLunsj';
+			} else if (ventelisteTidspunkt === tidspunkt.etterLunsj) {
+				valgtTidspunkt = 'etterLunsj';
+			} else if (ventelisteTidspunkt === tidspunkt.siste) {
+				valgtTidspunkt = 'siste';
+			}
 		}
 		// Oppdaterer den synlige teksten
 		tidspunktTekst = tidspunkt[valgtTidspunkt];
 	});
 
 	const byttFørEtter = ((førEtter: 'forLunsj' | 'etterLunsj' | 'siste')=> {
-		if (erPåmeldt) return;
+		if (erPåmeldt || erPåVentelisteLokal) return;
 		valgtTidspunkt = førEtter;
 		tidspunktTekst = tidspunkt[førEtter];
 	});
 
 	async function meldPaa() {
-		if (erPåmeldt || isLoading) return;
+		if (erPåmeldt || erPåVentelisteLokal || isLoading) return;
+
+		// Sjekk om brukeren allerede er påmeldt et annet kurs
+		if (globaltPaameldtKursId !== null) {
+			errorMessage = 'Du er allerede påmeldt et annet kurs.';
+			return;
+		}
 
 		// Sjekk om kurset er fullt
 		if (plasser[valgtTidspunkt] <= 0) {
@@ -90,6 +110,12 @@
 				const errorData = await response.json();
 				const errorMsg = errorData.message || 'Noe gikk galt under påmelding';
 				
+				// Hvis brukeren ikke er logget inn, vis melding
+				if (response.status === 401) {
+					errorMessage = errorMsg;
+					return; // Returner uten å kaste feil
+				}
+				
 				// Hvis kurset er fullt og ikke venteliste, vis venteliste-alternativ
 				if (response.status === 409 && errorMsg.includes('ingen ledige plasser') && !venteliste) {
 					errorMessage = errorMsg;
@@ -102,23 +128,29 @@
 			const responseData = await response.json();
 			
 			if (venteliste) {
-				erPåVenteliste = true;
+				erPåVentelisteLokal = true;
 				ventelisteMessage = responseData.message || 'Du er nå satt på venteliste.';
-				alert(ventelisteMessage);
+				visOverlayEL = true; // Vis overlay som når man melder seg på
 			} else {
 				erPåmeldt = true;
 				visOverlayEL = true;
 			}
 		} catch (error: any) {
 			errorMessage = error.message;
-			alert(`Påmelding feilet: ${errorMessage}`);
+			visFeilmelding = true;
 		} finally {
 			isLoading = false;
 		}
 	}
 
 	async function meldPaaVenteliste() {
-		if (isLoading) return;
+		if (isLoading || erPåVentelisteLokal) return;
+
+		// Sjekk om brukeren allerede er påmeldt et annet kurs
+		if (globaltPaameldtKursId !== null) {
+			errorMessage = 'Du er allerede påmeldt et annet kurs.';
+			return;
+		}
 		
 		const erSisteTidspunkt = valgtTidspunkt === 'siste';
 		
@@ -162,9 +194,38 @@
 		}
 	}
 
+	async function meldAvVenteliste() {
+		if (isLoading) return;
+		isLoading = true;
+
+		try {
+			const response = await fetch('/api/meld-av-venteliste', {
+				method: 'POST'
+			});
+
+			if (!response.ok) {
+				const errorData = await response.json();
+				throw new Error(errorData.message || 'Avmelding fra venteliste feilet');
+			}
+
+			// Laster siden på nytt for å oppdatere all status
+			window.location.reload();
+
+		} catch (error: any) {
+			alert(error.message);
+		} finally {
+			isLoading = false;
+		}
+	}
+
 	const lukkOverlay = () => {
 		visOverlayEL = false;
 		window.location.reload(); // Laster siden på nytt for å oppdatere status på alle knapper
+	};
+
+	const lukkFeilmelding = () => {
+		visFeilmelding = false;
+		errorMessage = '';
 	};
 </script>
 
@@ -172,11 +233,27 @@
 	<StudiesuppePopup on:decision={handleStudiesuppeDecision} />
 {/if}
 
+{#if visFeilmelding}
+	<div class="overlay" on:click={lukkFeilmelding}>
+		<div class="overlay-innhold feilmelding-overlay" on:click|stopPropagation>
+			<h1>Påmelding feilet</h1>
+			<p>{errorMessage}</p>
+			<button on:click={lukkFeilmelding}>OK</button>
+		</div>
+	</div>
+{/if}
+
 {#if visOverlayEL}
 	<div class="overlay" on:click={lukkOverlay}>
 		<div class="overlay-innhold" on:click|stopPropagation>
-			<h1>Du har nå meldt deg på {title}!</h1>
-			<p>Tidspunkt: {tidspunktTekst}</p>
+			{#if erPåVentelisteLokal}
+				<h1>Du er nå satt på venteliste for {title}!</h1>
+				<p>Tidspunkt: {tidspunktTekst}</p>
+				<p>Du vil få beskjed via e-post hvis det blir ledig plass.</p>
+			{:else}
+				<h1>Du har nå meldt deg på {title}!</h1>
+				<p>Tidspunkt: {tidspunktTekst}</p>
+			{/if}
 			<button on:click={lukkOverlay}>Lagre</button>
 		</div>
 	</div>
@@ -228,13 +305,35 @@
 					Meldt på!
 				{/if}
 			</button>
-		{:else if erPåVenteliste}
+		{:else if erPåVentelisteLokal}
 			<button 
-				id="ventelisteKnapp" 
-				type="button"
+				on:click={meldAvVenteliste} 
+				on:mouseenter={() => hoverAvmeldVenteliste = true}
+				on:mouseleave={() => hoverAvmeldVenteliste = false}
+				class="paameldt-knapp"
+				disabled={isLoading}
+			>
+				{#if isLoading}
+					...
+				{:else if hoverAvmeldVenteliste}
+					Meld av!
+				{:else}
+					På venteliste
+				{/if}
+			</button>
+		{:else if globaltPaameldtKursId !== null}
+			<button 
+				class="paameldt-knapp"
 				disabled={true}
 			>
-				På venteliste
+				Påmeldt annet kurs
+			</button>
+		{:else if !erLoggetInn}
+			<button 
+				class="paameldt-knapp"
+				disabled={true}
+			>
+				Du må være logget inn for å melde deg på
 			</button>
 		{:else}
 			<div class="meldPåKnapp-container">
@@ -245,7 +344,7 @@
 							on:click={meldPaaVenteliste} 
 							id="ventelisteKnapp" 
 							type="button"
-							disabled={isLoading || globaltPaameldtKursId !== null}
+							disabled={isLoading || globaltPaameldtKursId !== null || erPåVentelisteLokal || !erLoggetInn}
 						>
 							{#if isLoading}
 								Melder på venteliste...
@@ -259,7 +358,7 @@
 							on:click={meldPaaVenteliste} 
 							id="ventelisteKnapp" 
 							type="button"
-							disabled={isLoading || globaltPaameldtKursId !== null}
+							disabled={isLoading || globaltPaameldtKursId !== null || erPåVentelisteLokal || !erLoggetInn}
 						>
 							{#if isLoading}
 								Melder på venteliste...
@@ -273,7 +372,7 @@
 						on:click={meldPaa} 
 						id="meldPåKnapp" 
 						type="button"
-						disabled={isLoading || globaltPaameldtKursId !== null}
+						disabled={isLoading || globaltPaameldtKursId !== null || erPåVentelisteLokal || !erLoggetInn}
 					>
 						{#if isLoading}
 							Melder på...
@@ -318,6 +417,20 @@
 		border-radius: 1rem;
 		text-align: center;
 		color: black;
+	}
+	.feilmelding-overlay {
+		border: 3px solid #f44336;
+	}
+	.feilmelding-overlay h1 {
+		color: #f44336;
+	}
+	.feilmelding-overlay button {
+		background-color: #f44336;
+		color: white;
+		padding: 0.75rem 2rem;
+	}
+	.feilmelding-overlay button:hover {
+		background-color: #d32f2f;
 	}
 	button {
 		padding: 0.5rem 1rem;
@@ -432,7 +545,7 @@
 		cursor: pointer;
 	}
 	#ventelisteKnapp:hover:not(:disabled) {
-		background-color: #f57c00;
+		background-color: #f44336;
 	}
 	#ventelisteKnapp:disabled {
 		background-color: #ff9800;
