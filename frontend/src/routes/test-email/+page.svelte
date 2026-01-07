@@ -62,7 +62,7 @@
 
 <div class="container">
 	<h1>Test E-post - Venteliste Notifikasjon</h1>
-	<p class="info">Denne siden er kun tilgjengelig på localhost for testing.</p>
+	<p class="info">Denne siden er kun tilgjengelig for brukere med developer-rolle.</p>
 
 	{#if !data.smtpConfigured}
 		<div class="warning">
