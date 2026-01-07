@@ -1,5 +1,7 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, createEventDispatcher } from 'svelte';
+
+	const dispatch = createEventDispatcher();
 
 	interface Props {
 		title?: string
@@ -162,7 +164,7 @@
 			}
 
 			// Laster siden på nytt for å oppdatere all status
-			window.location.reload();
+			dispatch('update');
 
 		} catch (error: any) {
 			alert(error.message);
@@ -186,7 +188,7 @@
 			}
 
 			// Laster siden på nytt for å oppdatere all status
-			window.location.reload();
+			dispatch('update');
 
 		} catch (error: any) {
 			alert(error.message);
@@ -197,7 +199,7 @@
 
 	const lukkOverlay = () => {
 		visOverlayEL = false;
-		window.location.reload(); // Laster siden på nytt for å oppdatere status på alle knapper
+		dispatch('update');
 	};
 
 	const lukkFeilmelding = () => {
