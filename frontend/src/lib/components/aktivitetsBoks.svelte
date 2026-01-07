@@ -23,6 +23,7 @@
 	let visOverlayEL = false
 	let erPåmeldt = erAlleredePaameldt;
 	let erPåVentelisteLokal = erPåVenteliste; // Lokal kopi av venteliste-status
+	let tidspunktTekst: string;
 	let isLoading = false;
 	let errorMessage = '';
 	let hoverAvmeld = false; // Styrer hover-effekten for avmeldingsknappen
@@ -30,6 +31,11 @@
 	let visStudiesuppePopup = false;
 	let ventelisteMessage = '';
 	let visFeilmelding = false; // Styrer visning av feilmelding overlay
+
+	onMount(() => {
+		// Oppdaterer den synlige teksten til det eneste gjenværende tidspunktet
+		tidspunktTekst = tidspunkt.siste;
+	});
 
 	async function meldPaa() {
 		if (erPåmeldt || erPåVentelisteLokal || isLoading) return;
@@ -63,7 +69,7 @@
 				},
 				body: JSON.stringify({
 					kursId: kurs,
-					tidspunktTekst: tidspunkt.siste,
+					tidspunktTekst: tidspunktTekst,
 					studiesuppe: vilHaStudiesuppe,
 					venteliste: venteliste
 				})
@@ -291,7 +297,7 @@
 							{#if isLoading}
 								Melder på venteliste...
 							{:else}
-								Meld deg på venteliste ({tidspunkt.siste})
+								Meld deg på venteliste
 							{/if}
 						</button>
 					{:else}
@@ -305,7 +311,7 @@
 							{#if isLoading}
 								Melder på venteliste...
 							{:else}
-								Meld deg på venteliste ({tidspunkt.siste})
+								Meld deg på venteliste
 							{/if}
 						</button>
 					{/if}
@@ -319,7 +325,7 @@
 						{#if isLoading}
 							Melder på...
 						{:else}
-							Meld deg på ({tidspunkt.siste})
+							Meld deg på
 						{/if}
 					</button>
 				{/if}
