@@ -1,14 +1,40 @@
-import { json, error } from '@sveltejs/kit';
+import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { sendWaitlistNotificationEmail } from '$lib/server/email';
+import { getDb } from '$lib/server/db';
 
-export const POST: RequestHandler = async ({ request, url }) => {
-	// Kun tillat på localhost
-	const hostname = url.hostname;
-	const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
+async function checkDeveloper(cookies: any, url: URL): Promise<boolean> {
+	const isLocalhost = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
+	const currentUserId = cookies.get('UserId') || (isLocalhost ? 'dev-admin-localhost' : null);
 	
-	if (!isLocalhost) {
-		return json({ message: 'Denne API-en er kun tilgjengelig på localhost' }, { status: 403 });
+	if (!currentUserId) {
+		return false;
+	}
+	
+	if (isLocalhost) {
+		return true; // Localhost har developer-rolle
+	}
+	
+	const pool = await getDb();
+	const [rolleCheck] = await pool.query(
+		'SELECT rolle FROM roller WHERE bruker_id = ?',
+		[currentUserId]
+	);
+	
+	if (!Array.isArray(rolleCheck) || rolleCheck.length === 0) {
+		return false;
+	}
+	
+	const rolle = (rolleCheck[0] as any).rolle;
+	return rolle === 'developer';
+}
+
+export const POST: RequestHandler = async ({ request, url, cookies }) => {
+	// Kun tillat for developers
+	const isDeveloper = await checkDeveloper(cookies, url);
+	
+	if (!isDeveloper) {
+		return json({ message: 'Kun tilgjengelig for developers' }, { status: 403 });
 	}
 
 	try {

@@ -1,8 +1,57 @@
 import { db } from '$lib/server/db';
+import { initializeTables } from '$lib/server/initDb';
+import { redirect } from '@sveltejs/kit';
+
+let dbInitialized = false;
 
 /** @type {import('@sveltejs/kit').Handle} */
 export async function handle({ event, resolve }) {
+	// Initialize database tables on first request
+	if (!dbInitialized) {
+		try {
+			await initializeTables();
+			dbInitialized = true;
+		} catch (error) {
+			console.error('Database initialization failed:', error);
+			dbInitialized = true;
+		}
+	}
+
 	const userId = event.cookies.get('UserId');
+	const url = event.url.pathname;
+
+	// Sjekk maintenance mode (unntatt API calls, maintenance siden, og login)
+	if (url !== '/maintenance' && !url.startsWith('/api/') && url !== '/login' && url !== '/logout') {
+		try {
+			const [maintenanceRows] = await db.query('SELECT is_active FROM maintenance_break LIMIT 1');
+			const isMaintenance = Array.isArray(maintenanceRows) && maintenanceRows.length > 0
+				? Boolean(maintenanceRows[0].is_active)
+				: false;
+
+			if (isMaintenance) {
+// Sjekk om bruker er developer (kun developers har tilgang under maintenance)
+			let isDeveloper = false;
+			if (userId) {
+				const [roleCheck] = await db.query(
+					'SELECT rolle FROM roller WHERE bruker_id = ? AND rolle = ?',
+					[userId, 'developer']
+					);
+					isDeveloper = Array.isArray(roleCheck) && roleCheck.length > 0;
+				}
+
+				// Hvis ikke developer, redirect til maintenance siden
+				if (!isDeveloper) {
+					throw redirect(303, '/maintenance');
+				}
+			}
+		} catch (error) {
+			// Hvis det er en redirect error, re-throw den
+			if (error && typeof error === 'object' && 'status' in error && 'location' in error) {
+				throw error;
+			}
+			console.error('Error checking maintenance status:', error);
+		}
+	}
 
 	if (userId) {
 		try {
@@ -31,3 +80,4 @@ export async function handle({ event, resolve }) {
 
 	return resolve(event);
 }
+
