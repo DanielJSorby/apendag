@@ -1,10 +1,9 @@
-import { getDb } from '$lib/server/db';
+import { db } from '$lib/server/db';
 import type { RequestHandler } from '@sveltejs/kit';
 import { json } from '@sveltejs/kit';
 
 export const GET: RequestHandler = async ({ cookies, request }) => {
     try {
-        const pool = await getDb();
         const userId = cookies.get('UserId');
 
         // Sjekk om bruker er developer eller admin
@@ -12,7 +11,7 @@ export const GET: RequestHandler = async ({ cookies, request }) => {
             return json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const [roleCheck] = await pool.query(
+        const [roleCheck] = await db.query(
             'SELECT rolle FROM roller WHERE bruker_id = ? AND (rolle = ? OR rolle = ?)',
             [userId, 'developer', 'admin']
         );
@@ -22,7 +21,7 @@ export const GET: RequestHandler = async ({ cookies, request }) => {
         }
 
         // Hent maintenance status
-        const [rows] = await pool.query(
+        const [rows] = await db.query(
             'SELECT is_active, activated_at FROM maintenance_break LIMIT 1'
         );
 
@@ -39,7 +38,6 @@ export const GET: RequestHandler = async ({ cookies, request }) => {
 
 export const POST: RequestHandler = async ({ cookies, request }) => {
     try {
-        const pool = await getDb();
         const userId = cookies.get('UserId');
 
         // Sjekk om bruker er developer eller admin
@@ -47,7 +45,7 @@ export const POST: RequestHandler = async ({ cookies, request }) => {
             return json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const [roleCheck] = await pool.query(
+        const [roleCheck] = await db.query(
             'SELECT rolle FROM roller WHERE bruker_id = ? AND (rolle = ? OR rolle = ?)',
             [userId, 'developer', 'admin']
         );
@@ -59,39 +57,33 @@ export const POST: RequestHandler = async ({ cookies, request }) => {
         const body = await request.json();
         const { is_active } = body;
 
-        // Sjekk om tabellen finnes, hvis ikke, opprett den
-        await pool.query(`
-            CREATE TABLE IF NOT EXISTS maintenance_break (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                is_active BOOLEAN DEFAULT FALSE,
-                activated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                activated_by VARCHAR(255),
-                reason TEXT
-            )
-        `);
+        console.log(`[Maintenance API] User ${userId} setting maintenance to ${is_active}`);
 
         // Sjekk hvis det allerede finnes en rad
-        const [existing] = await pool.query(
+        const [existing] = await db.query(
             'SELECT id FROM maintenance_break LIMIT 1'
         );
 
         if (Array.isArray(existing) && existing.length > 0) {
             // Oppdater eksisterende rad
-            await pool.query(
+            await db.query(
                 'UPDATE maintenance_break SET is_active = ?, activated_at = CURRENT_TIMESTAMP, activated_by = ? WHERE id = 1',
-                [is_active, userId]
+                [is_active ? 1 : 0, userId]
             );
+            console.log(`[Maintenance API] Updated maintenance status to ${is_active}`);
         } else {
             // Opprett ny rad
-            await pool.query(
+            await db.query(
                 'INSERT INTO maintenance_break (is_active, activated_by) VALUES (?, ?)',
-                [is_active, userId]
+                [is_active ? 1 : 0, userId]
             );
+            console.log(`[Maintenance API] Created maintenance record with status ${is_active}`);
         }
 
         return json({ success: true, is_active });
     } catch (error) {
         console.error('Error updating maintenance status:', error);
-        return json({ error: 'Internal server error' }, { status: 500 });
+        return json({ error: 'Internal server error', details: (error as Error).message }, { status: 500 });
     }
 };
+

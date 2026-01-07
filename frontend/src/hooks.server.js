@@ -1,8 +1,17 @@
 import { db } from '$lib/server/db';
+import { initializeTables } from '$lib/server/initDb';
 import { redirect } from '@sveltejs/kit';
+
+let dbInitialized = false;
 
 /** @type {import('@sveltejs/kit').Handle} */
 export async function handle({ event, resolve }) {
+	// Initialize database tables on first request
+	if (!dbInitialized) {
+		await initializeTables();
+		dbInitialized = true;
+	}
+
 	const userId = event.cookies.get('UserId');
 	const url = event.url.pathname;
 
@@ -14,6 +23,8 @@ export async function handle({ event, resolve }) {
 				? maintenanceRows[0].is_active 
 				: false;
 
+			console.log(`[Maintenance Check] URL: ${url}, Maintenance Active: ${isMaintenance}, User: ${userId || 'none'}`);
+
 			if (isMaintenance) {
 				// Sjekk om bruker er developer eller admin
 				let isDeveloper = false;
@@ -23,10 +34,12 @@ export async function handle({ event, resolve }) {
 						[userId, 'developer', 'admin']
 					);
 					isDeveloper = Array.isArray(roleCheck) && roleCheck.length > 0;
+					console.log(`[Maintenance Check] User ${userId} is developer: ${isDeveloper}`);
 				}
 
 				// Hvis ikke developer, redirect til maintenance siden
 				if (!isDeveloper) {
+					console.log(`[Maintenance] Redirecting user to maintenance page`);
 					throw redirect(303, '/maintenance');
 				}
 			}
