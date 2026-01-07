@@ -27,13 +27,12 @@ export const load: LayoutServerLoad = async ({ cookies, url }) => {
 
                 // Hvis ikke developer, redirect til maintenance siden
                 if (!isDeveloper) {
-                    console.log(`[Layout Load] Redirecting to maintenance page`);
                     throw redirect(303, '/maintenance');
                 }
             }
         } catch (error) {
-            // Hvis det er en redirect, kast den videre
-            if (error instanceof Response) {
+            // Hvis det er en redirect error, re-throw den
+            if (error && typeof error === 'object' && 'status' in error && 'location' in error) {
                 throw error;
             }
             console.error('Error checking maintenance status in layout:', error);

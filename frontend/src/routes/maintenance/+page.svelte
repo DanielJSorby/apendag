@@ -32,19 +32,11 @@ onMount(() => {
         
         <div class="maintenance-details">
             <div class="detail-item">
-                <span class="detail-label">Anslått tid:</span>
-                <span class="detail-value">{estimatedTime}</span>
-            </div>
-            <div class="detail-item">
                 <span class="detail-label">Sist oppdatert:</span>
                 <span class="detail-value">{lastUpdated}</span>
             </div>
         </div>
         
-        <div class="contact-info">
-            <p>Har du spørsmål? Kontakt oss på:</p>
-            <a href="mailto:info@example.com">info@example.com</a>
-        </div>
     </div>
 </div>
 
@@ -124,26 +116,5 @@ onMount(() => {
     .detail-value {
         color: #333;
         font-weight: 600;
-    }
-
-    .contact-info {
-        margin-top: 2rem;
-        color: #666;
-    }
-
-    .contact-info p {
-        margin: 0 0 0.75rem 0;
-        font-size: 0.95rem;
-    }
-
-    .contact-info a {
-        color: #667eea;
-        text-decoration: none;
-        font-weight: 600;
-        transition: color 0.3s ease;
-    }
-
-    .contact-info a:hover {
-        color: #764ba2;
     }
 </style>

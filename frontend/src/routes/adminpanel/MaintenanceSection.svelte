@@ -17,7 +17,6 @@ async function loadMaintenanceStatus() {
             const data = await response.json();
             // Handle både boolean og 0/1 fra databasen
             maintenanceActive = Boolean(data.is_active);
-            console.log('Maintenance status loaded:', maintenanceActive);
         }
     } catch (error) {
         console.error('Error loading maintenance status:', error);

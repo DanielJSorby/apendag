@@ -8,8 +8,13 @@ let dbInitialized = false;
 export async function handle({ event, resolve }) {
 	// Initialize database tables on first request
 	if (!dbInitialized) {
-		await initializeTables();
-		dbInitialized = true;
+		try {
+			await initializeTables();
+			dbInitialized = true;
+		} catch (error) {
+			console.error('Database initialization failed:', error);
+			dbInitialized = true;
+		}
 	}
 
 	const userId = event.cookies.get('UserId');
@@ -19,11 +24,9 @@ export async function handle({ event, resolve }) {
 	if (url !== '/maintenance' && !url.startsWith('/api/') && url !== '/login' && url !== '/logout') {
 		try {
 			const [maintenanceRows] = await db.query('SELECT is_active FROM maintenance_break LIMIT 1');
-			const isMaintenance = Array.isArray(maintenanceRows) && maintenanceRows.length > 0 
+			const isMaintenance = Array.isArray(maintenanceRows) && maintenanceRows.length > 0
 				? Boolean(maintenanceRows[0].is_active)
 				: false;
-
-			console.log(`[Maintenance Check] URL: ${url}, Maintenance Active: ${isMaintenance}, User: ${userId || 'none'}`);
 
 			if (isMaintenance) {
 				// Sjekk om bruker er developer eller admin
@@ -34,23 +37,19 @@ export async function handle({ event, resolve }) {
 						[userId, 'developer', 'admin']
 					);
 					isDeveloper = Array.isArray(roleCheck) && roleCheck.length > 0;
-					console.log(`[Maintenance Check] User ${userId} is developer: ${isDeveloper}`);
-				} else {
-					console.log(`[Maintenance Check] No user logged in`);
 				}
 
 				// Hvis ikke developer, redirect til maintenance siden
 				if (!isDeveloper) {
-					console.log(`[Maintenance] Redirecting ${userId ? userId : 'unauthenticated user'} to maintenance page`);
 					throw redirect(303, '/maintenance');
 				}
 			}
 		} catch (error) {
-			// Hvis det er en redirect, kast den videre
-			if (error instanceof Response) {
+			// Hvis det er en redirect error, re-throw den
+			if (error && typeof error === 'object' && 'status' in error && 'location' in error) {
 				throw error;
 			}
-			console.error('Feil ved sjekking av maintenance status:', error);
+			console.error('Error checking maintenance status:', error);
 		}
 	}
 
@@ -81,3 +80,4 @@ export async function handle({ event, resolve }) {
 
 	return resolve(event);
 }
+

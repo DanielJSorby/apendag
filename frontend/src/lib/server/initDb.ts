@@ -28,10 +28,9 @@ export async function initializeTables() {
             );
         }
 
-        console.log('Database tables initialized successfully');
         return true;
     } catch (error) {
         console.error('Error initializing database tables:', error);
-        return false;
+        throw error;
     }
 }
