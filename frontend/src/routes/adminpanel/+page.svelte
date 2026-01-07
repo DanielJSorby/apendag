@@ -1098,7 +1098,7 @@ async function exportToCSV() {
                                             <option value={null}>Ikke valgt</option>
                                             <option value="09:00-10:30">09:00-10:30</option>
                                             <option value="11:00-12:30">11:00-12:30</option>
-                                            <option value="13:00-14:30">13:00-14:30</option>
+                                            <option value="14:00-15:30">14:00-15:30</option>
                                         </select>
                                     </td>
                                     <td>
