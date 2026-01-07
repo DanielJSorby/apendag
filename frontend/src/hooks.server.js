@@ -20,7 +20,7 @@ export async function handle({ event, resolve }) {
 		try {
 			const [maintenanceRows] = await db.query('SELECT is_active FROM maintenance_break LIMIT 1');
 			const isMaintenance = Array.isArray(maintenanceRows) && maintenanceRows.length > 0 
-				? maintenanceRows[0].is_active 
+				? Boolean(maintenanceRows[0].is_active)
 				: false;
 
 			console.log(`[Maintenance Check] URL: ${url}, Maintenance Active: ${isMaintenance}, User: ${userId || 'none'}`);
@@ -35,11 +35,13 @@ export async function handle({ event, resolve }) {
 					);
 					isDeveloper = Array.isArray(roleCheck) && roleCheck.length > 0;
 					console.log(`[Maintenance Check] User ${userId} is developer: ${isDeveloper}`);
+				} else {
+					console.log(`[Maintenance Check] No user logged in`);
 				}
 
 				// Hvis ikke developer, redirect til maintenance siden
 				if (!isDeveloper) {
-					console.log(`[Maintenance] Redirecting user to maintenance page`);
+					console.log(`[Maintenance] Redirecting ${userId ? userId : 'unauthenticated user'} to maintenance page`);
 					throw redirect(303, '/maintenance');
 				}
 			}
