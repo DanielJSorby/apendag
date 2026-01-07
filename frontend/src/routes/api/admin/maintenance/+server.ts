@@ -6,14 +6,14 @@ export const GET: RequestHandler = async ({ cookies, request }) => {
     try {
         const userId = cookies.get('UserId');
 
-        // Sjekk om bruker er developer eller admin
+        // Sjekk om bruker er developer
         if (!userId) {
             return json({ error: 'Unauthorized' }, { status: 401 });
         }
 
         const [roleCheck] = await db.query(
-            'SELECT rolle FROM roller WHERE bruker_id = ? AND (rolle = ? OR rolle = ?)',
-            [userId, 'developer', 'admin']
+            'SELECT rolle FROM roller WHERE bruker_id = ? AND rolle = ?',
+            [userId, 'developer']
         );
 
         if (!Array.isArray(roleCheck) || roleCheck.length === 0) {
@@ -40,14 +40,14 @@ export const POST: RequestHandler = async ({ cookies, request }) => {
     try {
         const userId = cookies.get('UserId');
 
-        // Sjekk om bruker er developer eller admin
+        // Sjekk om bruker er developer
         if (!userId) {
             return json({ error: 'Unauthorized' }, { status: 401 });
         }
 
         const [roleCheck] = await db.query(
-            'SELECT rolle FROM roller WHERE bruker_id = ? AND (rolle = ? OR rolle = ?)',
-            [userId, 'developer', 'admin']
+            'SELECT rolle FROM roller WHERE bruker_id = ? AND rolle = ?',
+            [userId, 'developer']
         );
 
         if (!Array.isArray(roleCheck) || roleCheck.length === 0) {

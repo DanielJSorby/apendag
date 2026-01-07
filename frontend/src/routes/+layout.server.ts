@@ -19,8 +19,8 @@ export const load: LayoutServerLoad = async ({ cookies, url }) => {
                 let isDeveloper = false;
                 if (userId) {
                     const [roleCheck] = await db.query(
-                        'SELECT rolle FROM roller WHERE bruker_id = ? AND (rolle = ? OR rolle = ?)',
-                        [userId, 'developer', 'admin']
+                        'SELECT rolle FROM roller WHERE bruker_id = ? AND rolle = ?',
+                        [userId, 'developer']
                     );
                     isDeveloper = Array.isArray(roleCheck) && roleCheck.length > 0;
                 }
