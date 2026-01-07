@@ -33,26 +33,6 @@
 	let ventelisteMessage = '';
 	let visFeilmelding = false; // Styrer visning av feilmelding overlay
 
-	// Initialiser valgtTidspunkt basert på påmeldingsstatus
-	if (erAlleredePaameldt && paameldtTidspunkt) {
-		if (paameldtTidspunkt === tidspunkt.forLunsj) {
-			valgtTidspunkt = 'forLunsj';
-		} else if (paameldtTidspunkt === tidspunkt.etterLunsj) {
-			valgtTidspunkt = 'etterLunsj';
-		} else if (paameldtTidspunkt === tidspunkt.siste) {
-			valgtTidspunkt = 'siste';
-		}
-	} else if (erPåVenteliste && ventelisteTidspunkt) {
-		if (ventelisteTidspunkt === tidspunkt.forLunsj) {
-			valgtTidspunkt = 'forLunsj';
-		} else if (ventelisteTidspunkt === tidspunkt.etterLunsj) {
-			valgtTidspunkt = 'etterLunsj';
-		} else if (ventelisteTidspunkt === tidspunkt.siste) {
-			valgtTidspunkt = 'siste';
-		}
-	}
-	tidspunktTekst = tidspunkt[valgtTidspunkt];
-
 	onMount(() => {
 		// Setter start-tidspunktet basert på hva som er lagret i databasen
 		if (erAlleredePaameldt && paameldtTidspunkt) {
@@ -249,9 +229,9 @@
 	};
 </script>
 
-<!-- {#if visStudiesuppePopup}
+{#if visStudiesuppePopup}
 	<StudiesuppePopup on:decision={handleStudiesuppeDecision} />
-{/if} -->
+{/if}
 
 {#if visFeilmelding}
 	<div class="overlay" on:click={lukkFeilmelding}>
