@@ -261,7 +261,7 @@
 <div id="aktivitetBoks">
 	<div class="tekst">
 	  <h1 id="title">{title}</h1>
-	  <h3 id="titleUnder">Velg et tidspunkt under og meld deg på!</h3>
+	  <h3 id="titleUnder">Meld deg på!</h3>
 	  <div id="valgAvKurs">
 		<button class:selected={valgtTidspunkt === 'forLunsj'} on:click={() => byttFørEtter('forLunsj')}>{tidspunkt["forLunsj"]}</button>
 		<button class:selected={valgtTidspunkt === 'etterLunsj'} on:click={() => byttFørEtter('etterLunsj')}>{tidspunkt["etterLunsj"]}</button>
