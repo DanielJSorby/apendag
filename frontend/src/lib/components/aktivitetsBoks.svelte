@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import StudiesuppePopup from './StudiesuppePopup.svelte';
 
 	interface Props {
 		title?: string
@@ -28,7 +27,6 @@
 	let errorMessage = '';
 	let hoverAvmeld = false; // Styrer hover-effekten for avmeldingsknappen
 	let hoverAvmeldVenteliste = false; // Styrer hover-effekten for avmeldingsknappen for venteliste
-	let visStudiesuppePopup = false;
 	let ventelisteMessage = '';
 	let visFeilmelding = false; // Styrer visning av feilmelding overlay
 
@@ -52,11 +50,10 @@
 			return;
 		}
 
-		// Siden det kun er ett tidspunkt, er det alltid "siste"
-		visStudiesuppePopup = true; // Vis popup i stedet for confirm
+		await fullforPaamelding(false); // Meld på direkte
 	}
 
-	async function fullforPaamelding(vilHaStudiesuppe: boolean, venteliste: boolean = false) {
+	async function fullforPaamelding(venteliste: boolean = false) {
 		isLoading = true;
 		errorMessage = '';
 		ventelisteMessage = '';
@@ -70,7 +67,6 @@
 				body: JSON.stringify({
 					kursId: kurs,
 					tidspunktTekst: tidspunktTekst,
-					studiesuppe: vilHaStudiesuppe,
 					venteliste: venteliste
 				})
 			});
@@ -121,16 +117,7 @@
 			return;
 		}
 		
-		// Lagre at vi skal på venteliste, så popup kan bruke det
-		visStudiesuppePopup = true; // Vis popup for studiesuppe
-	}
-
-	function handleStudiesuppeDecision(event: CustomEvent<boolean>) {
-		visStudiesuppePopup = false;
-		const vilHaStudiesuppe = event.detail;
-		// Hvis vi kom hit fra venteliste-knappen eller kurset er fullt, meld på venteliste
-		const skalVenteliste = plasser.siste <= 0;
-		fullforPaamelding(vilHaStudiesuppe, skalVenteliste);
+		await fullforPaamelding(true); // Meld på venteliste direkte
 	}
 
 	async function meldAv() {
@@ -191,10 +178,6 @@
 		errorMessage = '';
 	};
 </script>
-
-{#if visStudiesuppePopup}
-	<StudiesuppePopup on:decision={handleStudiesuppeDecision} />
-{/if}
 
 {#if visFeilmelding}
 	<div class="overlay" on:click={lukkFeilmelding}>
