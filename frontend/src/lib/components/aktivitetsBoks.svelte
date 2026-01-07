@@ -20,25 +20,7 @@
 	export let ventelisteTidspunkt: string | null; // Tidspunkt for venteliste
 	export let erLoggetInn: boolean = false; // Prop for om brukeren er logget inn
 
-	let valgtTidspunkt: 'forLunsj' | 'etterLunsj' | 'siste';
-
-	// Funksjon for å bestemme initiell valgtTidspunkt
-	const getInitialTidspunkt = () => {
-		if (erAlleredePaameldt && paameldtTidspunkt) {
-			if (paameldtTidspunkt === tidspunkt.forLunsj) return 'forLunsj';
-			if (paameldtTidspunkt === tidspunkt.etterLunsj) return 'etterLunsj';
-			if (paameldtTidspunkt === tidspunkt.siste) return 'siste';
-		}
-		if (erPåVenteliste && ventelisteTidspunkt) {
-			if (ventelisteTidspunkt === tidspunkt.forLunsj) return 'forLunsj';
-			if (ventelisteTidspunkt === tidspunkt.etterLunsj) return 'etterLunsj';
-			if (ventelisteTidspunkt === tidspunkt.siste) return 'siste';
-		}
-		return 'forLunsj'; // Default
-	};
-
-	valgtTidspunkt = getInitialTidspunkt();
-	
+	let valgtTidspunkt: 'forLunsj' | 'etterLunsj' | 'siste' = 'forLunsj';
 	let visOverlayEL = false
 	let erPåmeldt = erAlleredePaameldt;
 	let erPåVentelisteLokal = erPåVenteliste; // Lokal kopi av venteliste-status
@@ -52,7 +34,26 @@
 	let visFeilmelding = false; // Styrer visning av feilmelding overlay
 
 	onMount(() => {
-		// Oppdaterer den synlige teksten ved mount
+		// Setter start-tidspunktet basert på hva som er lagret i databasen
+		if (erAlleredePaameldt && paameldtTidspunkt) {
+			if (paameldtTidspunkt === tidspunkt.forLunsj) {
+				valgtTidspunkt = 'forLunsj';
+			} else if (paameldtTidspunkt === tidspunkt.etterLunsj) {
+				valgtTidspunkt = 'etterLunsj';
+			} else if (paameldtTidspunkt === tidspunkt.siste) {
+				valgtTidspunkt = 'siste';
+			}
+		} else if (erPåVentelisteLokal && ventelisteTidspunkt) {
+			// Hvis på venteliste, sett tidspunkt basert på venteliste-tidspunkt
+			if (ventelisteTidspunkt === tidspunkt.forLunsj) {
+				valgtTidspunkt = 'forLunsj';
+			} else if (ventelisteTidspunkt === tidspunkt.etterLunsj) {
+				valgtTidspunkt = 'etterLunsj';
+			} else if (ventelisteTidspunkt === tidspunkt.siste) {
+				valgtTidspunkt = 'siste';
+			}
+		}
+		// Oppdaterer den synlige teksten
 		tidspunktTekst = tidspunkt[valgtTidspunkt];
 	});
 
