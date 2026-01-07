@@ -229,9 +229,9 @@
 	};
 </script>
 
-<!-- {#if visStudiesuppePopup}
+{#if visStudiesuppePopup}
 	<StudiesuppePopup on:decision={handleStudiesuppeDecision} />
-{/if} -->
+{/if}
 
 {#if visFeilmelding}
 	<div class="overlay" on:click={lukkFeilmelding}>
