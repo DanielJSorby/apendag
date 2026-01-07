@@ -38,8 +38,8 @@
             </button>
             <button onclick={() => window.location.href = '/kalender22'}>
                 <h2>Torsdag <br> 22. januar</h2>
-                <p>En smak av Elvebakken kun for 10. klasse elever</p>
-                <p>Trykk her for en smak av Elvebakken!</p>
+                <p>Vi ønsker 10.klassinger velkommen til å oppleve en skolehverdag på Elvebakken.</p>
+                <p>Trykk her for å melde deg på!</p>
             </button>
         </div>
     </div>
