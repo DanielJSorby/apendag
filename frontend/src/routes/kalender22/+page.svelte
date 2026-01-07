@@ -17,7 +17,7 @@
 <HeroSection 
     image="/images/Elvebakken eksteriør 3.jpg"
     title="Vi ønsker deg som 10. klassing velkommen inn til å oppleve hverdagen på Elvebakken torsdag 22. januar"
-    subtitle="Meld deg på under på et av tidspunktene under. Bruk knappene for å velge tid, og trykk deretter “Meld deg på”"
+    subtitle="Meld deg på med e-post for kurs fra kl 14-15:30, og følg med for videre informasjon på e-post."
     height="50vh"
     overlayOpacity={0.67}
 />
