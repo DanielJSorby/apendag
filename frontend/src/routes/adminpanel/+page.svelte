@@ -3,6 +3,7 @@ import { onMount } from 'svelte';
 import { page } from '$app/stores';
 import { goto } from '$app/navigation';
 import { getCookie } from '$lib/functions/getCookie';
+import MaintenanceSection from './MaintenanceSection.svelte';
 
 let { data } = $props();
 
@@ -139,20 +140,20 @@ type VentelisteEntry = {
 };
 
 // Initialize activeTab from URL parameter or default to 'users'
-function getInitialTab(): 'users' | 'stats' | 'faq' | 'linjer' | 'skoler' | 'venteliste' | 'database' {
+function getInitialTab(): 'users' | 'stats' | 'faq' | 'linjer' | 'skoler' | 'venteliste' | 'maintenance' | 'database' {
     const tabParam = $page.url.searchParams.get('tab');
-    if (tabParam === 'users' || tabParam === 'stats' || tabParam === 'faq' || tabParam === 'linjer' || tabParam === 'skoler' || tabParam === 'venteliste' || tabParam === 'database') {
+    if (tabParam === 'users' || tabParam === 'stats' || tabParam === 'faq' || tabParam === 'linjer' || tabParam === 'skoler' || tabParam === 'venteliste' || tabParam === 'maintenance' || tabParam === 'database') {
         return tabParam;
     }
     return 'users';
 }
 
-let activeTab = $state<'users' | 'stats' | 'faq' | 'linjer' | 'skoler' | 'venteliste' | 'database'>(getInitialTab());
+let activeTab = $state<'users' | 'stats' | 'faq' | 'linjer' | 'skoler' | 'venteliste' | 'maintenance' | 'database'>(getInitialTab());
 
 // Update activeTab when URL parameter changes
 $effect(() => {
     const tabParam = $page.url.searchParams.get('tab');
-    if (tabParam === 'users' || tabParam === 'stats' || tabParam === 'faq' || tabParam === 'linjer' || tabParam === 'skoler' || tabParam === 'venteliste' || tabParam === 'database') {
+    if (tabParam === 'users' || tabParam === 'stats' || tabParam === 'faq' || tabParam === 'linjer' || tabParam === 'skoler' || tabParam === 'venteliste' || tabParam === 'maintenance' || tabParam === 'database') {
         if (activeTab !== tabParam) {
             activeTab = tabParam;
         }
@@ -943,6 +944,11 @@ async function exportToCSV() {
             Venteliste ({venteliste.length})
         </button>
         {#if currentUserRole === 'developer'}
+            <button 
+                class:active={activeTab === 'maintenance'}
+                onclick={() => setActiveTab('maintenance')}>
+                Maintenance
+            </button>
             <button 
                 class:active={activeTab === 'database'}
                 onclick={() => setActiveTab('database')}>
@@ -1806,6 +1812,12 @@ async function exportToCSV() {
                     </tbody>
                 </table>
             </div>
+        </section>
+    {/if}
+
+    {#if activeTab === 'maintenance' && currentUserRole === 'developer'}
+        <section class="content-section">
+            <MaintenanceSection />
         </section>
     {/if}
 </div>

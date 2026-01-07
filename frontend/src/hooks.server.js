@@ -1,8 +1,43 @@
 import { db } from '$lib/server/db';
+import { redirect } from '@sveltejs/kit';
 
 /** @type {import('@sveltejs/kit').Handle} */
 export async function handle({ event, resolve }) {
 	const userId = event.cookies.get('UserId');
+	const url = event.url.pathname;
+
+	// Sjekk maintenance mode (unntatt API calls, maintenance siden, og login)
+	if (url !== '/maintenance' && !url.startsWith('/api/') && url !== '/login' && url !== '/logout') {
+		try {
+			const [maintenanceRows] = await db.query('SELECT is_active FROM maintenance_break LIMIT 1');
+			const isMaintenance = Array.isArray(maintenanceRows) && maintenanceRows.length > 0 
+				? maintenanceRows[0].is_active 
+				: false;
+
+			if (isMaintenance) {
+				// Sjekk om bruker er developer eller admin
+				let isDeveloper = false;
+				if (userId) {
+					const [roleCheck] = await db.query(
+						'SELECT rolle FROM roller WHERE bruker_id = ? AND (rolle = ? OR rolle = ?)',
+						[userId, 'developer', 'admin']
+					);
+					isDeveloper = Array.isArray(roleCheck) && roleCheck.length > 0;
+				}
+
+				// Hvis ikke developer, redirect til maintenance siden
+				if (!isDeveloper) {
+					throw redirect(303, '/maintenance');
+				}
+			}
+		} catch (error) {
+			// Hvis det er en redirect, kast den videre
+			if (error instanceof Response) {
+				throw error;
+			}
+			console.error('Feil ved sjekking av maintenance status:', error);
+		}
+	}
 
 	if (userId) {
 		try {
