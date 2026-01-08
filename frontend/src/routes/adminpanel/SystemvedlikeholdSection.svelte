@@ -1,6 +1,8 @@
 <script lang="ts">
 import { onMount } from 'svelte';
 
+let { maintenanceActivatedAt = 'Ukjent tid' } = $props();
+
 let maintenanceActive = $state(false);
 let isLoading = $state(false);
 let message = $state('');
@@ -76,6 +78,9 @@ async function toggleMaintenance() {
             </p>
             <p style="margin-top: 0.5rem; font-size: 0.9rem; color: #666;">
                 Utviklere får fortsatt full tilgang til applikasjonen.
+            </p>
+            <p style="margin-top: 0.5rem; font-size: 0.9rem; color: #666;">
+                Sist aktivert: {maintenanceActivatedAt}
             </p>
         </div>
         

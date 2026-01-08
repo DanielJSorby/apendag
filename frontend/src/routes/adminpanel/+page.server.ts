@@ -62,6 +62,12 @@ export const load: PageServerLoad = async ({ cookies, url }) => {
         // Hent alle kurs fra databasen
         const [kursListe] = await pool.query('SELECT * FROM kurs ORDER BY id');
         
+        // Hent systemvedlikehold status
+        const [maintenanceRows] = await pool.query('SELECT activated_at FROM maintenance_break LIMIT 1');
+        const activatedAt = Array.isArray(maintenanceRows) && maintenanceRows.length > 0
+            ? maintenanceRows[0].activated_at
+            : null;
+        
         return {
             users: users || [],
             courseStats: courseStats || [],
@@ -70,7 +76,8 @@ export const load: PageServerLoad = async ({ cookies, url }) => {
             currentUserId: userId,
             currentUserRole: userRole,
             isDevelopmentMode: isDevelopmentAdmin,
-            kursListe: kursListe || []
+            kursListe: kursListe || [],
+            maintenanceActivatedAt: activatedAt ? new Date(activatedAt).toLocaleString('no-NO') : 'Ukjent tid'
         };
     } catch (error) {
         // Hvis det er en redirect, kast den videre

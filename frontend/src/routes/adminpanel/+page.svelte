@@ -90,6 +90,7 @@ let userRoles = $state<Record<string, string>>(data.userRoles || {});
 let currentUserRole = $state<string>(data.currentUserRole || 'ingen');
 let currentUserId = $state<string>(data.currentUserId || '');
 let isDevelopmentMode = $state<boolean>(data.isDevelopmentMode || false);
+let maintenanceActivatedAt = $state<string>(data.maintenanceActivatedAt || 'Ukjent tid');
 
 // Tab management
 function getInitialTab(): 'users' | 'stats' | 'faq' | 'linjer' | 'skoler' | 'venteliste' | 'Systemvedlikehold' | 'database' {
@@ -341,7 +342,7 @@ async function loadVenteliste() {
 
     {#if activeTab === 'Systemvedlikehold' && currentUserRole === 'developer'}
         <section class="content-section">
-            <SystemvedlikeholdSection />
+            <SystemvedlikeholdSection {maintenanceActivatedAt} />
         </section>
     {/if}
 </div>

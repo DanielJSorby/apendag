@@ -21,7 +21,7 @@ export async function handle({ event, resolve }) {
 	const url = event.url.pathname;
 
 	// Sjekk maintenance mode (unntatt API calls, maintenance siden, og login)
-	if (url !== '/maintenance' && !url.startsWith('/api/') && url !== '/login' && url !== '/logout') {
+	if (url !== '/systemvedlikehold' && !url.startsWith('/api/') && url !== '/login' && url !== '/logout') {
 		try {
 			const [maintenanceRows] = await db.query('SELECT is_active FROM maintenance_break LIMIT 1');
 			const isMaintenance = Array.isArray(maintenanceRows) && maintenanceRows.length > 0
@@ -41,7 +41,7 @@ export async function handle({ event, resolve }) {
 
 				// Hvis ikke developer, redirect til maintenance siden
 				if (!isDeveloper) {
-					throw redirect(303, '/Systemvedlikehold');
+					throw redirect(303, '/systemvedlikehold');
 				}
 			}
 		} catch (error) {
