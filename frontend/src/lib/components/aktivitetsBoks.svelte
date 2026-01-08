@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import StudiesuppePopup from './StudiesuppePopup.svelte';
 
 	interface Props {
 		title?: string
@@ -20,7 +19,6 @@
 	export let ventelisteTidspunkt: string | null; // Tidspunkt for venteliste
 	export let erLoggetInn: boolean = false; // Prop for om brukeren er logget inn
 
-	let valgtTidspunkt: 'forLunsj' | 'etterLunsj' | 'siste' = 'forLunsj';
 	let visOverlayEL = false
 	let erPåmeldt = erAlleredePaameldt;
 	let erPåVentelisteLokal = erPåVenteliste; // Lokal kopi av venteliste-status
@@ -29,38 +27,12 @@
 	let errorMessage = '';
 	let hoverAvmeld = false; // Styrer hover-effekten for avmeldingsknappen
 	let hoverAvmeldVenteliste = false; // Styrer hover-effekten for avmeldingsknappen for venteliste
-	let visStudiesuppePopup = false;
 	let ventelisteMessage = '';
 	let visFeilmelding = false; // Styrer visning av feilmelding overlay
 
 	onMount(() => {
-		// Setter start-tidspunktet basert på hva som er lagret i databasen
-		if (erAlleredePaameldt && paameldtTidspunkt) {
-			if (paameldtTidspunkt === tidspunkt.forLunsj) {
-				valgtTidspunkt = 'forLunsj';
-			} else if (paameldtTidspunkt === tidspunkt.etterLunsj) {
-				valgtTidspunkt = 'etterLunsj';
-			} else if (paameldtTidspunkt === tidspunkt.siste) {
-				valgtTidspunkt = 'siste';
-			}
-		} else if (erPåVentelisteLokal && ventelisteTidspunkt) {
-			// Hvis på venteliste, sett tidspunkt basert på venteliste-tidspunkt
-			if (ventelisteTidspunkt === tidspunkt.forLunsj) {
-				valgtTidspunkt = 'forLunsj';
-			} else if (ventelisteTidspunkt === tidspunkt.etterLunsj) {
-				valgtTidspunkt = 'etterLunsj';
-			} else if (ventelisteTidspunkt === tidspunkt.siste) {
-				valgtTidspunkt = 'siste';
-			}
-		}
-		// Oppdaterer den synlige teksten
-		tidspunktTekst = tidspunkt[valgtTidspunkt];
-	});
-
-	const byttFørEtter = ((førEtter: 'forLunsj' | 'etterLunsj' | 'siste')=> {
-		if (erPåmeldt || erPåVentelisteLokal) return;
-		valgtTidspunkt = førEtter;
-		tidspunktTekst = tidspunkt[førEtter];
+		// Oppdaterer den synlige teksten til det eneste gjenværende tidspunktet
+		tidspunktTekst = tidspunkt.siste;
 	});
 
 	async function meldPaa() {
@@ -73,21 +45,15 @@
 		}
 
 		// Sjekk om kurset er fullt
-		if (plasser[valgtTidspunkt] <= 0) {
+		if (plasser.siste <= 0) {
 			errorMessage = 'Det er ingen ledige plasser på dette tidspunktet. Du kan velge å sette deg på venteliste.';
 			return;
 		}
 
-		const erSisteTidspunkt = valgtTidspunkt === 'siste';
-
-		if (erSisteTidspunkt) {
-			visStudiesuppePopup = true; // Vis popup i stedet for confirm
-		} else {
-			await fullforPaamelding(false, false); // Meld på direkte uten studiesuppe
-		}
+		await fullforPaamelding(false); // Meld på direkte
 	}
 
-	async function fullforPaamelding(vilHaStudiesuppe: boolean, venteliste: boolean = false) {
+	async function fullforPaamelding(venteliste: boolean = false) {
 		isLoading = true;
 		errorMessage = '';
 		ventelisteMessage = '';
@@ -101,7 +67,6 @@
 				body: JSON.stringify({
 					kursId: kurs,
 					tidspunktTekst: tidspunktTekst,
-					studiesuppe: vilHaStudiesuppe,
 					venteliste: venteliste
 				})
 			});
@@ -152,22 +117,7 @@
 			return;
 		}
 		
-		const erSisteTidspunkt = valgtTidspunkt === 'siste';
-		
-		if (erSisteTidspunkt) {
-			// Lagre at vi skal på venteliste, så popup kan bruke det
-			visStudiesuppePopup = true; // Vis popup for studiesuppe
-		} else {
-			await fullforPaamelding(false, true); // Meld på venteliste direkte uten studiesuppe
-		}
-	}
-
-	function handleStudiesuppeDecision(event: CustomEvent<boolean>) {
-		visStudiesuppePopup = false;
-		const vilHaStudiesuppe = event.detail;
-		// Hvis vi kom hit fra venteliste-knappen eller kurset er fullt, meld på venteliste
-		const skalVenteliste = plasser[valgtTidspunkt] <= 0;
-		fullforPaamelding(vilHaStudiesuppe, skalVenteliste);
+		await fullforPaamelding(true); // Meld på venteliste direkte
 	}
 
 	async function meldAv() {
@@ -229,10 +179,6 @@
 	};
 </script>
 
-{#if visStudiesuppePopup}
-	<StudiesuppePopup on:decision={handleStudiesuppeDecision} />
-{/if}
-
 {#if visFeilmelding}
 	<div class="overlay" on:click={lukkFeilmelding}>
 		<div class="overlay-innhold feilmelding-overlay" on:click|stopPropagation>
@@ -248,11 +194,11 @@
 		<div class="overlay-innhold" on:click|stopPropagation>
 			{#if erPåVentelisteLokal}
 				<h1>Du er nå satt på venteliste for {title}!</h1>
-				<p>Tidspunkt: {tidspunktTekst}</p>
+				<p>Tidspunkt: {tidspunkt.siste}</p>
 				<p>Du vil få beskjed via e-post hvis det blir ledig plass.</p>
 			{:else}
 				<h1>Du har nå meldt deg på {title}!</h1>
-				<p>Tidspunkt: {tidspunktTekst}</p>
+				<p>Tidspunkt: {tidspunkt.siste}</p>
 			{/if}
 			<button on:click={lukkOverlay}>Lagre</button>
 		</div>
@@ -263,28 +209,13 @@
 	  <h1 id="title">{title}</h1>
 	  <h3 id="titleUnder">Meld deg på!</h3>
 	  <div id="valgAvKurs">
-		<button class:selected={valgtTidspunkt === 'forLunsj'} on:click={() => byttFørEtter('forLunsj')}>{tidspunkt["forLunsj"]}</button>
-		<button class:selected={valgtTidspunkt === 'etterLunsj'} on:click={() => byttFørEtter('etterLunsj')}>{tidspunkt["etterLunsj"]}</button>
-		<button class:selected={valgtTidspunkt === 'siste'} on:click={() => byttFørEtter('siste')}>{tidspunkt["siste"]}</button>
+		<button class="selected">{tidspunkt.siste}</button>
 	  </div>  
 	  <div class="visesIForholdTilTid">
-		{#if valgtTidspunkt === 'forLunsj'}
-			<div class="plasser" style="background-color: {farge};">
-				<h1 id="plassState">{plasser.forLunsj}</h1>
-				<h3 id="tilgjengeligePlasser">plasser</h3>
-			</div>
-		{:else if valgtTidspunkt === 'etterLunsj'}
-			<div class="plasser" style="background-color: {farge};">
-				<h1 id="plassState">{plasser.etterLunsj}</h1>
-				<h3 id="tilgjengeligePlasser">plasser</h3>
-			</div>
-		{:else}
 			<div class="plasser" style="background-color: {farge};">
 				<h1 id="plassState">{plasser.siste}</h1>
 				<h3 id="tilgjengeligePlasser">plasser</h3>
 			</div>
-		{/if}
-
 	  </div>  
 	  
 	</div>
@@ -337,9 +268,9 @@
 			</button>
 		{:else}
 			<div class="meldPåKnapp-container">
-				{#if plasser[valgtTidspunkt] <= 0}
+				{#if plasser.siste <= 0}
 					{#if errorMessage && errorMessage.includes('ingen ledige plasser')}
-						<p class="fullt-melding">Kurset er fullt for dette tidspunktet.</p>
+						<p class="fullt-melding">Kurset er fullt.</p>
 						<button 
 							on:click={meldPaaVenteliste} 
 							id="ventelisteKnapp" 
@@ -349,11 +280,11 @@
 							{#if isLoading}
 								Melder på venteliste...
 							{:else}
-								Meld deg på venteliste ({tidspunktTekst})
+								Meld deg på venteliste
 							{/if}
 						</button>
 					{:else}
-						<p class="fullt-melding">Kurset er fullt for dette tidspunktet.</p>
+						<p class="fullt-melding">Kurset er fullt.</p>
 						<button 
 							on:click={meldPaaVenteliste} 
 							id="ventelisteKnapp" 
@@ -363,7 +294,7 @@
 							{#if isLoading}
 								Melder på venteliste...
 							{:else}
-								Meld deg på venteliste ({tidspunktTekst})
+								Meld deg på venteliste
 							{/if}
 						</button>
 					{/if}
@@ -377,7 +308,7 @@
 						{#if isLoading}
 							Melder på...
 						{:else}
-							Meld deg på ({tidspunktTekst})
+							Meld deg på
 						{/if}
 					</button>
 				{/if}
@@ -442,6 +373,7 @@
 	button.selected {
 		background-color: #4CAF50; /* En grønnfarge for valgt knapp */
 		color: white;
+		cursor: default;
 	}
 
 	.paameldt-knapp {

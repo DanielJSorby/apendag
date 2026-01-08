@@ -44,15 +44,11 @@ export async function POST(event) {
         // @ts-ignore
         const kurs = kursRows[0];
 
-        // Bestem hvilken kolonne som skal oppdateres
-        let tidspunktKolonne;
-        if (tidspunktTekst === kurs.tid_for_lunsj) {
-            tidspunktKolonne = 'plasser_for';
-        } else if (tidspunktTekst === kurs.tid_etter_lunsj) {
-            tidspunktKolonne = 'plasser_etter';
-        } else if (tidspunktTekst === kurs.tid_siste) {
-            tidspunktKolonne = 'plasser_siste';
-        } else {
+        // Siden vi kun har ett tidspunkt nå, er kolonnen alltid 'plasser_siste'
+        const tidspunktKolonne = 'plasser_siste';
+
+        // Valider at det lagrede tidspunktet er det vi forventer
+        if (tidspunktTekst !== kurs.tid_siste) {
             // Ugyldig tilstand, avbryt
             await connection.rollback();
             return json({ message: 'Påmeldt tidspunkt er ugyldig.' }, { status: 400 });
@@ -68,7 +64,7 @@ export async function POST(event) {
 
         // 3. Sjekk om det er noen på venteliste for dette kurset/tidspunktet
         const [waitlistRows] = await connection.query(
-            `SELECT v.id, v.bruker_id, v.studiesuppe, b.navn, b.email 
+            `SELECT v.id, v.bruker_id, b.navn, b.email 
              FROM venteliste v 
              INNER JOIN bruker b ON v.bruker_id COLLATE utf8mb4_unicode_ci = b.id COLLATE utf8mb4_unicode_ci 
              WHERE v.kurs_id = ? AND v.tidspunkt_tekst = ? 
@@ -81,7 +77,6 @@ export async function POST(event) {
         if (waitlistRows.length > 0) {
             const waitlistEntry = waitlistRows[0];
             const waitlistUserId = waitlistEntry.bruker_id;
-            const waitlistStudiesuppe = waitlistEntry.studiesuppe;
             const waitlistUserName = waitlistEntry.navn;
             const waitlistUserEmail = waitlistEntry.email;
 
@@ -101,8 +96,8 @@ export async function POST(event) {
                 await connection.query(decreaseKursSql, [kursId]);
 
                 // 2. Oppdater ventelistebrukerens påmelding
-                const enrollWaitlistUserSql = 'UPDATE bruker SET paameldt_kurs_id = ?, paameldt_tidspunkt_tekst = ?, studiesuppe = ? WHERE id = ?';
-                await connection.query(enrollWaitlistUserSql, [kursId, tidspunktTekst, waitlistStudiesuppe, waitlistUserId]);
+                const enrollWaitlistUserSql = 'UPDATE bruker SET paameldt_kurs_id = ?, paameldt_tidspunkt_tekst = ? WHERE id = ?';
+                await connection.query(enrollWaitlistUserSql, [kursId, tidspunktTekst, waitlistUserId]);
 
                 // 3. Fjern fra venteliste
                 await connection.query('DELETE FROM venteliste WHERE id = ?', [waitlistEntry.id]);
@@ -142,7 +137,7 @@ export async function POST(event) {
                 
                 // Prøv å finne neste person på ventelisten
                 const [nextWaitlistRows] = await connection.query(
-                    `SELECT v.id, v.bruker_id, v.studiesuppe, b.navn, b.email 
+                    `SELECT v.id, v.bruker_id, b.navn, b.email 
                      FROM venteliste v 
                      INNER JOIN bruker b ON v.bruker_id COLLATE utf8mb4_unicode_ci = b.id COLLATE utf8mb4_unicode_ci 
                      WHERE v.kurs_id = ? AND v.tidspunkt_tekst = ? 
@@ -155,7 +150,6 @@ export async function POST(event) {
                 if (nextWaitlistRows.length > 0) {
                     const nextWaitlistEntry = nextWaitlistRows[0];
                     const nextWaitlistUserId = nextWaitlistEntry.bruker_id;
-                    const nextWaitlistStudiesuppe = nextWaitlistEntry.studiesuppe;
                     const nextWaitlistUserName = nextWaitlistEntry.navn;
                     const nextWaitlistUserEmail = nextWaitlistEntry.email;
 
@@ -172,8 +166,8 @@ export async function POST(event) {
                         const decreaseKursSql = `UPDATE kurs SET ${tidspunktKolonne} = ${tidspunktKolonne} - 1 WHERE id = ?`;
                         await connection.query(decreaseKursSql, [kursId]);
 
-                        const enrollWaitlistUserSql = 'UPDATE bruker SET paameldt_kurs_id = ?, paameldt_tidspunkt_tekst = ?, studiesuppe = ? WHERE id = ?';
-                        await connection.query(enrollWaitlistUserSql, [kursId, tidspunktTekst, nextWaitlistStudiesuppe, nextWaitlistUserId]);
+                        const enrollWaitlistUserSql = 'UPDATE bruker SET paameldt_kurs_id = ?, paameldt_tidspunkt_tekst = ? WHERE id = ?';
+                        await connection.query(enrollWaitlistUserSql, [kursId, tidspunktTekst, nextWaitlistUserId]);
 
                         await connection.query('DELETE FROM venteliste WHERE id = ?', [nextWaitlistEntry.id]);
 

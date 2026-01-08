@@ -52,27 +52,19 @@ export const GET: RequestHandler = async ({ cookies, url }) => {
 
 // Helper function to update available places in kurs table
 async function updateKursPlasser(pool: any, kursId: number | null, tidspunkt: string | null, increment: number) {
-    if (!kursId || !tidspunkt) return;
-    
-    // Whitelist of valid field names to prevent SQL injection
-    const fieldMap: Record<string, string> = {
-        '09:00-10:30': 'plasser_for',
-        '11:00-12:30': 'plasser_etter',
-        '13:00-14:30': 'plasser_siste'
-    };
-    
-    const plassField = fieldMap[tidspunkt];
-    if (!plassField) {
-        return; // Unknown time slot
+    // Hvis det ikke er spesifisert noe kurs eller tidspunkt, gjør ingenting.
+    // Dette er viktig for å unngå feil når en bruker fjernes fra et kurs (blir satt til NULL).
+    if (!kursId || !tidspunkt) {
+        return;
     }
-    
-    // Use separate queries for each field to avoid template literals in SQL
-    if (plassField === 'plasser_for') {
-        await pool.query('UPDATE kurs SET plasser_for = plasser_for + ? WHERE id = ?', [increment, kursId]);
-    } else if (plassField === 'plasser_etter') {
-        await pool.query('UPDATE kurs SET plasser_etter = plasser_etter + ? WHERE id = ?', [increment, kursId]);
-    } else if (plassField === 'plasser_siste') {
-        await pool.query('UPDATE kurs SET plasser_siste = plasser_siste + ? WHERE id = ?', [increment, kursId]);
+
+    try {
+        // Siden vi kun bruker ett tidspunkt nå, oppdaterer vi alltid 'plasser_siste'.
+        const sql = 'UPDATE kurs SET plasser_siste = plasser_siste + ? WHERE id = ?';
+        await pool.query(sql, [increment, kursId]);
+    } catch (error) {
+        console.error(`Databasefeil i updateKursPlasser for kursId ${kursId}:`, error);
+        // Vurder å kaste feilen videre hvis transaksjonshåndtering er nødvendig
     }
 }
 
