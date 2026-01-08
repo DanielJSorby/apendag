@@ -65,7 +65,7 @@ async function toggleMaintenance() {
         <div class="status-info">
             <p class="status-label">Status:</p>
             <p class="status-value" class:active={maintenanceActive}>
-                {maintenanceActive ? '🔴 Aktiv' : '🟢 Inaktiv'}
+                {maintenanceActive ? 'Aktiv' : 'Inaktiv'}
             </p>
         </div>
         
@@ -80,7 +80,7 @@ async function toggleMaintenance() {
         </div>
         
         <button 
-            on:click={toggleMaintenance}
+            onclick={toggleMaintenance}
             disabled={isLoading}
             class:loading={isLoading}
             class={maintenanceActive ? 'btn-danger' : 'btn-success'}

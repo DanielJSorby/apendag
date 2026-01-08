@@ -1,17 +1,5 @@
 <script lang="ts">
-import { onMount } from 'svelte';
-
-let estimatedTime = $state('ca. 30 minutter');
-let lastUpdated = $state(new Date().toLocaleTimeString('no-NO'));
-
-onMount(() => {
-    // Oppdater tid hver minutter
-    const interval = setInterval(() => {
-        lastUpdated = new Date().toLocaleTimeString('no-NO');
-    }, 60000);
-
-    return () => clearInterval(interval);
-});
+let { data } = $props();
 </script>
 
 <svelte:head>
@@ -32,8 +20,8 @@ onMount(() => {
         
         <div class="maintenance-details">
             <div class="detail-item">
-                <span class="detail-label">Sist oppdatert:</span>
-                <span class="detail-value">{lastUpdated}</span>
+                <span class="detail-label">Vedlikehold startet:</span>
+                <span class="detail-value">{data.activatedAt}</span>
             </div>
         </div>
         
@@ -46,9 +34,32 @@ onMount(() => {
         display: flex;
         align-items: center;
         justify-content: center;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
         padding: 1rem;
+        animation: colorCycle 20s ease-in-out infinite;
+    }
+
+    @keyframes colorCycle {
+        0% {
+            background-color: var(--color-pink);
+            box-shadow: 0 4px 20px rgba(217, 59, 96, 0.5);
+        }
+        25% {
+            background-color: var(--color-blue);
+            box-shadow: 0 4px 20px rgba(49, 171, 198, 0.5);
+        }
+        50% {
+            background-color: var(--color-green);
+            box-shadow: 0 4px 20px rgba(73, 116, 80, 0.5);
+        }
+        75% {
+            background-color: var(--color-orange);
+            box-shadow: 0 4px 20px rgba(220, 137, 70, 0.5);
+        }
+        100% {
+            background-color: var(--color-pink);
+            box-shadow: 0 4px 20px rgba(217, 59, 96, 0.5);
+        }
     }
 
     .maintenance-content {

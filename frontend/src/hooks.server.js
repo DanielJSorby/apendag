@@ -41,7 +41,7 @@ export async function handle({ event, resolve }) {
 
 				// Hvis ikke developer, redirect til maintenance siden
 				if (!isDeveloper) {
-					throw redirect(303, '/maintenance');
+					throw redirect(303, '/Systemvedlikehold');
 				}
 			}
 		} catch (error) {
