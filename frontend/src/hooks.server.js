@@ -29,12 +29,12 @@ export async function handle({ event, resolve }) {
 				: false;
 
 			if (isMaintenance) {
-// Sjekk om bruker er developer (kun developers har tilgang under maintenance)
-			let isDeveloper = false;
-			if (userId) {
-				const [roleCheck] = await db.query(
-					'SELECT rolle FROM roller WHERE bruker_id = ? AND rolle = ?',
-					[userId, 'developer']
+				// Sjekk om bruker er developer (kun developers har tilgang under maintenance)
+				let isDeveloper = false;
+				if (userId) {
+					const [roleCheck] = await db.query(
+						'SELECT rolle FROM roller WHERE bruker_id = ? AND rolle = ?',
+						[userId, 'developer']
 					);
 					isDeveloper = Array.isArray(roleCheck) && roleCheck.length > 0;
 				}

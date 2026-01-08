@@ -1,23 +1,8 @@
 import { db } from '$lib/server/db';
 import type { PageServerLoad } from './$types';
-import { redirect } from '@sveltejs/kit';
 
-export const load: PageServerLoad = async ({ cookies, url }) => {
+export const load: PageServerLoad = async () => {
     try {
-        // Automatisk admin på localhost for utvikling
-        const isLocalhost = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
-        
-        let userId = cookies.get('UserId');
-        let isDevelopmentAdmin = false;
-        
-        if (isLocalhost && !userId) {
-            // På localhost uten innlogging, bruk dev admin ID
-            userId = 'dev-admin-localhost';
-            isDevelopmentAdmin = true;
-        } else if (!userId) {
-            throw redirect(303, '/login');
-        }
-        
         const [maintenanceRows] = await db.query(
             'SELECT activated_at FROM maintenance_break LIMIT 1'
         );
