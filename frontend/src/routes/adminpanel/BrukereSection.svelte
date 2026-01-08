@@ -83,11 +83,17 @@ function getUserRole(userId: string): string {
 }
 
 let filteredUsers = $derived(
-    users.filter((u: any) =>
-        u.navn?.toLowerCase().includes(userSearch.toLowerCase()) ||
-        u.email?.toLowerCase().includes(userSearch.toLowerCase()) ||
-        u.ungdomskole?.toLowerCase().includes(userSearch.toLowerCase())
-    )
+    users
+        .filter((u: any) =>
+            u.navn?.toLowerCase().includes(userSearch.toLowerCase()) ||
+            u.email?.toLowerCase().includes(userSearch.toLowerCase()) ||
+            u.ungdomskole?.toLowerCase().includes(userSearch.toLowerCase())
+        )
+        .sort((a: any, b: any) => {
+            const dateA = new Date(a.når_laget).getTime();
+            const dateB = new Date(b.når_laget).getTime();
+            return dateB - dateA; // Newest first
+        })
 );
 
 async function createUser() {
@@ -236,6 +242,7 @@ async function setUserRole(userId: string, rolle: string) {
                 <th>Påmeldt kurs</th>
                 <th>Tidspunkt</th>
                 <th>Studiesuppe</th>
+                <th>Opprettet</th>
                 <th>Rolle</th>
                 <th>Handlinger</th>
             </tr>
@@ -317,9 +324,7 @@ async function setUserRole(userId: string, rolle: string) {
                         <td>
                             <select bind:value={editingUser.paameldt_tidspunkt_tekst}>
                                 <option value={null}>Ikke valgt</option>
-                                <option value="09:00-10:30">09:00-10:30</option>
-                                <option value="11:00-12:30">11:00-12:30</option>
-                                <option value="13:00-14:30">13:00-14:30</option>
+                                <option value="14:00-15:30">14:00-15:30</option>
                             </select>
                         </td>
                         <td>
@@ -328,6 +333,7 @@ async function setUserRole(userId: string, rolle: string) {
                                 <option value="Ja">Ja</option>
                             </select>
                         </td>
+                        <td>{new Date(user.når_laget).toLocaleString('no-NO')}</td>
                         <td>
                             <select bind:value={editingUserRole} disabled={user.id === currentUserId}>
                                 <option value="ingen">Ingen</option>
@@ -361,6 +367,7 @@ async function setUserRole(userId: string, rolle: string) {
                         <td>{getKursNavn(user.paameldt_kurs_id)}</td>
                         <td>{user.paameldt_tidspunkt_tekst || '-'}</td>
                         <td>{user.studiesuppe || '-'}</td>
+                        <td>{new Date(user.når_laget).toLocaleString('no-NO')}</td>
                         <td>
                             <span class="role-badge role-{getUserRole(user.id)}">{getUserRole(user.id)}</span>
                         </td>

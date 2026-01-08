@@ -19,7 +19,7 @@ async function loadMaintenanceStatus() {
             maintenanceActive = Boolean(data.is_active);
         }
     } catch (error) {
-        console.error('Error loading maintenance status:', error);
+        console.error('Error loading systemvedlikehold status:', error);
     }
 }
 
@@ -39,14 +39,14 @@ async function toggleMaintenance() {
             maintenanceActive = !maintenanceActive;
             messageType = 'success';
             message = maintenanceActive 
-                ? 'Maintenance mode aktivert - utviklere har fortsatt tilgang' 
-                : 'Maintenance mode deaktivert';
+                ? 'Systemvedlikehold modus aktivert - utviklere har fortsatt tilgang' 
+                : 'Systemvedlikehold modus deaktivert';
             setTimeout(() => {
                 message = '';
             }, 3000);
         } else {
             messageType = 'error';
-            message = 'Feil ved oppdatering av maintenance mode';
+            message = 'Feil ved oppdatering av systemvedlikehold modus';
         }
     } catch (error) {
         console.error('Error toggling maintenance:', error);
@@ -59,7 +59,7 @@ async function toggleMaintenance() {
 </script>
 
 <div class="maintenance-section">
-    <h2>Maintenance Mode</h2>
+    <h2>Systemvedlikehold Modus</h2>
     
     <div class="status-card">
         <div class="status-info">
@@ -71,8 +71,8 @@ async function toggleMaintenance() {
         
         <div class="description">
             <p>
-                Når maintenance mode er aktivert vil alle brukere (unntatt utviklere) 
-                se en maintenance-side i stedet for normale sider.
+                Når systemvedlikehold modus er aktivert vil alle brukere (unntatt utviklere) 
+                se en systemvedlikehold-side i stedet for normale sider.
             </p>
             <p style="margin-top: 0.5rem; font-size: 0.9rem; color: #666;">
                 Utviklere får fortsatt full tilgang til applikasjonen.

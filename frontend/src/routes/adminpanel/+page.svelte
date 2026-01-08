@@ -5,7 +5,7 @@ import { goto } from '$app/navigation';
 import SystemvedlikeholdSection from './SystemvedlikeholdSection.svelte';
 import BrukereSection from './BrukereSection.svelte';
 import StatistikkSection from './StatistikkSection.svelte';
-import OSSSection from './OSSSection.svelte';
+import FAQSection from './FAQSection.svelte';
 import LinjerSection from './LinjerSection.svelte';
 import SkolerSection from './SkolerSection.svelte';
 import VentelisteSection from './VentelisteSection.svelte';
@@ -300,7 +300,7 @@ async function loadVenteliste() {
 
     {#if activeTab === 'faq'}
         <section class="content-section">
-            <OSSSection 
+            <FAQSection 
                 bind:faqQuestions
             />
         </section>

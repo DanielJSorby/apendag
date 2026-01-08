@@ -43,12 +43,8 @@ async function updateKurs(kurs: any) {
                 <th>ID</th>
                 <th>Linje</th>
                 <th>Kursnavn</th>
-                <th>Før lunsj</th>
-                <th>Etter lunsj</th>
-                <th>Siste</th>
-                <th>Plasser før</th>
-                <th>Plasser etter</th>
-                <th>Plasser siste</th>
+                <th>Tidspunkt</th>
+                <th>Plasser</th>
                 <th>Handlinger</th>
             </tr>
         </thead>
@@ -59,11 +55,7 @@ async function updateKurs(kurs: any) {
                         <td>{kurs.id}</td>
                         <td><input type="text" bind:value={editingKurs.linje} style="width: 80px;" /></td>
                         <td><input type="text" bind:value={editingKurs.navn} style="width: 150px;" /></td>
-                        <td><input type="text" bind:value={editingKurs.tid_for_lunsj} style="width: 100px;" /></td>
-                        <td><input type="text" bind:value={editingKurs.tid_etter_lunsj} style="width: 100px;" /></td>
-                        <td><input type="text" bind:value={editingKurs.tid_siste} style="width: 100px;" /></td>
-                        <td><input type="number" bind:value={editingKurs.plasser_for} style="width: 70px;" min="0" /></td>
-                        <td><input type="number" bind:value={editingKurs.plasser_etter} style="width: 70px;" min="0" /></td>
+                        <td><input type="text" bind:value={editingKurs.tidspunkt} style="width: 100px;" /></td>
                         <td><input type="number" bind:value={editingKurs.plasser_siste} style="width: 70px;" min="0" /></td>
                         <td class="actions-cell">
                             <button onclick={() => updateKurs(editingKurs!)} class="btn-small btn-success">
@@ -77,11 +69,7 @@ async function updateKurs(kurs: any) {
                         <td>{kurs.id}</td>
                         <td>{kurs.linje}</td>
                         <td>{kurs.navn}</td>
-                        <td>{kurs.tid.forLunsj || '-'}</td>
-                        <td>{kurs.tid.etterLunsj || '-'}</td>
                         <td>{kurs.tid.siste || '-'}</td>
-                        <td>{kurs.plasser_for || 0}</td>
-                        <td>{kurs.plasser_etter || 0}</td>
                         <td>{kurs.plasser_siste || 0}</td>
                         <td class="actions-cell">
                             <button onclick={() => {
@@ -89,11 +77,7 @@ async function updateKurs(kurs: any) {
                                     id: kurs.id,
                                     linje: kurs.linje,
                                     navn: kurs.navn,
-                                    tid_for_lunsj: kurs.tid.forLunsj,
-                                    tid_etter_lunsj: kurs.tid.etterLunsj,
-                                    tid_siste: kurs.tid.siste,
-                                    plasser_for: kurs.plasser_for || 0,
-                                    plasser_etter: kurs.plasser_etter || 0,
+                                    tidspunkt: kurs.tid.siste,
                                     plasser_siste: kurs.plasser_siste || 0
                                 };
                             }} class="btn-small btn-edit">
