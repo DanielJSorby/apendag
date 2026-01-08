@@ -121,14 +121,21 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
             }
             
             userId = uuidv4();
+            
+            // Få nåværende tid i +1 GMT (CET/CEST)
+            const now = new Date();
+            const cetTime = new Date(now.getTime() + (now.getTimezoneOffset() * 60000) + (3600000)); // +1 time
+            const når_laget = cetTime.toISOString().slice(0, 19).replace('T', ' ');
+            
             await db.query(
-                'INSERT INTO bruker (id, navn, email, ungdomskole, telefon) VALUES (?, ?, ?, ?, ?)',
+                'INSERT INTO bruker (id, navn, email, ungdomskole, telefon, når_laget) VALUES (?, ?, ?, ?, ?, ?)',
                 [
                     userId,
                     decodeURIComponent(name),
                     decodeURIComponent(email),
                     ungdomskole ? decodeURIComponent(ungdomskole) : null,
-                    telefon ? decodeURIComponent(telefon).trim() : null
+                    telefon ? decodeURIComponent(telefon).trim() : null,
+                    når_laget
                 ]
             );
         }

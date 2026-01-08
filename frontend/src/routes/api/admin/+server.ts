@@ -80,9 +80,14 @@ export const POST: RequestHandler = async ({ request, cookies, url }) => {
         const data = await request.json();
         const { id, navn, email, paameldt_kurs_id, paameldt_tidspunkt_tekst, studiesuppe, ungdomskole, telefon } = data;
         
+        // Få nåværende tid i +1 GMT (CET/CEST)
+        const now = new Date();
+        const cetTime = new Date(now.getTime() + (now.getTimezoneOffset() * 60000) + (3600000)); // +1 time
+        const når_laget = cetTime.toISOString().slice(0, 19).replace('T', ' ');
+        
         await pool.query(
-            'INSERT INTO bruker (id, navn, email, paameldt_kurs_id, paameldt_tidspunkt_tekst, studiesuppe, ungdomskole, telefon) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-            [id, navn, email, paameldt_kurs_id, paameldt_tidspunkt_tekst, studiesuppe, ungdomskole || null, telefon || null]
+            'INSERT INTO bruker (id, navn, email, paameldt_kurs_id, paameldt_tidspunkt_tekst, studiesuppe, ungdomskole, telefon, når_laget) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [id, navn, email, paameldt_kurs_id, paameldt_tidspunkt_tekst, studiesuppe, ungdomskole || null, telefon || null, når_laget]
         );
         
         // Decrease available places if user is enrolled in a course
