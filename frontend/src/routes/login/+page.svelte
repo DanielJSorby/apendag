@@ -1,6 +1,5 @@
 <script lang="ts">
-    import { onMount, onDestroy } from 'svelte';
-    import { getCookie } from '$lib/functions/getCookie';
+    import { onDestroy } from 'svelte';
     let email = $state('');
     let errorMessage = $state('');
     let successMessage = $state('');
@@ -9,13 +8,6 @@
     let lastSentTime = $state<number | null>(null); // Timestamp when link was sent
     let timeRemaining = $state(0); // Seconds remaining until resend is allowed
     let countdownInterval: ReturnType<typeof setInterval> | null = null;
-
-    onMount(() => {
-        const userId = getCookie('UserId');
-        if (userId) {
-            window.location.href = '/';
-        }
-    });
 
     onDestroy(() => {
         if (countdownInterval) {
