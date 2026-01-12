@@ -56,9 +56,12 @@ const exportFields = [
 
 let availableLines = $derived<Set<string>>(new Set(kursListe.map((k: any) => k.linje).filter(Boolean)));
 
+let hasInitializedLines = false;
+
 $effect(() => {
-    if (availableLines.size > 0 && selectedLinesForExport.size === 0) {
+    if (!hasInitializedLines && availableLines.size > 0) {
         selectedLinesForExport = new Set(availableLines);
+        hasInitializedLines = true;
     }
 });
 
