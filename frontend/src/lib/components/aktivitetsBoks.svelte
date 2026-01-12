@@ -213,7 +213,11 @@
 	  </div>  
 	  <div class="visesIForholdTilTid">
 			<div class="plasser" style="background-color: {farge};">
-				<h1 id="plassState">{plasser.siste}</h1>
+				{#if plasser.siste < 0}
+					<h1 id="plassState">0</h1>
+				{:else}
+					<h1 id="plassState">{plasser.siste}</h1>
+				{/if}
 				<h3 id="tilgjengeligePlasser">plasser</h3>
 			</div>
 	  </div>  
