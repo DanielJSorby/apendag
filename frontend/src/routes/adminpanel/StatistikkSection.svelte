@@ -29,6 +29,7 @@ let visibleColumns = $state({
     studiesuppe: false,
     paameldt_kurs_id: false
 });
+
 let selectedLinesForExport = $state<Set<string>>(new Set());
 let selectedFieldsForExport = $state<Set<string>>(new Set([
     'navn',
@@ -39,6 +40,7 @@ let selectedFieldsForExport = $state<Set<string>>(new Set([
     'kurs_navn',
     'paameldt_tidspunkt_tekst'
 ]));
+
 let isExporting = $state(false);
 
 const exportFields = [
@@ -72,13 +74,13 @@ onMount(() => {
             try {
                 const parsed = JSON.parse(saved);
                 visibleColumns = {
-                    navn: parsed.navn !== undefined ? parsed.navn : true,
-                    email: parsed.email !== undefined ? parsed.email : true,
-                    telefon: parsed.telefon !== undefined ? parsed.telefon : true,
-                    ungdomskole: parsed.ungdomskole !== undefined ? parsed.ungdomskole : true,
-                    paameldt_tidspunkt_tekst: parsed.paameldt_tidspunkt_tekst !== undefined ? parsed.paameldt_tidspunkt_tekst : true,
-                    studiesuppe: parsed.studiesuppe !== undefined ? parsed.studiesuppe : false,
-                    paameldt_kurs_id: parsed.paameldt_kurs_id !== undefined ? parsed.paameldt_kurs_id : false
+                    navn: parsed.navn ?? true,
+                    email: parsed.email ?? true,
+                    telefon: parsed.telefon ?? true,
+                    ungdomskole: parsed.ungdomskole ?? true,
+                    paameldt_tidspunkt_tekst: parsed.paameldt_tidspunkt_tekst ?? true,
+                    studiesuppe: parsed.studiesuppe ?? false,
+                    paameldt_kurs_id: parsed.paameldt_kurs_id ?? false
                 };
             } catch (e) {
                 console.error('Error parsing visibleColumns from cookie:', e);
@@ -94,12 +96,9 @@ $effect(() => {
 });
 
 function toggleCourse(courseId: number) {
-    if (expandedCourses.has(courseId)) {
-        expandedCourses.delete(courseId);
-    } else {
-        expandedCourses.add(courseId);
-    }
-    expandedCourses = new Set(expandedCourses);
+    const newSet = new Set(expandedCourses);
+    newSet.has(courseId) ? newSet.delete(courseId) : newSet.add(courseId);
+    expandedCourses = newSet;
 }
 
 function getUsersForCourse(courseId: number) {
@@ -108,21 +107,13 @@ function getUsersForCourse(courseId: number) {
 
 function toggleLineForExport(line: string) {
     const newSet = new Set(selectedLinesForExport);
-    if (newSet.has(line)) {
-        newSet.delete(line);
-    } else {
-        newSet.add(line);
-    }
+    newSet.has(line) ? newSet.delete(line) : newSet.add(line);
     selectedLinesForExport = newSet;
 }
 
 function toggleFieldForExport(field: string) {
     const newSet = new Set(selectedFieldsForExport);
-    if (newSet.has(field)) {
-        newSet.delete(field);
-    } else {
-        newSet.add(field);
-    }
+    newSet.has(field) ? newSet.delete(field) : newSet.add(field);
     selectedFieldsForExport = newSet;
 }
 
@@ -134,19 +125,27 @@ function deselectAllLines() {
     selectedLinesForExport = new Set();
 }
 
-async function exportToCSV() {
+function selectAllFields() {
+    selectedFieldsForExport = new Set(exportFields.map(f => f.key));
+}
+
+function deselectAllFields() {
+    selectedFieldsForExport = new Set();
+}
+
+ async function exportToCSV() {
     if (selectedLinesForExport.size === 0) {
         alert('Velg minst én linje å eksportere');
         return;
     }
-    
+
     if (selectedFieldsForExport.size === 0) {
         alert('Velg minst ett felt å eksportere');
         return;
     }
-    
+
     isExporting = true;
-    
+
     try {
         const response = await fetch('/api/admin/export-csv', {
             method: 'POST',
@@ -156,13 +155,13 @@ async function exportToCSV() {
                 selectedFields: Array.from(selectedFieldsForExport)
             })
         });
-        
+
         if (!response.ok) {
             const errorText = await response.text();
             alert(`Kunne ikke eksportere CSV: ${errorText}`);
             return;
         }
-        
+
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -172,6 +171,7 @@ async function exportToCSV() {
         a.click();
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
+
     } catch (error) {
         console.error('Error exporting CSV:', error);
         alert('En feil oppstod ved eksport av CSV');
@@ -179,6 +179,7 @@ async function exportToCSV() {
         isExporting = false;
     }
 }
+
 </script>
 
 <h2>Statistikk</h2>
@@ -226,6 +227,10 @@ async function exportToCSV() {
         <div class="export-group">
             <div class="export-group-header">
                 <h4>Velg felter</h4>
+                <div class="select-all-buttons">
+                    <button onclick={selectAllFields} class="btn-small btn-edit">Velg alle</button>
+                    <button onclick={deselectAllFields} class="btn-small btn-cancel">Fjern alle</button>
+                </div>
             </div>
             <div class="export-checkboxes">
                 {#each exportFields as field}
